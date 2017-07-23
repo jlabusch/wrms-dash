@@ -1,0 +1,21 @@
+{
+  "name": "wrms-dash-api",
+  "version": "1.0.0",
+  "description": "Catalyst EU dashboard API",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jlabusch/wrms-dash-api.git"
+  },
+  "scripts": {
+    "start": "node ./index.js"
+  },
+  "author": "Jacques Labuschagne <jlabusch@acm.org>",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "config": "~1",
+    "pg": "~6",
+    "qs": "~6.4",
+    "restify": "~4.3"
+  }
+}

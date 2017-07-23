@@ -1,0 +1,6 @@
+{
+    "server": {
+        "version": "1.0.0",
+        "listen_port": 80
+    }
+}
