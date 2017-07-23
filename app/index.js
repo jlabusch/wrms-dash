@@ -62,6 +62,14 @@ setup('get', '/sla_quotes', function(req, res, next){
     next && next(false);
 });
 
+setup('get', '/customer', function(req, res, next){
+    console.log('customer()');
+    res.json({
+        result: {name: 'Acme Auto Parts Ltd', id: 2198}
+    });
+    next && next(false);
+});
+
 setup('get', '/additional_quotes', function(req, res, next){
     console.log('additional_quotes()');
     res.json({

@@ -9,8 +9,10 @@ var secs = 1000;
 
 function query(path, next, override_uri, refresh_interval_secs){
     let xhr = new XMLHttpRequest();
-    var refresh_interval_secs = refresh_interval_secs || 600;
-    var uri_base = override_uri || 'http://localhost:8004';
+    if (refresh_interval_secs === undefined){
+        refresh_interval_secs = 600;
+    }
+    var uri_base = override_uri || 'http://mango.btn.catalyst-eu.net:8004';
 
     xhr.open('GET', uri_base + path, true);
     xhr.onreadystatechange = function(){
@@ -21,9 +23,11 @@ function query(path, next, override_uri, refresh_interval_secs){
             next(new Error('' + xhr.status));
             return;
         }
-        setTimeout(function(){
-            query(path, next, override_uri, refresh_interval_secs);
-        }, refresh_interval_secs*secs);
+        if (refresh_interval_secs){
+            setTimeout(function(){
+                query(path, next, override_uri, refresh_interval_secs);
+            }, refresh_interval_secs*secs);
+        }
         var json = undefined;
         try{
             json = JSON.parse(xhr.responseText);
@@ -96,6 +100,21 @@ var chart10 = new Keen.Dataviz()
     .prepare();
 
 query('/users', render(chart10));
+
+var chart14 = new Keen.Dataviz()
+    .el('#chart-14')
+    .colors([['#444']])
+    .height(120)
+    .type('metric')
+    .prepare();
+
+query('/customer', function(err, data){
+    render(chart14)(err, {result: data.result.id});
+
+    if (!err){
+        $('#chart-14 > div > div > span').text(data.result.name);
+    }
+});
 
 var chart02 = new Keen.Dataviz()
     .el('#chart-02')
