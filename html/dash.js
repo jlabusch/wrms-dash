@@ -7,25 +7,12 @@ var default_colors = [
 
 var secs = 1000;
 
-var gophers = [
-    'COWBOY_GOPHER.png',
-    'GIRL_GOPHER.png',
-    'GO_BUFFALO.png',
-    'GOPHERCON.png',
-    'GOPHER_DENVER.png',
-    'GOPHER_SAFARI.png',
-    'LION_GOPHER.png',
-    // 'ZERO_FUCKS.png',
-    'STAR_TREK_GOPHER.png'
-];
-
-document.getElementById('gopher').src = './' + gophers[Math.round(Math.random()*(gophers.length-1))];
-
-function query(path, next, refresh_interval_secs){
+function query(path, next, override_uri, refresh_interval_secs){
     let xhr = new XMLHttpRequest();
     var refresh_interval_secs = refresh_interval_secs || 600;
+    var uri_base = override_uri || 'http://localhost:8004';
 
-    xhr.open('GET', 'http://localhost:8004' + path, true);
+    xhr.open('GET', uri_base + path, true);
     xhr.onreadystatechange = function(){
         if (xhr.readyState !== 4){
             return;
@@ -35,7 +22,7 @@ function query(path, next, refresh_interval_secs){
             return;
         }
         setTimeout(function(){
-            query(path, next, refresh_interval_secs);
+            query(path, next, override_uri, refresh_interval_secs);
         }, refresh_interval_secs*secs);
         var json = undefined;
         try{
@@ -273,4 +260,18 @@ function draw_custom_charts(){
         chart05.draw(google.visualization.arrayToDataTable(data.result), common_options);
     });
 } // google charts
+
+var gophers = [
+    'COWBOY_GOPHER.png',
+    'GIRL_GOPHER.png',
+    'GO_BUFFALO.png',
+    'GOPHERCON.png',
+    'GOPHER_DENVER.png',
+    'GOPHER_SAFARI.png',
+    'LION_GOPHER.png',
+    // 'ZERO_FUCKS.png',
+    'STAR_TREK_GOPHER.png'
+];
+
+document.getElementById('gopher').src = './' + gophers[Math.round(Math.random()*(gophers.length-1))];
 
