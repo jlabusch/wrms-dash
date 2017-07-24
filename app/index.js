@@ -65,7 +65,9 @@ setup('get', '/sla_quotes', function(req, res, next){
 setup('get', '/customer', function(req, res, next){
     console.log('customer()');
     res.json({
-        result: {name: 'Acme Auto Parts Ltd', id: 2198}
+        result: 0,
+        org: {name: 'Acme Auto Parts Ltd', id: 2198},
+        system: {name: 'Acme Service Level Agreement 2017-2018', id: 1234}
     });
     next && next(false);
 });
@@ -178,6 +180,15 @@ setup('get', '/wr_list', function(req, res, next){
             { request_id: 'WR 217001', brief: 'brief desc', status: 'New request', severity: 'Medium' },
             { request_id: 'WR 217002', brief: 'brief but longer desc', status: 'New request', severity: 'Medium' },
             { request_id: 'WR 217003', brief: 'some widget is not working, help', status: 'New request', severity: 'Medium' },
+            { request_id: 'WR 217003', brief: 'some widget is not working, help', status: 'New request', severity: 'Medium' },
+            { request_id: 'WR 217003', brief: 'some widget is not working, help', status: 'New request', severity: 'Medium' },
+            { request_id: 'WR 217003', brief: 'some widget is not working, help', status: 'New request', severity: 'Medium' },
+            { request_id: 'WR 217003', brief: 'some widget is not working, help', status: 'New request', severity: 'Medium' },
+            { request_id: 'WR 217003', brief: 'some widget is not working, help', status: 'New request', severity: 'Medium' },
+            { request_id: 'WR 217003', brief: 'some widget is not working, help', status: 'New request', severity: 'Medium' },
+            { request_id: 'WR 217003', brief: 'some widget is not working, help', status: 'New request', severity: 'Medium' },
+            { request_id: 'WR 217003', brief: 'some widget is not working, help', status: 'New request', severity: 'Medium' },
+            { request_id: 'WR 217003', brief: 'some widget is not working, help', status: 'New request', severity: 'Medium' }
         ]
     });
     next && next(false);
