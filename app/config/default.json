@@ -1,4 +1,11 @@
 {
+    "db": {
+        "user": "wrms_readonly",
+        "database": "wrms",
+        "password": "",
+        "host": "192.168.0.10",
+        "port": 5432
+    },
     "server": {
         "version": "1.0.0",
         "listen_port": 80

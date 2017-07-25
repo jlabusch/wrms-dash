@@ -7,6 +7,10 @@ var default_colors = [
     URI_BASE_DEFAULT = 'http://localhost:8004', //'http://mango.btn.catalyst-eu.net:8004',
     SECS = 1000;
 
+var ORG = (function(s){ var a = s.match(/org=(\d+)/); return a ? a[1] : 1137; })(window.location.search),
+    SYS = (function(s){ var a = s.match(/sys=([0-9,]+)/); return a ? a[1] : 1661; })(window.location.search),
+    URI_EXT = ORG + '/' + SYS;
+
 function query(path, next, override_uri, refresh_interval_secs){
     let xhr = new XMLHttpRequest();
     if (refresh_interval_secs === undefined){
@@ -14,7 +18,7 @@ function query(path, next, override_uri, refresh_interval_secs){
     }
     var uri_base = override_uri || URI_BASE_DEFAULT;
 
-    xhr.open('GET', uri_base + path, true);
+    xhr.open('GET', uri_base + path + '/' + URI_EXT, true);
     xhr.onreadystatechange = function(){
         if (xhr.readyState !== 4){
             return;
@@ -152,15 +156,17 @@ var chart03 = new Keen.Dataviz()
 
 query('/additional_quotes', render(chart03));
 
+/*
 var chart13 = new Keen.Dataviz()
     .el('#chart-13')
     .height(250)
     .type('table')
     .prepare();
 
-query('/wr_list', render(chart13));
+query('/wr_list/1759/2906,2936', render(chart13));
+*/
 
-google.charts.load('current', {packages: ['corechart', 'bar']});
+google.charts.load('current', {packages: ['corechart', 'bar', 'table']});
 google.charts.setOnLoadCallback(draw_custom_charts);
 
 function draw_custom_charts(){
@@ -237,12 +243,12 @@ function draw_custom_charts(){
             console.log('severity: ' + err);
             return;
         }
-        data.result.forEach((row, i) => { row.push(sev_colors[i]) });
-        data.result.unshift(['Category', 'Number of WRs', {role: 'style'}]);
+        data.forEach((row, i) => { row.push(sev_colors[i]) });
+        data.unshift(['Category', 'Number of WRs', {role: 'style'}]);
 
         var chart04 = new google.visualization.BarChart(document.getElementById('chart-04'));
 
-        chart04.draw(google.visualization.arrayToDataTable(data.result), common_options);
+        chart04.draw(google.visualization.arrayToDataTable(data), common_options);
     });
 
     query('/response_times', function(err, data){
@@ -263,12 +269,39 @@ function draw_custom_charts(){
             console.log('statuses: ' + err);
             return;
         }
-        data.result.forEach((row, i) => { row.push(default_colors[0]) });
-        data.result.unshift(['Category', 'Number of WRs', {role: 'style'}]);
+        var o = JSON.parse(JSON.stringify(common_options));
+        o.chartArea.height = 150;
+
+        data.forEach((row, i) => { row.push(default_colors[0]) });
+        data.unshift(['Category', 'Number of WRs', {role: 'style'}]);
 
         var chart05 = new google.visualization.BarChart(document.getElementById('chart-05'));
 
-        chart05.draw(google.visualization.arrayToDataTable(data.result), common_options);
+        chart05.draw(google.visualization.arrayToDataTable(data), o);
+    });
+
+    query('/wr_list', function(err, data){
+        if (err){
+            console.log('wr_list: ' + err);
+            return;
+        }
+        var table = new google.visualization.DataTable();
+        table.addColumn('string', 'WR#');
+        table.addColumn('string', 'Brief');
+        table.addColumn('string', 'Status');
+        table.addColumn('string', 'Urgency');
+        table.addRows(
+            data.map(function(row){
+                return [
+                    'WR ' + row.request_id,
+                    row.brief,
+                    row.status,
+                    row.urgency
+                ];
+            })
+        );
+        var viz = new google.visualization.Table(document.getElementById('chart-13'));
+        viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     });
 } // google charts
 
