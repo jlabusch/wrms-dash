@@ -138,7 +138,7 @@ query('/storage', render(chart09));
 var chart10 = new Keen.Dataviz()
     .el('#chart-10')
     .colors([default_colors[9]])
-    .title('active users in past year')
+    .title('user accounts')
     .height(250)
     .type('metric')
     .prepare();
@@ -163,6 +163,7 @@ var chart02 = new Keen.Dataviz()
                 format: function(value, ratio, id){ return value + ' hours'; }
             }
         },
+        legend:{ position: 'none' },
         chartArea: {
             height: "85%",
             left: "5%",
@@ -185,6 +186,7 @@ var chart03 = new Keen.Dataviz()
                 format: function(value, ratio, id){ return value + ' hours'; }
             }
         },
+        legend:{ position: 'none' },
         chartArea: {
             height: "85%",
             left: "5%",

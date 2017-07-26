@@ -190,6 +190,7 @@ function prepare_query(label, cache_key_base, sql, process_data){
     }
 }
 
+// TODO: exclude WRs with the "Warranty" tag
 function get_quotes(pred){
     return function(req, res, next){
         let ctx = get_dash_context(req);
@@ -403,15 +404,48 @@ setup(
     )
 );
 
-function calculate_response_duration(sev, start, end){
+function calculate_response_duration(wr, sev, start, end){
+    console.log('calculate_response_duration(' + wr + '/' + sev + ', ' + start.toISOString() + ', ' + end.toISOString() + ')');
     if (sev === 'Critical'){
         return end - start;
     }
     const work_hours_per_day = 8,
         work_end_hour = 17,
         work_start_hour = work_end_hour - work_hours_per_day;
-    // TODO
-    return end - start;
+
+    function same_day(a, b){
+        return  a.getFullYear() === b.getFullYear() &&
+                a.getMonth() === b.getMonth() &&
+                a.getDate() === b.getDate();
+    }
+
+    let d = new Date(start.getTime());
+    d.setHours(work_end_hour, 0, 0, 0);
+    let elapsed = (end > d ? d : end) - start;
+    if (same_day(start, end)){
+        console.log('response_times: same day start/end, clamp to 5pm, duration = ' + elapsed + 'ms');
+    }else{
+        while (true){
+            d.setDate(d.getDate()+1);
+            if (same_day(d, end)){
+                break;
+            }else{
+                if (d.getDay() === 0 || d.getDay() === 6){
+                    // weekend
+                }else{
+                    elapsed += work_hours_per_day * HOURS;
+                }
+            }
+        }
+        // Reached end date
+        d = new Date(end.getTime());
+        d.setHours(work_start_hour, 0, 0, 0);
+        if (end > d){
+            elapsed += (end - d);
+        }
+        console.log('response_times: diff day start/end, duration = ' + elapsed + 'ms');
+    }
+    return elapsed;
 }
 
 setup('get', '/response_times', function(req, res, next){
@@ -436,14 +470,14 @@ setup('get', '/response_times', function(req, res, next){
                 handle_timings(c, true);
             }else{
                 db.query(
-                    'timings',
-                    `SELECT MIN(a.date) AS end,a.request_id,u.email
+                    'timings-debug',
+                    `SELECT MIN(a.date) AS end,a.request_id
                      FROM request_activity a
                      JOIN usr u ON u.user_no=a.worker_id
                      WHERE a.request_id IN (${data.rows.map(row => { return row.request_id }).join(',')})
                        AND a.source='note'
                        AND u.email like '%@catalyst%'
-                     GROUP BY a.request_id,u.email`.replace(/\s+/g, ' ')
+                     GROUP BY a.request_id`.replace(/\s+/g, ' ')
                 )
                 .then(
                     handle_timings,
@@ -487,7 +521,7 @@ setup('get', '/response_times', function(req, res, next){
             Object.keys(state).forEach(id => {
                 let o = state[id];
                 times[state[id].severity].push(
-                    calculate_response_duration(o.severity, o.start, o.end) // msec
+                    calculate_response_duration(o.request_id, o.severity, o.start, o.end) // msec
                 );
             });
 
@@ -495,6 +529,7 @@ setup('get', '/response_times', function(req, res, next){
             ['Low', 'Medium', 'High', 'Critical'].forEach(sev => {
                 let arr = [sev, 0];
                 if (times[sev].length){
+                    times[sev].sort();
                     let index = Math.round(times[sev].length*percentile);
                     console.log('sev=' + sev + ', rt=' + JSON.stringify(times[sev]) + ', ' + percentile + '%=' + index);
                     arr[1] = Math.round(times[sev][index-1]/HOURS*10)/10;
@@ -511,7 +546,7 @@ setup('get', '/response_times', function(req, res, next){
         handle_wrs(c, true);
     }else{
         db.query(
-                'wr_list-limited',
+                'wr_list-limited-debug',
                 wr_list_sql(ctx, true)
             )
             .then(
