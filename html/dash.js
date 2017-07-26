@@ -22,12 +22,30 @@ var ORG = (function(s){ var a = s.match(/org=(\d+)/); return a ? a[1] : 1137; })
 
 (function(){
     [
+        $('body > div.container-fluid > div:nth-child(1) > div:nth-child(1) > div > div.chart-notes'),
+        $('body > div.container-fluid > div:nth-child(1) > div:nth-child(1) > div > div.chart-title'),
         $('body > div.container-fluid > div:nth-child(1) > div:nth-child(2) > div > div.chart-notes'),
         $('body > div.container-fluid > div:nth-child(1) > div:nth-child(2) > div > div.chart-title'),
-        $('body > div.container-fluid > div:nth-child(1) > div:nth-child(1) > div > div.chart-title'),
+        $('body > div.container-fluid > div:nth-child(1) > div:nth-child(3) > div > div.chart-notes'),
+        $('body > div.container-fluid > div:nth-child(1) > div:nth-child(3) > div > div.chart-title'),
+        $('body > div.container-fluid > div:nth-child(2) > div:nth-child(1) > div > div.chart-notes'),
+        $('body > div.container-fluid > div:nth-child(2) > div:nth-child(1) > div > div.chart-title'),
         $('body > div.container-fluid > div:nth-child(2) > div:nth-child(2) > div > div.chart-notes'),
         $('body > div.container-fluid > div:nth-child(2) > div:nth-child(2) > div > div.chart-title'),
-        $('body > div.container-fluid > div:nth-child(3) > div:nth-child(3) > div > div.chart-title')
+        $('body > div.container-fluid > div:nth-child(2) > div:nth-child(3) > div > div.chart-notes'),
+        $('body > div.container-fluid > div:nth-child(2) > div:nth-child(3) > div > div.chart-title'),
+        $('body > div.container-fluid > div:nth-child(3) > div:nth-child(1) > div > div.chart-notes'),
+        $('body > div.container-fluid > div:nth-child(3) > div:nth-child(1) > div > div.chart-title'),
+        $('body > div.container-fluid > div:nth-child(3) > div:nth-child(2) > div > div.chart-notes'),
+        $('body > div.container-fluid > div:nth-child(3) > div:nth-child(2) > div > div.chart-title'),
+        $('body > div.container-fluid > div:nth-child(3) > div:nth-child(3) > div > div.chart-notes'),
+        $('body > div.container-fluid > div:nth-child(3) > div:nth-child(3) > div > div.chart-title'),
+        $('body > div.container-fluid > div:nth-child(4) > div:nth-child(1) > div > div.chart-notes'),
+        $('body > div.container-fluid > div:nth-child(4) > div:nth-child(1) > div > div.chart-title'),
+        $('body > div.container-fluid > div:nth-child(4) > div:nth-child(2) > div > div.chart-notes'),
+        $('body > div.container-fluid > div:nth-child(4) > div:nth-child(2) > div > div.chart-title'),
+        $('body > div.container-fluid > div:nth-child(4) > div:nth-child(3) > div > div.chart-notes'),
+        $('body > div.container-fluid > div:nth-child(4) > div:nth-child(3) > div > div.chart-title'),
     ].forEach(function(t){
         t.text( t.text().replace(/PERIOD/g, PERIOD) );
     });
@@ -80,7 +98,7 @@ function render(chart, pre){
 
 var chart06 = new Keen.Dataviz()
     .el('#chart-06')
-    .title('new WRs this period')
+    .title('WRs this period')
     .height(250)
     .colors([default_colors[0]])
     .type('metric')
@@ -177,16 +195,6 @@ var chart03 = new Keen.Dataviz()
     .prepare();
 
 query('/additional_quotes', render(chart03));
-
-/*
-var chart13 = new Keen.Dataviz()
-    .el('#chart-13')
-    .height(250)
-    .type('table')
-    .prepare();
-
-query('/wr_list/1759/2906,2936', render(chart13));
-*/
 
 google.charts.load('current', {packages: ['corechart', 'bar', 'table']});
 google.charts.setOnLoadCallback(draw_custom_charts);

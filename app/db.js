@@ -65,10 +65,10 @@ DB.prototype.query = function(){
             if (err){
                 reject(err);
             }else{
-                let j = JSON.stringify(data, null, 2);
                 if (debug){
-                    console.log(label + j);
+                    console.log(label + JSON.stringify(data.rows, null, 2));
                 }
+                let j = JSON.stringify(data, null, 2);
                 resolve(JSON.parse(j));
             }
         });

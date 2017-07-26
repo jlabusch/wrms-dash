@@ -3,7 +3,7 @@
         "user": "wrms_readonly",
         "database": "wrms",
         "password": "",
-        "host": "192.168.0.10",
+        "host": "192.168.0.102",
         "port": 5432
     },
     "server": {
