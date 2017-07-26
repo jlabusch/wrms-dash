@@ -3,12 +3,12 @@
         "user": "wrms_readonly",
         "database": "wrms",
         "password": "",
-        "host": "192.168.0.10",
+        "host": "catwgtn-prod-pg92.db.catalyst.net.nz",
         "port": 5432
     },
     "server": {
         "version": "1.0.0",
         "listen_port": 80
     },
-    "sla_uri": "http://192.168.0.10:8000/sla_config"
+    "sla_uri": "http://mango.btn.catalyst-eu.net:8000/sla_config"
 }

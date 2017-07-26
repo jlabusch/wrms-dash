@@ -6,7 +6,7 @@ var default_colors = [
         // Catalyst colors:
         // "#5b9aa9", "#e6ad30", "#889a3a", "#ba2025", "#c6b253", "#dd8545", "#50433c"
     ],
-    URI_BASE_DEFAULT = 'http://localhost:8004', //'http://mango.btn.catalyst-eu.net:8004',
+    URI_BASE_DEFAULT = 'http://mango.btn.catalyst-eu.net:8004',
     SECS = 1000;
 
 var ORG = (function(s){ var a = s.match(/org=(\d+)/); return a ? a[1] : 1137; })(window.location.search),

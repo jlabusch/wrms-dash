@@ -190,7 +190,6 @@ function prepare_query(label, cache_key_base, sql, process_data){
     }
 }
 
-// TODO: exclude WRs with the "Warranty" tag
 function get_quotes(pred){
     return function(req, res, next){
         let ctx = get_dash_context(req);
@@ -282,11 +281,15 @@ setup(
     )
 );
 
-setup('get', '/additional_quotes',
+const exlude_additional_quote_statuses = ['F', 'H', 'M'];
+
+setup(
+    'get',
+    '/additional_quotes',
     get_quotes(
         function(){
             return function(row){
-                return ['F', 'H', 'M'].indexOf(row.last_status) < 0 &&
+                return exlude_additional_quote_statuses.indexOf(row.last_status) < 0 &&
                     (!row.invoice_to || row.invoice_to.indexOf(row.quote_id) < 0);
             }
         }
@@ -421,6 +424,10 @@ function calculate_response_duration(wr, sev, start, end){
 
     let d = new Date(start.getTime());
     d.setHours(work_end_hour, 0, 0, 0);
+    if (d < start){
+        // Handle the case when it's raised and resolved out of hours, before next business day
+        start = d;
+    }
     let elapsed = (end > d ? d : end) - start;
     if (same_day(start, end)){
         console.log('response_times: same day start/end, clamp to 5pm, duration = ' + elapsed + 'ms');
@@ -470,12 +477,12 @@ setup('get', '/response_times', function(req, res, next){
                 handle_timings(c, true);
             }else{
                 db.query(
-                    'timings-debug',
+                    'timings',
                     `SELECT MIN(a.date) AS end,a.request_id
                      FROM request_activity a
                      JOIN usr u ON u.user_no=a.worker_id
                      WHERE a.request_id IN (${data.rows.map(row => { return row.request_id }).join(',')})
-                       AND a.source='note'
+                       AND a.source IN ('note', 'status')
                        AND u.email like '%@catalyst%'
                      GROUP BY a.request_id`.replace(/\s+/g, ' ')
                 )
@@ -529,7 +536,7 @@ setup('get', '/response_times', function(req, res, next){
             ['Low', 'Medium', 'High', 'Critical'].forEach(sev => {
                 let arr = [sev, 0];
                 if (times[sev].length){
-                    times[sev].sort();
+                    times[sev].sort((a,b)=>{ return a-b });
                     let index = Math.round(times[sev].length*percentile);
                     console.log('sev=' + sev + ', rt=' + JSON.stringify(times[sev]) + ', ' + percentile + '%=' + index);
                     arr[1] = Math.round(times[sev][index-1]/HOURS*10)/10;
@@ -546,7 +553,7 @@ setup('get', '/response_times', function(req, res, next){
         handle_wrs(c, true);
     }else{
         db.query(
-                'wr_list-limited-debug',
+                'wr_list-limited',
                 wr_list_sql(ctx, true)
             )
             .then(
@@ -598,15 +605,18 @@ setup(
     '/sla_hours',
     prepare_query('sla_hours', 'sla_hours',
         function(ctx){
-            return `SELECT r.request_id,SUM(t.work_quantity) AS hours
+            return `SELECT r.request_id,SUM(ts.work_quantity) AS hours
                     FROM request r
-                    JOIN request_timesheet t ON r.request_id=t.request_id
+                    JOIN request_timesheet ts ON r.request_id=ts.request_id
+                    LEFT JOIN request_tag rtag ON r.request_id=rtag.request_id
+                    LEFT JOIN organisation_tag otag ON otag.tag_id=rtag.tag_id
                     JOIN usr u ON u.user_no=r.requester_id
                     WHERE u.org_code=${ctx.org}
                         AND r.system_id IN (${ctx.sys.join(',')})
-                        AND t.work_on >= '${ctx.period + '-01'}'
-                        AND t.work_on < '${next_period(ctx) + '-01'}'
-                        AND t.work_units='hours'
+                        AND ts.work_on >= '${ctx.period + '-01'}'
+                        AND ts.work_on < '${next_period(ctx) + '-01'}'
+                        AND ts.work_units='hours'
+                        AND (otag.tag_description IS NULL OR otag.tag_description != 'Warranty')
                     GROUP BY r.request_id`;
         },
         function(data, ctx, next){
@@ -657,15 +667,17 @@ setup(
             }
             function produce_result(){
                 wait_for_cache(cache_key('approved_quotes',ctx), function(aq){
+                    console.log(JSON.stringify(aq.rows, null, 2));
                     let sla = 0,
                         add = 0;
                     aq.rows.forEach(row => {
-                        delete ts[row.request_id];
                         console.log(JSON.stringify(row));
                         if (is_sla_quote(row, ctx)){
                             sla += convert_quote_amount(row);
-                        }else if (!is_sla_quote(row, ctx, true)){
+                            delete ts[row.request_id];
+                        }else if (!is_sla_quote(row, ctx, true) && exlude_additional_quote_statuses.indexOf(row.last_status) < 0){
                             add += convert_quote_amount(row);
+                            delete ts[row.request_id];
                         }
                     });
                     let t = Object.keys(ts).reduce((acc, val) => {
