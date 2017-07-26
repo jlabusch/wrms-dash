@@ -50,9 +50,12 @@ DB.prototype.query = function(){
     let start = new Date(),
         args = Array.prototype.slice.call(arguments, 0),
         query_name = args.shift(),
+        debug = query_name.indexOf('debug') > -1,
         label = _L('DB.query(' + query_name + ')');
 
-    console.log(label + args[0]);
+    if (debug){
+        console.log(label + args[0]);
+    }
 
     return new Promise((resolve, reject) => {
         args.push(function(err, data){
@@ -63,7 +66,9 @@ DB.prototype.query = function(){
                 reject(err);
             }else{
                 let j = JSON.stringify(data, null, 2);
-                //console.log(label + j);
+                if (debug){
+                    console.log(label + j);
+                }
                 resolve(JSON.parse(j));
             }
         });

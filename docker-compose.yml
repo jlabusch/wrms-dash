@@ -21,4 +21,6 @@ services:
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - ./app/index.js:/opt/index.js:ro
+            - ./app/db.js:/opt/db.js:ro
+            - ./app/config/default.json:/opt/config/default.json:ro
 
