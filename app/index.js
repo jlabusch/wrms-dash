@@ -201,7 +201,7 @@ function get_quotes(pred){
 
         function success(data, cache_hit){
             let r = { result: [ {wr: "None", result: 0} ] };
-            if (data && data.rows && data.rows.length > 0){
+            if (data && data.rows){
                 if (!cache_hit){
                     cache_put(cache_key('approved_quotes',ctx), data);
                 }
@@ -554,7 +554,7 @@ setup('get', '/response_times', function(req, res, next){
     }else{
         db.query(
                 'wr_list-limited',
-                wr_list_sql(ctx, true)
+                wr_list_sql(ctx, true, ["'C'"])
             )
             .then(
                 handle_wrs,

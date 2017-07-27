@@ -288,6 +288,10 @@ function draw_custom_charts(){
             console.log('severity: ' + err);
             return;
         }
+        if (data.result.length < 2){
+            console.log('severity: no data');
+            return;
+        }
         data.result.forEach((row, i) => { row.push(sev_colors[i]) });
         data.result.unshift(['Category', '95% response time', {role: 'style'}]);
 
