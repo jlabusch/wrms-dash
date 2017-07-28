@@ -17,3 +17,15 @@ For now:
  - check out https://github.com/keen/keen-dataviz.js/blob/master/docs/README.md#chart-types for front-end options
 
 Ashley Mcnamara's Gophers licensed under CC (https://github.com/ashleymcnamara/gophers).
+
+### How to contribute
+
+*Imposter syndrome disclaimer*: I want your help. No really, I do.
+
+There might be a little voice inside that tells you you're not ready; that you need to do one more tutorial, or learn another framework, or write a few more blog posts before you can help me with this project.
+
+I assure you, that's not the case.
+
+If you'd like to throw ideas around before starting any development, happy to do that. If you'd rather start by improving documentation, test coverage or even just giving general feedback, you're very welcome.
+
+Thank you for contributing!
