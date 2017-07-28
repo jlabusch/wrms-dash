@@ -60,15 +60,13 @@ setup(
     )
 );
 
-const exlude_additional_quote_statuses = ['F', 'H', 'M'];
-
 setup(
     'get',
     '/additional_quotes',
     get_quotes(
         function(){
             return function(row){
-                return exlude_additional_quote_statuses.indexOf(row.last_status) < 0 &&
+                return util.exclude_additional_quote_statuses.indexOf(row.last_status) < 0 &&
                     (!row.invoice_to || row.invoice_to.indexOf(row.quote_id) < 0);
             }
         }

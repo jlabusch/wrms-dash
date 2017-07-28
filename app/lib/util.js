@@ -1,3 +1,5 @@
+exports.exclude_additional_quote_statuses = ['F', 'H', 'M'];
+
 exports.is_sla_quote = function(row, ctx, loose_match){
     if (!row.invoice_to){
         return false;
