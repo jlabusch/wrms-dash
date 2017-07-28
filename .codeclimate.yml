@@ -1,0 +1,12 @@
+engines:
+  duplication:
+    enabled: true
+    config:
+      languages:
+        javascript:
+          mass_threshold: 90
+exclude_paths:
+- "html/"
+ratings:
+  paths:
+  - "app/**/*"

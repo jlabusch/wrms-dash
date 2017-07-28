@@ -81,7 +81,12 @@ let instance = undefined;
 module.exports = {
     type: DB,
     create: function(){ instance = new DB(); return instance; },
-    get: function(){ return instance; },
+    get: function(){
+        if (!instance){
+            instance = new DB();
+        }
+        return instance;
+    },
     __test_override: function(i){ instance = i; }
 }
 

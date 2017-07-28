@@ -4,6 +4,7 @@ services:
 
     nginx:
         image: nginx:1.13
+        restart: always
         ports:
             - "8005:80"
         volumes:
@@ -21,6 +22,6 @@ services:
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - ./app/index.js:/opt/index.js:ro
-            - ./app/db.js:/opt/db.js:ro
+            - ./app/lib:/opt/lib:ro
             - ./app/config/default.json:/opt/config/default.json:ro
 
