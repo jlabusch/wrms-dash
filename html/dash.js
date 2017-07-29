@@ -164,8 +164,8 @@ query('/users', render(chart10));
 
 query('/customer', function(err, data){
     if (!err){
-        $('#cust-name').text('[ ' + data.org.name + ' ]');
-        $('#cust-system').text('[ ' + data.system.name + ' ]');
+        $('#cust-name').text(data.org.name);
+        $('#cust-system').text(data.system.name);
     }
 });
 

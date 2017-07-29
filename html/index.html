@@ -22,16 +22,13 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="../">
-          <span class="glyphicon glyphicon-chevron-left"></span>
+        <a class="navbar-brand" href="#">
+          <span class="glyphicon glyphicon-chevron-right"></span>
         </a>
-        <a class="navbar-brand" href="./">Dashboard</a>
+        <a class="navbar-brand" href="https://wrms.catalyst.net.nz">WRMS Dashboard</a>
       </div>
       <div class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-left">
-          <li><a href="https://wrms.catalyst.net.nz">WRMS</a></li>
-          <li><a href="#" id="cust-name">Customer name</a></li>
-          <li><a href="#" id="cust-system">Customer system</a></li>
         </ul>
       </div>
     </div>
@@ -42,53 +39,43 @@
 
       <div class="col-sm-2">
         <div class="chart-wrapper">
-          <div class="chart-title">WRMS activity for PERIOD</div>
-          <div class="chart-stage"><div id="chart-06"></div></div>
-          <div class="chart-notes">Excludes project work</div>
+          <a href="/dash.html?org=hla">
+            <img data-src="holder.js/100%x150/white/text:HLA">
+          </a>
         </div>
       </div>
 
-      <div class="col-sm-4">
+      <div class="col-sm-2">
         <div class="chart-wrapper">
-          <div class="chart-title">SLA hours for PERIOD</div>
-          <div class="chart-stage"><div id="chart-01"></div></div>
-          <div id="chart-01-notes" class="chart-notes">Monthly SLA budget</div>
+          <a href="/dash.html?org=msf">
+            <img data-src="holder.js/100%x150/white/text:MSF">
+          </a>
         </div>
       </div>
 
-      <div class="col-sm-3">
+      <div class="col-sm-2">
         <div class="chart-wrapper">
-          <div class="chart-title">Approved SLA quotes for PERIOD</div>
-          <div class="chart-stage"><div id="chart-02"></div></div>
-          <div class="chart-notes">Only includes quotes specifically allocated to this period</div>
+          <a href="/dash.html?org=unicef">
+            <img data-src="holder.js/100%x150/white/text:UNICEF">
+          </a>
         </div>
       </div>
 
-      <div class="col-sm-3">
+      <div class="col-sm-2">
         <div class="chart-wrapper">
-          <div class="chart-title">Approved additional quotes (all open WRs)</div>
-          <div class="chart-stage"><div id="chart-03"></div></div>
-          <div class="chart-notes">Excludes On Hold, Cancelled, Parked, Finished</div>
+          <img data-src="holder.js/100%x150/white">
         </div>
       </div>
 
-    </div>
-
-    <div class="row">
-
-      <div class="col-sm-4">
+      <div class="col-sm-2">
         <div class="chart-wrapper">
-          <div class="chart-title">95% percentile SLA response times for PERIOD</div>
-          <div class="chart-stage"><div id="chart-08"></div></div>
-          <div class="chart-notes">Max WRMS response time, measured in hours</div>
+          <img data-src="holder.js/100%x150/white">
         </div>
       </div>
 
-      <div class="col-sm-8">
+      <div class="col-sm-2">
         <div class="chart-wrapper">
-          <div class="chart-title">WRs raised for PERIOD</div>
-          <div class="chart-stage"><div id="chart-13"></div></div>
-          <div class="chart-notes">All statuses</div>
+          <img data-src="holder.js/100%x150/white">
         </div>
       </div>
 
@@ -96,53 +83,39 @@
 
     <div class="row">
 
-      <div class="col-sm-4">
+      <div class="col-sm-2">
         <div class="chart-wrapper">
-          <div class="chart-title">Severity (all open WRs)</div>
-          <div class="chart-stage"><div id="chart-04"></div></div>
-          <div class="chart-notes">Excludes Finished and Cancelled</div>
+          <img data-src="holder.js/100%x150/white">
         </div>
       </div>
 
-      <div class="col-sm-8">
+      <div class="col-sm-2">
         <div class="chart-wrapper">
-          <div class="chart-title">Statuses (all open WRs)</div>
-          <div class="chart-stage"><div id="chart-05"></div></div>
-          <div class="chart-notes">Excludes Finished and Cancelled</div>
+          <img data-src="holder.js/100%x150/white">
         </div>
       </div>
 
-    </div>
-
-    <div class="row">
-
-      <div class="col-sm-3">
+      <div class="col-sm-2">
         <div class="chart-wrapper">
-          <div class="chart-title">Availability</div>
-          <div class="chart-stage"><div id="chart-07"></div></div>
-          <div class="chart-notes" id="avail-notes">Production environment</div>
+          <img data-src="holder.js/100%x150/white">
         </div>
       </div>
 
-      <div class="col-sm-3">
+      <div class="col-sm-2">
         <div class="chart-wrapper">
-          <div class="chart-title">Storage used</div>
-          <div class="chart-stage"><div id="chart-09"></div></div>
-          <div class="chart-notes" id="storage-notes">Production environment</div>
+          <img data-src="holder.js/100%x150/white">
         </div>
       </div>
 
-      <div class="col-sm-3">
+      <div class="col-sm-2">
         <div class="chart-wrapper">
-          <div class="chart-title">Active users</div>
-          <div class="chart-stage"><div id="chart-10"></div></div>
-          <div class="chart-notes">Production env. for past 12 months</div>
+          <img data-src="holder.js/100%x150/white">
         </div>
       </div>
 
-      <div class="col-sm-3">
+      <div class="col-sm-2">
         <div class="chart-wrapper">
-          <img style="margin-left:15%;margin-top:50px;margin-bottom:50px;" height="223px" width="auto" id="gopher">
+          <img data-src="holder.js/100%x150/white">
         </div>
       </div>
 
@@ -161,11 +134,6 @@
   <script>
     Holder.add_theme("white", { background:"#fff", foreground:"#a7a7a7", size:10 });
   </script>
-
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <!-- <script type="text/javascript" src="assets/lib/keen-js/dist/keen.js"></script>
-  <script type="text/javascript" src="assets/js/meta.js"></script> -->
-  <script type="text/javascript" src="dash.js"></script>
 
 </body>
 </html>
