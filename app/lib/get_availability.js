@@ -29,9 +29,7 @@ module.exports = query.prepare(
         next(r);
     },
     (key, ctx, next, error) => {
-        let orgs = config.get('org');
-
-        if (!orgs[ctx.org] || !orgs[ctx.org].availability){
+        if (!util.orgs[ctx.org] || !util.orgs[ctx.org].availability){
             return error('No availability lookup configured for ' + ctx.org);
         }
 
@@ -59,7 +57,7 @@ module.exports = query.prepare(
             protocol: 'https:',
             hostname: config.get('icinga_uri'),
             path: icinga_path_template
-                    .replace('SERVICE', orgs[ctx.org].availability)
+                    .replace('SERVICE', util.orgs[ctx.org].availability)
                     .replace('START_YEAR', start.getFullYear())
                     .replace('START_MONTH', start.getMonth()+1)
                     .replace('START_DAY', start.getDate())

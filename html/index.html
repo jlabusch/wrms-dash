@@ -34,30 +34,38 @@
     </div>
   </div>
 
+  <style>
+    a:hover {
+        text-decoration: none;
+    }
+    .index-tile {
+        text-align: center;
+        font-size: 25px;
+        line-height: 150px;
+        height: 150px;
+        background-color: #00bbde;/*#00cfbb;*/
+        color: #f3f3f3;
+    }
+  </style>
+
   <div class="container-fluid">
     <div class="row">
 
       <div class="col-sm-2">
         <div class="chart-wrapper">
-          <a href="/dash.html?org=hla">
-            <img data-src="holder.js/100%x150/white/text:HLA">
-          </a>
+          <img data-src="holder.js/100%x150/white">
         </div>
       </div>
 
       <div class="col-sm-2">
         <div class="chart-wrapper">
-          <a href="/dash.html?org=msf">
-            <img data-src="holder.js/100%x150/white/text:MSF">
-          </a>
+          <img data-src="holder.js/100%x150/white">
         </div>
       </div>
 
       <div class="col-sm-2">
         <div class="chart-wrapper">
-          <a href="/dash.html?org=unicef">
-            <img data-src="holder.js/100%x150/white/text:UNICEF">
-          </a>
+          <img data-src="holder.js/100%x150/white">
         </div>
       </div>
 
@@ -135,5 +143,7 @@
     Holder.add_theme("white", { background:"#fff", foreground:"#a7a7a7", size:10 });
   </script>
 
+  <script type="text/javascript" src="common.js"></script>
+  <script type="text/javascript" src="index.js"></script>
 </body>
 </html>

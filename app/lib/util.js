@@ -1,4 +1,14 @@
+var config = require('config');
+
 exports.exclude_additional_quote_statuses = ['F', 'H', 'M'];
+
+exports.orgs = (function(cfg){
+    let o = JSON.parse(JSON.stringify(cfg));
+    Object.keys(o).forEach(name => {
+        o[ o[name].id ] = o[name];
+    });
+    return o;
+})(config.get('orgs'));
 
 exports.is_sla_quote = function(row, ctx, loose_match){
     if (!row.invoice_to){

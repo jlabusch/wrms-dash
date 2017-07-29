@@ -17,7 +17,7 @@ function prepare_query(label, cache_key_base, sql, process_data, db_query_overri
         let ctx = get_dash_context(req);
 
         if (ctx.error){
-            console.log(label + ctx.error);
+            console.log(label + ': ' + ctx.error);
             res.json({error: ctx.error});
             return;
         }

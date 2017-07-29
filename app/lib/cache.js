@@ -4,6 +4,9 @@ const MINS = 60*1000,
     DEFAULT_CACHE_TIMELIMIT = 5*MINS;
 
 function cache_key(name, context){
+    if (context.error){
+        return name;
+    }
     return name + JSON.stringify(context);
 }
 

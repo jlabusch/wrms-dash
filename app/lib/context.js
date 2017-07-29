@@ -1,11 +1,11 @@
-var config = require('config');
+var config = require('config'),
+    util = require('./util');
 
 module.exports = function(req){
-    let context = {},
-        orgs = config.get('org');
+    let context = {};
 
-    if (typeof(orgs[req.params.org]) === 'number'){
-        context.org = orgs[req.params.org];
+    if (util.orgs[req.params.org]){
+        context.org = util.orgs[req.params.org].id;
     }else{
         context.org = parseInt(req.params.org);
     }
@@ -16,7 +16,12 @@ module.exports = function(req){
     }
 
     if (req.params.sys === 'default'){
-        context.sys = orgs[context.org].default_system.split(/,/);
+        if (util.orgs[context.org] && util.orgs[context.org].default_system){
+            context.sys = util.orgs[context.org].default_system.split(/,/);
+        }else{
+            context.error = "No default system for org=" + req.params.org;
+            return context;
+        }
     }else if (req.params.sys.match(/^[0-9,]+$/)){
         context.sys = req.params.sys.split(/,/);
     }else{

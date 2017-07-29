@@ -73,6 +73,8 @@ setup(
     )
 );
 
+setup('get', '/customer_list', require('./lib/get_customer_list'));
+
 setup('get', '/customer', require('./lib/get_customer'));
 
 setup('get', '/wrs_created_count', require('./lib/get_wrs_created_count'));

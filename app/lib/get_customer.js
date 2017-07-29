@@ -1,4 +1,5 @@
-var query = require('./query');
+var query = require('./query'),
+    util = require('./util');
 
 module.exports = query.prepare(
     'customer',
