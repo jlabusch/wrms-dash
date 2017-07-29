@@ -4,10 +4,9 @@ exports.is_sla_quote = function(row, ctx, loose_match){
     if (!row.invoice_to){
         return false;
     }
-    let p   = ctx.period.split(/-/),
-        rs  = loose_match
-                ? row.quote_id + '\\s*:\\s*' + '\\d\\d\\d\\d' + '.\\d\\d?'   + '\\s+SLA'
-                : row.quote_id + '\\s*:\\s*' + p[0]           + '.0?' + p[1] + '\\s+SLA',
+    let rs  = loose_match
+                ? row.quote_id + '\\s*:\\s*' + '\\d\\d\\d\\d' + '.\\d\\d?'        + '\\s+SLA'
+                : row.quote_id + '\\s*:\\s*' + ctx.year       + '.0?' + ctx.month + '\\s+SLA',
         m   = row.invoice_to.match(new RegExp(rs));
     //console.log('check WR ' + row.request_id + ' quote vs ' + rs + ': "' + row.invoice_to + '" -> ' + JSON.stringify(m));
     return !!m;
@@ -70,9 +69,8 @@ exports.map_severity = function(urg){
 }
 
 function next_period(context){
-    let p = context.period.split(/-/),
-        y = parseInt(p[0]),
-        m = parseInt(p[1]) + 1;
+    let y = parseInt(context.year),
+        m = parseInt(context.month) + 1;
     if (m > 12){
         m = 1;
         y++;

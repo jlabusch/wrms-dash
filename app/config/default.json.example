@@ -1,0 +1,24 @@
+{
+    "db": {
+        "user": "wrms_readonly",
+        "database": "wrms",
+        "password": "",
+        "host": "db.example.com",
+        "port": 5432
+    },
+    "server": {
+        "version": "1.0.0",
+        "listen_port": 80
+    },
+    "sla_uri": "http://sla.example.com/sla_config",
+    "icinga_uri": "icinga.example.com",
+    "org": {
+        "acme": 1000,
+        "1000": {
+            "availability": "ELB backend count",
+            "default_system": "1234",
+            "storage": "host=myhost&service=Check+disk+space",
+            "storage_pattern": "sitedata=(\\d+)MB"
+        }
+    }
+}

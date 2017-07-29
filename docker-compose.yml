@@ -19,6 +19,8 @@ services:
         entrypoint:
             - npm
             - start
+        environment:
+            - ICINGA_BASIC_AUTH
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - ./app/index.js:/opt/index.js:ro

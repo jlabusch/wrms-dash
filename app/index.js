@@ -85,13 +85,7 @@ setup('get', '/users', function(req, res, next){
     next && next(false);
 });
 
-setup('get', '/storage', function(req, res, next){
-    console.log('storage()');
-    res.json({
-        result: 0
-    });
-    next && next(false);
-});
+setup('get', '/storage', require('./lib/get_storage'));
 
 setup('get', '/availability', require('./lib/get_availability'));
 

@@ -19,7 +19,7 @@ function same_day(a, b){
 }
 
 function log(wr, sev, start, end, elapsed){
-        console.log('calculate_response_duration(' + wr + '/' + sev + ',\t' + start.toISOString() + ', ' + end.toISOString() + ') => ' + to_hours(elapsed) + ' hrs');
+        //console.log('calculate_response_duration(' + wr + '/' + sev + ',\t' + start.toISOString() + ', ' + end.toISOString() + ') => ' + to_hours(elapsed) + ' hrs');
 }
 
 function calculate_response_duration(wr, sev, start, end){

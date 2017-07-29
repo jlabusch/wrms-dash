@@ -6,11 +6,11 @@ var default_colors = [
         // Catalyst colors:
         // "#5b9aa9", "#e6ad30", "#889a3a", "#ba2025", "#c6b253", "#dd8545", "#50433c"
     ],
-    URI_BASE_DEFAULT = 'http://mango.btn.catalyst-eu.net:8004',
+    URI_BASE_DEFAULT = 'http://localhost:8004', //'http://mango.btn.catalyst-eu.net:8004',
     SECS = 1000;
 
-var ORG = (function(s){ var a = s.match(/org=(\d+)/); return a ? a[1] : 1137; })(window.location.search),
-    SYS = (function(s){ var a = s.match(/sys=([0-9,]+)/); return a ? a[1] : 1661; })(window.location.search),
+var ORG = (function(s){ var a = s.match(/org=([^&]+)/); return a ? a[1] : 1137; })(window.location.search),
+    SYS = (function(s){ var a = s.match(/sys=([^&]+)/); return a ? a[1] : 'default'; })(window.location.search),
     DEFAULT_PERIOD = (function(){
         var now     = new Date(),
             YEAR    = now.getFullYear(),
@@ -21,40 +21,22 @@ var ORG = (function(s){ var a = s.match(/org=(\d+)/); return a ? a[1] : 1137; })
     URI_EXT = ORG + '/' + SYS + '/' + PERIOD;
 
 (function(){
-    [
-        $('body > div.container-fluid > div:nth-child(1) > div:nth-child(1) > div > div.chart-notes'),
-        $('body > div.container-fluid > div:nth-child(1) > div:nth-child(1) > div > div.chart-title'),
-        $('body > div.container-fluid > div:nth-child(1) > div:nth-child(2) > div > div.chart-notes'),
-        $('body > div.container-fluid > div:nth-child(1) > div:nth-child(2) > div > div.chart-title'),
-        $('body > div.container-fluid > div:nth-child(1) > div:nth-child(3) > div > div.chart-notes'),
-        $('body > div.container-fluid > div:nth-child(1) > div:nth-child(3) > div > div.chart-title'),
-        $('body > div.container-fluid > div:nth-child(2) > div:nth-child(1) > div > div.chart-notes'),
-        $('body > div.container-fluid > div:nth-child(2) > div:nth-child(1) > div > div.chart-title'),
-        $('body > div.container-fluid > div:nth-child(2) > div:nth-child(2) > div > div.chart-notes'),
-        $('body > div.container-fluid > div:nth-child(2) > div:nth-child(2) > div > div.chart-title'),
-        $('body > div.container-fluid > div:nth-child(2) > div:nth-child(3) > div > div.chart-notes'),
-        $('body > div.container-fluid > div:nth-child(2) > div:nth-child(3) > div > div.chart-title'),
-        $('body > div.container-fluid > div:nth-child(3) > div:nth-child(1) > div > div.chart-notes'),
-        $('body > div.container-fluid > div:nth-child(3) > div:nth-child(1) > div > div.chart-title'),
-        $('body > div.container-fluid > div:nth-child(3) > div:nth-child(2) > div > div.chart-notes'),
-        $('body > div.container-fluid > div:nth-child(3) > div:nth-child(2) > div > div.chart-title'),
-        $('body > div.container-fluid > div:nth-child(3) > div:nth-child(3) > div > div.chart-notes'),
-        $('body > div.container-fluid > div:nth-child(3) > div:nth-child(3) > div > div.chart-title'),
-        $('body > div.container-fluid > div:nth-child(4) > div:nth-child(1) > div > div.chart-notes'),
-        $('body > div.container-fluid > div:nth-child(4) > div:nth-child(1) > div > div.chart-title'),
-        $('body > div.container-fluid > div:nth-child(4) > div:nth-child(2) > div > div.chart-notes'),
-        $('body > div.container-fluid > div:nth-child(4) > div:nth-child(2) > div > div.chart-title'),
-        $('body > div.container-fluid > div:nth-child(4) > div:nth-child(3) > div > div.chart-notes'),
-        $('body > div.container-fluid > div:nth-child(4) > div:nth-child(3) > div > div.chart-title'),
-    ].forEach(function(t){
-        t.text( t.text().replace(/PERIOD/g, PERIOD) );
-    });
+    for (var i = 0; i < 5; ++i){
+        for (var j = 0; j < 4; ++j){
+            [
+                $('body > div.container-fluid > div:nth-child(' + i + ') > div:nth-child(' + j + ') > div > div.chart-notes'),
+                $('body > div.container-fluid > div:nth-child(' + i + ') > div:nth-child(' + j + ') > div > div.chart-title')
+            ].forEach(t => {
+                t.text( t.text().replace(/PERIOD/g, PERIOD) );
+            });
+        }
+    }
 })();
 
 function query(path, next, override_uri, refresh_interval_secs){
     let xhr = new XMLHttpRequest();
     if (refresh_interval_secs === undefined){
-        refresh_interval_secs = 600;
+        refresh_interval_secs = 60;
     }
     var uri_base = override_uri || URI_BASE_DEFAULT;
 
@@ -114,7 +96,23 @@ var chart07 = new Keen.Dataviz()
     .type('metric')
     .prepare();
 
+function format_icinga_note(obj){
+    if (obj.service.indexOf(obj.host) > -1){
+        return obj.service;
+    }else{
+        return obj.host + '/' + obj.service;
+    }
+}
+
 query('/availability', render(chart07, function(c, d){
+    if (d.error || !d.result){
+        d.result = 0;
+        console.log(d.error);
+        return;
+    }
+    if (d.host && d.service){
+        $('#avail-notes').text(format_icinga_note(d));
+    }
     if (d.result < 99.5){
         c.colors([default_colors[1]]);
     }else if (d.result < 99.9){
@@ -129,11 +127,30 @@ var chart09 = new Keen.Dataviz()
     .title('disk used')
     .height(250)
     .colors([default_colors[5]])
-    .chartOptions({suffix: 'G'})
     .type('metric')
     .prepare();
 
-query('/storage', render(chart09));
+query('/storage', render(chart09, function(chart, data){
+    if (data.error || !data.result){
+        data.result = 0;
+        console.log(data.error);
+        return;
+    }
+    if (data.host && data.service){
+        $('#storage-notes').text(format_icinga_note(data) + ' (' + data.result + 'MB)');
+    }
+    var GB = 1000,
+        TB = 1000*GB;
+    if (data.result < GB){
+        chart.chartOptions({suffix: 'MB'})
+    }else if (data.result < TB){
+        data.result = Math.round(data.result/GB*10)/10;
+        chart.chartOptions({suffix: 'GB'})
+    }else{
+        data.result = Math.round(data.result/TB*10)/10;
+        chart.chartOptions({suffix: 'TB'})
+    }
+}));
 
 var chart10 = new Keen.Dataviz()
     .el('#chart-10')
