@@ -10,6 +10,49 @@
             });
         }
     }
+
+    var pparts = PERIOD.split(/-/),
+        year   = parseInt(pparts[0]),
+        month  = parseInt(pparts[1]);
+    console.log(pparts);
+
+    (function(){
+        var y = year;
+        var m = month-1;
+        if (m < 1){
+            m = 12;
+            y--;
+        }
+        var period = y + '-' + m,
+            search = window.location.search;
+        if (search.indexOf('period') < 0){
+            search += '&period=' + period;
+        }else{
+            search = search.replace(/period=[^&]+/, 'period=' + period);
+        }
+        $('#period-prev')
+            .attr('href', '/dash.html' + search)
+            .text('(<< ' + period + ')');
+    })();
+
+    (function(){
+        var y = year;
+        var m = month+1;
+        if (m > 12){
+            m = 1;
+            y++;
+        }
+        var period = y + '-' + m,
+            search = window.location.search;
+        if (search.indexOf('period') < 0){
+            search += '&period=' + period;
+        }else{
+            search = search.replace(/period=[^&]+/, 'period=' + period);
+        }
+        $('#period-next')
+            .attr('href', '/dash.html' + search)
+            .text('(' + period + ' >>)');
+    })();
 })();
 
 var chart06 = new Keen.Dataviz()

@@ -79,7 +79,7 @@ module.exports = query.prepare(
                         if (util.is_sla_quote(row, ctx)){
                             sla += util.convert_quote_amount(row);
                             delete ts[row.request_id];
-                        }else if (!util.is_sla_quote(row, ctx, true) && util.exclude_additional_quote_statuses.indexOf(row.last_status) < 0){
+                        }else if (util.is_additional_quote(row, ctx)){
                             add += util.convert_quote_amount(row);
                             delete ts[row.request_id];
                         }

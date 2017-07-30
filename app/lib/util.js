@@ -10,16 +10,39 @@ exports.orgs = (function(cfg){
     return o;
 })(config.get('orgs'));
 
-exports.is_sla_quote = function(row, ctx, loose_match){
-    if (!row.invoice_to){
-        return false;
+function describe_quote(row){
+    let r = {
+        additional: true,
+        sla: false,
+        period: undefined
+    };
+
+    if (row.invoice_to){
+        let m = row.invoice_to.match(new RegExp(row.quote_id + '\\s*:\\s*(\\d\\d\\d\\d).0?(\\d+)\\s+(\\w+)'));
+        if (m){
+            r.sla = m[3].match(/(SLA|Service)/i);
+            r.additional = !r.sla;
+            r.period = m[1] + '-' + m[2];
+        }
     }
-    let rs  = loose_match
-                ? row.quote_id + '\\s*:\\s*' + '\\d\\d\\d\\d' + '.\\d\\d?'        + '\\s+SLA'
-                : row.quote_id + '\\s*:\\s*' + ctx.year       + '.0?' + ctx.month + '\\s+SLA',
-        m   = row.invoice_to.match(new RegExp(rs));
-    //console.log('check WR ' + row.request_id + ' quote vs ' + rs + ': "' + row.invoice_to + '" -> ' + JSON.stringify(m));
-    return !!m;
+
+    console.log('WR ' + row.request_id + ' quote ' + row.quote_id + ': "' + row.invoice_to + '" -> ' + JSON.stringify(r));
+    return r;
+}
+
+exports.describe_quote = describe_quote;
+
+exports.is_sla_quote = function(row, context){
+    let q = describe_quote(row);
+    return  q.sla &&
+            q.period === context.period;
+}
+
+exports.is_additional_quote = function(row, context){
+    let q = describe_quote(row);
+    return  q.additional &&
+            (q.period === context.period || q.period === undefined) &&
+            ['H', 'M'].indexOf(row.last_status) < 0;
 }
 
 exports.convert_quote_amount = function(row){

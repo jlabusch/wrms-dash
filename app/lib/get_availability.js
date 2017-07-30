@@ -24,7 +24,7 @@ module.exports = query.prepare(
             r.result  = x.percent_total_time_ok;
             r.host    = x.host_display_name;
             r.service = x.service_display_name;
-            console.log(ctx.org + ' availability => ' + r.result + '%');
+            //console.log(ctx.org + ' availability => ' + r.result + '%');
         }
         next(r);
     },

@@ -64,10 +64,9 @@ setup(
     'get',
     '/additional_quotes',
     get_quotes(
-        function(){
+        function(context){
             return function(row){
-                return util.exclude_additional_quote_statuses.indexOf(row.last_status) < 0 &&
-                    (!row.invoice_to || row.invoice_to.indexOf(row.quote_id) < 0);
+                return util.is_additional_quote(row, context);
             }
         }
     )
