@@ -12,7 +12,7 @@ function db_error_handler(res, next){
 
 exports.error = db_error_handler;
 
-function prepare_query(label, cache_key_base, sql, process_data, db_query_override, cache_timelimit_override){
+function prepare_query(label, cache_key_base, sql, process_data, db_query_override, cache_timelimit_override, cache_key_override){
     return function(req, res, next){
         let ctx = get_dash_context(req);
 
@@ -22,7 +22,7 @@ function prepare_query(label, cache_key_base, sql, process_data, db_query_overri
             return;
         }
 
-        let ck = cache.key(cache_key_base, ctx); 
+        let ck = cache_key_override ? cache_key_override(ctx) : cache.key(cache_key_base, ctx);
 
         let success = function(data, cache_hit){
             if (!cache_hit){

@@ -43,9 +43,9 @@
 
       <div class="col-sm-2">
         <div class="chart-wrapper">
-          <div class="chart-title">WRMS activity for PERIOD</div>
+          <div class="chart-title">New requests for PERIOD</div>
           <div class="chart-stage"><div id="chart-06"></div></div>
-          <div class="chart-notes">Excludes project work</div>
+          <div class="chart-notes">Selected System(s) only</div>
         </div>
       </div>
 
@@ -67,9 +67,9 @@
 
       <div class="col-sm-3">
         <div class="chart-wrapper">
-          <div class="chart-title">Approved additional quotes (all open WRs)</div>
+          <div class="chart-title">Approved additional quotes for PERIOD</div>
           <div class="chart-stage"><div id="chart-03"></div></div>
-          <div class="chart-notes">Excludes On Hold or Parked, or allocated to other periods</div>
+          <div class="chart-notes">Excludes On Hold or Parked, includes quotes with no explicit month designation</div>
         </div>
       </div>
 
@@ -99,17 +99,29 @@
 
       <div class="col-sm-4">
         <div class="chart-wrapper">
-          <div class="chart-title">Severity (all open WRs)</div>
+          <div class="chart-title">Severity (all open WRs, present day)</div>
           <div class="chart-stage"><div id="chart-04"></div></div>
-          <div class="chart-notes">Excludes Finished and Cancelled</div>
+          <div class="chart-notes">Excludes Finished, Cancelled and Ongoing Maintenance</div>
         </div>
       </div>
 
       <div class="col-sm-8">
         <div class="chart-wrapper">
-          <div class="chart-title">Statuses (all open WRs)</div>
+          <div class="chart-title">Statuses (all open WRs, present day)</div>
           <div class="chart-stage"><div id="chart-05"></div></div>
-          <div class="chart-notes">Excludes Finished and Cancelled</div>
+          <div class="chart-notes">Excludes Finished, Cancelled and Ongoing Maintenance</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="col-sm-12">
+        <div class="chart-wrapper">
+          <div class="chart-title">Open WR count over time</div>
+          <div class="chart-stage"><div id="chart-11"></div></div>
+          <div class="chart-notes">Excludes Finished, Cancelled, On Hold, Blocked, Parked and Ongoing Maintenance</div>
         </div>
       </div>
 
@@ -119,7 +131,7 @@
 
       <div class="col-sm-3">
         <div class="chart-wrapper">
-          <div class="chart-title">Availability</div>
+          <div class="chart-title">Availability for PERIOD</div>
           <div class="chart-stage"><div id="chart-07"></div></div>
           <div class="chart-notes" id="avail-notes">Production environment</div>
         </div>
@@ -127,7 +139,7 @@
 
       <div class="col-sm-3">
         <div class="chart-wrapper">
-          <div class="chart-title">Storage used</div>
+          <div class="chart-title">Storage used (present day)</div>
           <div class="chart-stage"><div id="chart-09"></div></div>
           <div class="chart-notes" id="storage-notes">Production environment</div>
         </div>
@@ -135,7 +147,7 @@
 
       <div class="col-sm-3">
         <div class="chart-wrapper">
-          <div class="chart-title">Active users</div>
+          <div class="chart-title">Active users (present day)</div>
           <div class="chart-stage"><div id="chart-10"></div></div>
           <div class="chart-notes">Production env. for past 12 months</div>
         </div>

@@ -5,7 +5,7 @@ module.exports = query.prepare(
     'statuses',
     'stat',
     function(ctx){
-        return util.wr_list_sql(ctx, false)
+        return util.wr_list_sql(ctx, false, ["'C'", "'F'", "'O'"])
     },
     function(data, ctx, next){
         let r = [];

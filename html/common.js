@@ -25,9 +25,7 @@ function query(path, next, override_uri, refresh_interval_secs){
     if (refresh_interval_secs === undefined){
         refresh_interval_secs = 60;
     }
-    var uri_base = override_uri || URI_BASE_DEFAULT;
-
-    xhr.open('GET', uri_base + path + '/' + URI_EXT, true);
+    xhr.open('GET', (override_uri ? override_uri : URI_BASE_DEFAULT) + path + '/' + URI_EXT, true);
     xhr.onreadystatechange = function(){
         if (xhr.readyState !== 4){
             return;

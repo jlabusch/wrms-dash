@@ -1,7 +1,14 @@
+var sev_colors = [
+    default_colors[7],
+    default_colors[0],
+    default_colors[2],
+    default_colors[10]
+];
+
 
 (function(){
     for (var i = 0; i < 5; ++i){
-        for (var j = 0; j < 4; ++j){
+        for (var j = 0; j < 5; ++j){
             [
                 $('body > div.container-fluid > div:nth-child(' + i + ') > div:nth-child(' + j + ') > div > div.chart-notes'),
                 $('body > div.container-fluid > div:nth-child(' + i + ') > div:nth-child(' + j + ') > div > div.chart-title')
@@ -14,7 +21,6 @@
     var pparts = PERIOD.split(/-/),
         year   = parseInt(pparts[0]),
         month  = parseInt(pparts[1]);
-    console.log(pparts);
 
     (function(){
         var y = year;
@@ -107,6 +113,7 @@ var chart09 = new Keen.Dataviz()
     .type('metric')
     .prepare();
 
+// TODO: for clients with storage limits defined by contract, make this a guage chart instead.
 query('/storage', render(chart09, function(chart, data){
     if (data.error || !data.result){
         data.result = 0;
@@ -137,6 +144,7 @@ var chart10 = new Keen.Dataviz()
     .type('metric')
     .prepare();
 
+// TODO: for clients with user limits defined by contract, e.g. Totara, make this a guage chart instead.
 query('/users', render(chart10));
 
 query('/customer', function(err, data){
@@ -192,7 +200,7 @@ var chart03 = new Keen.Dataviz()
 
 query('/additional_quotes', render(chart03));
 
-google.charts.load('current', {packages: ['corechart', 'bar', 'table']});
+google.charts.load('current', {packages: ['corechart', 'bar', 'table', 'line']});
 google.charts.setOnLoadCallback(draw_custom_charts);
 
 function draw_custom_charts(){
@@ -230,6 +238,29 @@ function draw_custom_charts(){
         axisTitlesPosition: 'none'
     };
 
+    query('/wrs_over_time', function(err, data){
+        if (err){
+            console.log('wrs_over_time: ' + err);
+            return;
+        }
+
+        console.log(JSON.stringify(data, null, 2));
+
+        var o = JSON.parse(JSON.stringify(common_options));
+        o.legend.position = 'right';
+        o.curveType = 'function';
+        o.colors = sev_colors;
+        o.vAxis.viewWindow = {min:0};
+        o.chartArea = {
+            top: '5%', height: 200, left: '5%', width: '85%'
+        };
+        o.height = 250;
+
+        var chart11 = new google.visualization.LineChart(document.getElementById('chart-11'));
+
+        chart11.draw(google.visualization.arrayToDataTable(data), o);
+    });
+
     query('/sla_hours', function(err, data){
         if (err){
             console.log('sla_hours: ' + err);
@@ -256,13 +287,6 @@ function draw_custom_charts(){
 
         chart01.draw(google.visualization.arrayToDataTable(data.result), o);
     });
-
-    var sev_colors = [
-        default_colors[7],
-        default_colors[0],
-        default_colors[2],
-        default_colors[10]
-    ];
 
     query('/severity', function(err, data){
         if (err){

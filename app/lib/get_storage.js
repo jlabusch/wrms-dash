@@ -50,7 +50,7 @@ module.exports = query.prepare(
 
         let req = https.request(options, (res) => {
             if (res.statusCode !== 200){
-                let e = 'storage: ' + uri + ' => ' + res.statusCode;
+                let e = 'storage: ' + options.path + ' => ' + res.statusCode;
                 console.log(e);
                 return error(e);
             }
@@ -61,6 +61,7 @@ module.exports = query.prepare(
                 try{
                     json = JSON.parse(data);
                     cache.put(key, json);
+                    console.log('storage: ' + options.path);
                 }catch(ex){
                     let e = 'storage: ' + ex;
                     console.log(e);
@@ -72,5 +73,6 @@ module.exports = query.prepare(
         req.on('error', error);
         req.end();
     },
-    60*60*1000 // cache TTL 1 hour
+    60*60*1000, // cache TTL 1 hour
+    (ctx) => { return 'storage-' + ctx.org }
 );

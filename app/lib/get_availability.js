@@ -68,7 +68,7 @@ module.exports = query.prepare(
 
         let req = https.request(options, (res) => {
             if (res.statusCode !== 200){
-                let e = 'availability: ' + uri + ' => ' + res.statusCode;
+                let e = 'availability: ' + options.path + ' => ' + res.statusCode;
                 console.log(e);
                 return error(e);
             }
@@ -79,6 +79,7 @@ module.exports = query.prepare(
                 try{
                     json = JSON.parse(data);
                     cache.put(key, json);
+                    console.log('availability: ' + options.path);
                 }catch(ex){
                     let e = 'availability: ' + ex;
                     console.log(e);

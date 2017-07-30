@@ -78,6 +78,8 @@ setup('get', '/customer', require('./lib/get_customer'));
 
 setup('get', '/wrs_created_count', require('./lib/get_wrs_created_count'));
 
+setup('get', '/wrs_over_time', require('./lib/get_wrs_over_time'));
+
 setup('get', '/users', function(req, res, next){
     console.log('users()');
     res.json({
