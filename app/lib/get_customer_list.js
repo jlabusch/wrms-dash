@@ -15,5 +15,6 @@ module.exports = query.prepare(
     function(ck, ctx, good, bad){
         process.nextTick(() => { good(config.get('orgs')) });
     },
-    10*1000
+    10*1000,
+    () => { return 'cust_list' }
 )

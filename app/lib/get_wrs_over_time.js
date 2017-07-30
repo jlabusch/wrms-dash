@@ -46,7 +46,7 @@ function fill_row(m, sev_by_wr){
 
 module.exports = query.prepare(
     'wrs_over_time',
-    'wrs_over_time-debug',
+    'wrs_over_time',
     function(ctx){
         return `
             SELECT  r.request_id,

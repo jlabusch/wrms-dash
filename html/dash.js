@@ -149,8 +149,12 @@ query('/users', render(chart10));
 
 query('/customer', function(err, data){
     if (!err){
-        $('#cust-name').text(data.org.name);
-        $('#cust-system').text(data.system.name);
+        $('#cust-name')
+            .text(data.org.name)
+            .attr('href', 'https://wrms.catalyst.net.nz/requestlist.php?org_code=' + data.org.id);
+        $('#cust-system')
+            .text(data.system.name)
+            .attr('href', 'https://wrms.catalyst.net.nz/requestlist.php?org_code=' + data.org.id);
     }
 });
 
@@ -323,6 +327,10 @@ function draw_custom_charts(){
             console.log('statuses: ' + err);
             return;
         }
+        if (data.length < 1){
+            console.log('statuses: no data');
+            return;
+        }
         var o = JSON.parse(JSON.stringify(common_options));
         o.chartArea.height = 150;
 
@@ -337,6 +345,10 @@ function draw_custom_charts(){
     query('/wr_list', function(err, data){
         if (err){
             console.log('wr_list: ' + err);
+            return;
+        }
+        if (data.length < 1){
+            console.log('wr_list: no data');
             return;
         }
         var table = new google.visualization.DataTable();
