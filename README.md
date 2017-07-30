@@ -11,7 +11,7 @@ Proper readme still #todo.
 For now:
 
  - Each widget's back end code is at `./app/lib/get_XXX.js`
- - Back end configuration is at `./app/config/default.json`
+ - Back end configuration is at `./app/config/default.json` (see also `default.json.example`)
  - There are no public instances of `sla_uri` and `db.host`; get in touch if you need any more info
  - To point a widget at a different data source at the front end (i.e. bypassing the Node back end), set `override_uri` in the call to `html/dash.js:query()`
  - check out https://github.com/keen/keen-dataviz.js/blob/master/docs/README.md#chart-types for front-end options
