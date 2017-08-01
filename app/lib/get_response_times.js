@@ -103,11 +103,11 @@ module.exports = function(req, res, next){
 
     function handle_timings(ts_data, cache_hit){
         let r = {result: []};
-        if (ts_data && ts_data.rows && ts_data.rows.length > 0){
-            if (!cache_hit){
-                cache.put(cache.key('timings',ctx), ts_data);
-            }
-            let state = {};
+        if (!cache_hit){
+            cache.put(cache.key('timings',ctx), ts_data);
+        }
+        let state = {};
+        if (wr_data && wr_data.rows){
             wr_data.rows.forEach(wrow => {
                 state[wrow.request_id] = {
                     request_id: wrow.request_id,
@@ -117,37 +117,39 @@ module.exports = function(req, res, next){
                     end: new Date()
                 };
             });
+        }
+        if (ts_data && ts_data.rows){
             ts_data.rows.forEach(trow => {
                 state[trow.request_id].end = new Date(trow.end);
                 state[trow.request_id].who = trow.email;
             });
-
-            let times = {
-                Low: [],
-                Medium: [],
-                High: [],
-                Critical: []
-            };
-
-            Object.keys(state).forEach(id => {
-                let o = state[id];
-                times[state[id].severity].push(
-                    calculate_response_duration(o.request_id, o.severity, o.start, o.end) // msec
-                );
-            });
-
-            const percentile = 0.95;
-            ['Low', 'Medium', 'High', 'Critical'].forEach(sev => {
-                let arr = [sev, 0];
-                if (times[sev].length){
-                    times[sev].sort((a,b)=>{ return a-b });
-                    let index = Math.round(times[sev].length*percentile) - 1;
-                    //console.log('sev=' + sev + ',\trt=' + JSON.stringify(times[sev]) + ', ' + percentile + '%=' + index);
-                    arr[1] = to_hours(times[sev][index]);
-                }
-                r.result.push(arr);
-            });
         }
+
+        let times = {
+            Low: [],
+            Medium: [],
+            High: [],
+            Critical: []
+        };
+
+        Object.keys(state).forEach(id => {
+            let o = state[id];
+            times[state[id].severity].push(
+                calculate_response_duration(o.request_id, o.severity, o.start, o.end) // msec
+            );
+        });
+
+        const percentile = 0.95;
+        ['Low', 'Medium', 'High', 'Critical'].forEach(sev => {
+            let arr = [sev, 0];
+            if (times[sev].length){
+                times[sev].sort((a,b)=>{ return a-b });
+                let index = Math.round(times[sev].length*percentile) - 1;
+                //console.log('sev=' + sev + ',\trt=' + JSON.stringify(times[sev]) + ', ' + percentile + '%=' + index);
+                arr[1] = to_hours(times[sev][index]);
+            }
+            r.result.push(arr);
+        });
         res.json(r);
         next && next(false);
     }
