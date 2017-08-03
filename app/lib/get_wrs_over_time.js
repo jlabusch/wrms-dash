@@ -53,12 +53,16 @@ module.exports = query.prepare(
                     to_char(r.request_on, 'YYYY-MM') as created_on,
                     ra.note,
                     to_char(ra.date, 'YYYY-MM') as updated_on,
-                    urg.lookup_desc as urgency
+                    urg.lookup_desc as urgency,
+                    imp.lookup_desc as importance
             FROM request r
             JOIN request_activity ra ON r.request_id=ra.request_id
             JOIN lookup_code urg on urg.source_table='request'
                AND urg.source_field='urgency'
                AND urg.lookup_code=cast(r.urgency as text)
+            JOIN lookup_code imp on imp.source_table='request'
+               AND imp.source_field='importance'
+               AND imp.lookup_code=cast(r.importance as text)
             WHERE ra.org_code=${ctx.org}
               AND ra.system_id IN (${ctx.sys.join(',')})
               AND ra.source='status'
@@ -81,7 +85,7 @@ module.exports = query.prepare(
                 }
 
                 if (closed.indexOf(row.note) < 0){
-                    open_wrs[row.request_id] = util.map_severity(row.urgency);
+                    open_wrs[row.request_id] = util.map_severity(row.urgency, row.importance);
                 }else{
                     delete open_wrs[row.request_id];
                 }

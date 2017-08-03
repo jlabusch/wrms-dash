@@ -112,7 +112,7 @@ module.exports = function(req, res, next){
                 state[wrow.request_id] = {
                     request_id: wrow.request_id,
                     brief: wrow.brief,
-                    severity: util.map_severity(wrow.urgency).name,
+                    severity: util.map_severity(wrow.urgency, wrow.importance).name,
                     start: new Date(wrow.request_on),
                     end: new Date()
                 };

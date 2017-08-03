@@ -63,7 +63,8 @@ exports.wr_list_sql = function(context, this_period_only, exclude_statuses){
                    r.brief,
                    r.request_on,
                    stat.lookup_desc as status,
-                   urg.lookup_desc as urgency
+                   urg.lookup_desc as urgency,
+                   imp.lookup_desc as importance
             FROM request r
             JOIN usr u ON u.user_no=r.requester_id
             JOIN lookup_code stat on stat.source_table='request'
@@ -72,6 +73,9 @@ exports.wr_list_sql = function(context, this_period_only, exclude_statuses){
             JOIN lookup_code urg on urg.source_table='request'
                AND urg.source_field='urgency'
                AND urg.lookup_code=cast(r.urgency as text)
+            JOIN lookup_code imp on urg.source_table='request'
+               AND imp.source_field='importance'
+               AND imp.lookup_code=cast(r.importance as text)
             WHERE u.org_code=${context.org}
                ${this_period_only ? and_period : ''}
                AND r.system_id in (${context.sys.join(',')})
@@ -88,25 +92,38 @@ exports.round_hrs = function(h){
     return i+h;
 }
 
-exports.map_severity = function(urg){
-    var urgency = {
-        "'Yesterday'": 3,
+exports.map_severity = function(urg, imp){
+    const urgs = {
+        "Anytime": 0,
+        "Sometime soon": 1,
         "As Soon As Possible": 2,
         "Before Specified Date": 2,
         "On Specified Date": 2,
         "After Specified Date": 2,
-        "Sometime soon": 1,
-        "Anytime": 0
+        "'Yesterday'": 3
     };
-    var severity = [
+    let urg_n = urgs[urg];
+
+    const imps  = [
+        "Minor importance",
+        "Average importance",
+        "Major importance",
+        "Critical!"
+    ];
+    let imp_n = imps.indexOf(imp);
+
+    const severity = [
         'Low',
         'Medium',
         'High',
         'Critical'
     ];
+
+    let n = Math.max(urg_n, imp_n);
+
     return {
-        name: severity[ urgency[urg] ],
-        number: urgency[urg]
+        name: severity[n],
+        number: n
     };
 }
 

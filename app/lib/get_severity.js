@@ -16,7 +16,7 @@ module.exports = query.prepare(
         ];
         if (data && data.rows && data.rows.length > 0){
             data.rows.forEach(row => {
-                r[util.map_severity(row.urgency).number][1]++;
+                r[util.map_severity(row.urgency, row.importance).number][1]++;
             });
         }
         next(r);
