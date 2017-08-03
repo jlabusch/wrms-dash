@@ -24,7 +24,7 @@ module.exports = function(req, res, next){
             });
             r.result = Object.keys(wrs_with_time).sort().map(key => {
                 let row = wrs_with_time[key];
-                return [{wr: row.request_id + ': ' + row.brief, result: row.hours}];
+                return [{wr: row.request_id + ': ' + row.brief, result: util.round_hrs(row.hours)}];
             });
         }else{
             r.result.push({wr: "None", result: 0});

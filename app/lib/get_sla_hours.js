@@ -28,7 +28,7 @@ module.exports = query.prepare(
         let ts = {};
         if (data && data.rows && data.rows.length > 0){
             data.rows.forEach(row => {
-                ts[row.request_id] = row.hours;
+                ts[row.request_id] = util.round_hrs(row.hours);
             });
         }
         let budget = 0,

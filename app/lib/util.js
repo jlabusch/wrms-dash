@@ -79,6 +79,15 @@ exports.wr_list_sql = function(context, this_period_only, exclude_statuses){
             ORDER BY r.urgency,r.last_status ASC`.replace(/\s+/g, ' ');
 }
 
+exports.round_hrs = function(h){
+    let i = h|0;
+    h-=i;
+    if (h > 0.5) h = 1;
+    else if (h > 0) h = 0.5;
+    else h = 0;
+    return i+h;
+}
+
 exports.map_severity = function(urg){
     var urgency = {
         "'Yesterday'": 3,
