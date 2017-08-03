@@ -261,7 +261,7 @@ function draw_custom_charts(){
         o.colors = sev_colors;
         o.vAxis.viewWindow = {min:0};
         o.chartArea = {
-            top: '5%', height: 200, left: '5%', width: '85%'
+            top: '5%', height: 200, left: '5%', width: '80%'
         };
         o.height = 250;
 
