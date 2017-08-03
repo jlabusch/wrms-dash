@@ -72,6 +72,8 @@ setup(
     )
 );
 
+setup('get', '/sla_unquoted', require('./lib/get_sla_unquoted'));
+
 setup('get', '/customer_list', require('./lib/get_customer_list'));
 
 setup('get', '/customer', require('./lib/get_customer'));

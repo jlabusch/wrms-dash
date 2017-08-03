@@ -10,7 +10,7 @@ module.exports = query.prepare(
     'sla_hours',
     'sla_hours',
     function(ctx){
-        return `SELECT r.request_id,SUM(ts.work_quantity) AS hours
+        return `SELECT r.request_id,r.brief,SUM(ts.work_quantity) AS hours
                 FROM request r
                 JOIN request_timesheet ts ON r.request_id=ts.request_id
                 LEFT JOIN request_tag rtag ON r.request_id=rtag.request_id
@@ -105,7 +105,8 @@ module.exports = query.prepare(
                             ['Additional quotes', 0]
                         ]
                     });
-                });
+                })
+                .limit(47);
         }
     }
 );

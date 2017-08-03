@@ -7,7 +7,7 @@ var sev_colors = [
 
 
 (function(){
-    for (var i = 0; i < 5; ++i){
+    for (var i = 0; i < 7; ++i){
         for (var j = 0; j < 5; ++j){
             [
                 $('body > div.container-fluid > div:nth-child(' + i + ') > div:nth-child(' + j + ') > div > div.chart-notes'),
@@ -63,7 +63,7 @@ var sev_colors = [
 
 var chart06 = new Keen.Dataviz()
     .el('#chart-06')
-    .title('WRs this period')
+    .title('WRs')
     .height(250)
     .colors([default_colors[0]])
     .type('metric')
@@ -90,7 +90,8 @@ function format_icinga_note(obj){
 query('/availability', render(chart07, function(c, d){
     if (d.error || !d.result){
         d.result = 0;
-        console.log(d.error);
+        console.log('availability: ' + d.error);
+        setTimeout(function(){ $('#chart-07 .keen-dataviz-metric-value').text('N/A'); }, 10);
         return;
     }
     if (d.host && d.service){
@@ -117,7 +118,8 @@ var chart09 = new Keen.Dataviz()
 query('/storage', render(chart09, function(chart, data){
     if (data.error || !data.result){
         data.result = 0;
-        console.log(data.error);
+        console.log('storage: ' + data.error);
+        setTimeout(function(){ $('#chart-09 .keen-dataviz-metric-value').text('N/A'); }, 10);
         return;
     }
     if (data.host && data.service){
@@ -145,7 +147,14 @@ var chart10 = new Keen.Dataviz()
     .prepare();
 
 // TODO: for clients with user limits defined by contract, e.g. Totara, make this a guage chart instead.
-query('/users', render(chart10));
+query('/users', render(chart10, function(chart, data){
+    if (data.error || !data.result){
+        data.result = 0;
+        console.log('users: ' + data.error);
+        setTimeout(function(){ $('#chart-10 .keen-dataviz-metric-value').text('N/A'); }, 10);
+        return;
+    }
+}));
 
 query('/customer', function(err, data){
     if (!err){
@@ -158,48 +167,46 @@ query('/customer', function(err, data){
     }
 });
 
+var donut_options = {
+    donut: {
+        label: {
+            format: function(value, ratio, id){ return value + ' hours'; }
+        }
+    },
+    chartArea: {
+        height: "85%",
+        left: "5%",
+        top: "5%",
+        width: "100%"
+    }
+}
+
 var chart02 = new Keen.Dataviz()
     .el('#chart-02')
     .colors(default_colors)
     .height(250)
     .type('donut')
-    .chartOptions({
-        donut: {
-            label: {
-                format: function(value, ratio, id){ return value + ' hours'; }
-            }
-        },
-        legend:{ position: 'none' },
-        chartArea: {
-            height: "85%",
-            left: "5%",
-            top: "5%",
-            width: "100%"
-        }
-    })
+    .chartOptions(donut_options)
     .prepare();
 
 query('/sla_quotes', render(chart02));
+
+var chart14 = new Keen.Dataviz()
+    .el('#chart-14')
+    .colors(default_colors)
+    .height(250)
+    .type('donut')
+    .chartOptions(donut_options)
+    .prepare();
+
+query('/sla_unquoted', render(chart14));
 
 var chart03 = new Keen.Dataviz()
     .el('#chart-03')
     .colors(default_colors)
     .height(250)
     .type('donut')
-    .chartOptions({
-        donut: {
-            label: {
-                format: function(value, ratio, id){ return value + ' hours'; }
-            }
-        },
-        legend:{ position: 'none' },
-        chartArea: {
-            height: "85%",
-            left: "5%",
-            top: "5%",
-            width: "100%"
-        }
-    })
+    .chartOptions(donut_options)
     .prepare();
 
 query('/additional_quotes', render(chart03));
@@ -247,8 +254,6 @@ function draw_custom_charts(){
             console.log('wrs_over_time: ' + err);
             return;
         }
-
-        console.log(JSON.stringify(data, null, 2));
 
         var o = JSON.parse(JSON.stringify(common_options));
         o.legend.position = 'right';
@@ -307,11 +312,11 @@ function draw_custom_charts(){
 
     query('/response_times', function(err, data){
         if (err){
-            console.log('severity: ' + err);
+            console.log('response_times: ' + err);
             return;
         }
         if (data.result.length < 2){
-            console.log('severity: no data');
+            console.log('response_times: no data');
             return;
         }
         data.result.forEach((row, i) => { row.push(sev_colors[i]) });

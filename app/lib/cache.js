@@ -33,9 +33,10 @@ function cache_get(key, limit){
 
 function setup_wait(key){
     let next = null,
-        on_timeout = null;
+        on_timeout = null,
+        timeout_limit = 15;
 
-    process.nextTick(() => { do_wait(key, next, on_timeout, 1); });
+    process.nextTick(() => { do_wait(key, next, on_timeout, 1, timeout_limit); });
 
     let o = {
         then: function(good, bad){
@@ -46,13 +47,17 @@ function setup_wait(key){
         timeout: function(bad){
             on_timeout = bad;
             return o;
+        },
+        limit: function(n){
+            timeout_limit = n;
+            return o;
         }
     }
     return o;
 }
 
-function do_wait(key, next, on_timeout, count){
-    if (count > 15){
+function do_wait(key, next, on_timeout, count, limit){
+    if (count > limit){
         console.log('CACHE WAIT: Giving up on ' + key);
         on_timeout && on_timeout();
         return;
@@ -62,7 +67,7 @@ function do_wait(key, next, on_timeout, count){
         console.log('CACHE WAIT -> HIT [' + key + ']');
         next && next(c, true);
     }else{
-        setTimeout(function(){ do_wait(key, next, on_timeout, count+1); }, 50*count);
+        setTimeout(function(){ do_wait(key, next, on_timeout, count+1, limit); }, 50*count);
     }
 }
 
