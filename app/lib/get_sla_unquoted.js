@@ -1,26 +1,47 @@
-var config= require('config'),
+var get_dash_context = require('./context'),
     query = require('./query'),
     cache = require('./cache'),
     util  = require('./util');
 
-module.exports = query.prepare(
-    'sla_unquoted',
-    'sla_hours', // to match ./get_sla_hours.js
-    null,
-    function(data, ctx, next){
-        let r = {result: [{wr: "None", result: 0}]};
-        if (data && data.rows && data.rows.length > 0){
-            r.result = data.rows.map(row => {
+module.exports = function(req, res, next){
+    let ctx = get_dash_context(req);
+
+    if (ctx.error){
+        console.log('get_sla_unquoted: ' + ctx.error);
+        res.json({error: ctx.error});
+        return;
+    }
+
+    function process_results(tsdata, qdata){
+        let r = {result: []};
+        if (tsdata && tsdata.rows && tsdata.rows.length > 0 && qdata && Array.isArray(qdata.rows)){
+            let wrs_with_time = {};
+            tsdata.rows.forEach(row => {
+                wrs_with_time[row.request_id] = row;
+            });
+            qdata.rows.forEach(row => {
+                delete wrs_with_time[row.request_id];
+            });
+            r.result = Object.keys(wrs_with_time).sort().map(key => {
+                let row = wrs_with_time[key];
                 return [{wr: row.request_id + ': ' + row.brief, result: row.hours}];
             });
+        }else{
+            r.result.push({wr: "None", result: 0});
         }
-        next(r);
-    },
-    function(ckb, ctx, next, error){
-        cache.wait(cache.key(ckb, ctx))
-            .then(next)
-            .timeout(() => { error(new Error('sla_unquoted: cache timed out')); })
-            .limit(47);
+        res.json(r);
+        next && next(false);
     }
-);
+
+    cache.wait(cache.key('sla_hours', ctx))
+        .then((tsdata) => {
+            cache.wait(cache.key('approved_quotes', ctx))
+                .then((qdata) => { process_results(tsdata, qdata) })
+                .timeout(() => { query.error(res, next)(new Error('sla_unquoted: quote cache timed out')); })
+                .limit(40);
+        })
+        .timeout(() => { query.error(res, next)(new Error('sla_unquoted: timesheet cache timed out')); })
+        .limit(40);
+}
+
 

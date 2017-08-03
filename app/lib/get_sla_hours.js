@@ -78,11 +78,13 @@ module.exports = query.prepare(
                     aq.rows.forEach(row => {
                         if (util.is_sla_quote(row, ctx)){
                             sla += util.convert_quote_amount(row);
-                            delete ts[row.request_id];
                         }else if (util.is_additional_quote(row, ctx)){
                             add += util.convert_quote_amount(row);
-                            delete ts[row.request_id];
                         }
+                        // Delete timesheets if there has ever been any kind of quote,
+                        // even if it's for a different month.
+                        delete ts[row.request_id];
+                        //console.log('get_sla_hours: deleting timesheets for ' + row.request_id + ', it has a quote');
                     });
                     let t = Object.keys(ts).reduce((acc, val) => {
                         return acc + ts[val];
