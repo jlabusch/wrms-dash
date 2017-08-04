@@ -29,11 +29,9 @@ module.exports = function(req){
         return context;
     }
 
-    if (req.params.period.match(/^\d\d\d\d-\d\d?$/)){
-        context.period = req.params.period.replace(/-0/, '-');
-        let s = context.period.split('-');
-        context.year   = parseInt(s[0]);
-        context.month  = parseInt(s[1]);
+    let p = util.parse_period(req.params.period);
+    if (p){
+        ['year', 'month', 'period'].forEach(x => { context[x] = p[x]; });
     }else{
         let now        = new Date();
         context.year   = now.getFullYear(),

@@ -53,6 +53,21 @@ exports.convert_quote_amount = function(row){
                 : row.quote_amount;
 }
 
+exports.parse_period = function(str){
+    let r = null,
+        m = str.match(/^(\d\d\d\d)-0?(\d\d?)$/);
+    if (m){
+        r = {
+            period: str.replace(/-0/, '-'),
+            year: parseInt(m[1]),
+            month: parseInt(m[2])
+        }
+    }else{
+        console.log('parse_period: "' + str + '" failed');
+    }
+    return r;
+}
+
 exports.wr_list_sql = function(context, this_period_only, exclude_statuses){
     exclude_statuses = exclude_statuses || ["'C'", "'F'"];
     let and_period =   `AND r.request_on >= '${context.period + '-01'}'                 
@@ -127,14 +142,21 @@ exports.map_severity = function(urg, imp){
     };
 }
 
-function next_period(context){
-    let y = parseInt(context.year),
-        m = parseInt(context.month) + 1;
+function next_period_obj(context){
+    let y = context.year,
+        m = context.month + 1;
     if (m > 12){
         m = 1;
         y++;
     }
-    return y + '-' + m;
+    let r = {year: y, month: m, period: y + '-' + m};
+    return r;
+}
+
+exports.next_period_obj = next_period_obj;
+
+function next_period(context){
+    return next_period_obj(context).period;
 }
 
 exports.next_period = next_period;

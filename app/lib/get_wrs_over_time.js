@@ -44,6 +44,29 @@ function fill_row(m, sev_by_wr){
     return nr;
 }
 
+function find_gaps(from, to){
+    let gaps = [],
+        fp = util.parse_period(from),
+        tp = util.parse_period(to);
+
+    if (!fp || !tp){
+        console.log("wrs_over_time: can't parse periods");
+        return gaps;
+    }
+
+    if (tp.period === fp.period){
+        return gaps;
+    }
+
+    let p = util.next_period_obj(fp);
+
+    while (p.period !== tp.period){
+        gaps.push(p.period);
+        p = util.next_period_obj(p);
+    }
+    return gaps;
+}
+
 module.exports = query.prepare(
     'wrs_over_time',
     'wrs_over_time',
@@ -74,13 +97,28 @@ module.exports = query.prepare(
         if (data && data.rows && data.rows.length > 0){
 
             let month = data.rows[0].updated_on,
+                seen_ctx_period = false,
                 open_wrs = {
                     // request_id: severity
                 };
 
             data.rows.forEach(row => {
                 if (row.updated_on !== month){
+                    if (seen_ctx_period){
+                        // We're up to date, do no more
+                        return;
+                    }
                     r.push(fill_row(month, open_wrs));
+                    seen_ctx_period = seen_ctx_period || (ctx.period === util.parse_period(row.updated_on).period);
+
+                    find_gaps(month, row.updated_on).forEach(gap => {
+                        if (seen_ctx_period){
+                            return;
+                        }
+                        r.push(fill_row(gap, open_wrs));
+                        seen_ctx_period = (ctx.period === gap);
+                    });
+
                     month = row.updated_on;
                 }
 
@@ -91,7 +129,9 @@ module.exports = query.prepare(
                 }
             });
 
-            r.push(fill_row(month, open_wrs));
+            if (!seen_ctx_period || ctx.period === util.parse_period(month).period){
+                r.push(fill_row(month, open_wrs));
+            }
         }
         if (r.length > 12){
             r.splice(0, r.length-12);
