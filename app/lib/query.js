@@ -1,10 +1,11 @@
 var get_dash_context = require('./context'),
     cache   = require('./cache'),
+    util    = require('./util'),
     db      = require('./db').get();
 
 function db_error_handler(res, next){
     return function(err){
-        console.log('ERROR: ' + err);
+        util.log(__filename, 'ERROR: ' + err);
         res.json({error: err.message});
         next && next(false);
     }
@@ -25,7 +26,7 @@ function prepare_query(
         let ctx = get_dash_context(req);
 
         if (ctx.error){
-            console.log(label + ': ' + ctx.error);
+            util.log(__filename, label + ': ' + ctx.error);
             res.json({error: ctx.error});
             return;
         }

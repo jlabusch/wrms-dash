@@ -18,47 +18,42 @@ var sev_colors = [
         }
     }
 
+    $('#period-current').html(PERIOD);
+
     var pparts = PERIOD.split(/-/),
         year   = parseInt(pparts[0]),
         month  = parseInt(pparts[1]);
 
-    (function(){
+    function period_selection_formatter(sel, next_period){
+        var period = next_period(),
+            search = window.location.search;
+        if (search.indexOf('period') < 0){
+            search += '&period=' + period;
+        }else{
+            search = search.replace(/period=[^&]+/, 'period=' + period);
+        }
+        $(sel).attr('href', '/dash.html' + search);
+    }
+
+    period_selection_formatter('#period-prev', function(){
         var y = year;
         var m = month-1;
         if (m < 1){
             m = 12;
             y--;
         }
-        var period = y + '-' + m,
-            search = window.location.search;
-        if (search.indexOf('period') < 0){
-            search += '&period=' + period;
-        }else{
-            search = search.replace(/period=[^&]+/, 'period=' + period);
-        }
-        $('#period-prev')
-            .attr('href', '/dash.html' + search)
-            .text('(<< ' + period + ')');
-    })();
+        return y + '-' + m;
+    });
 
-    (function(){
+    period_selection_formatter('#period-next', function(){
         var y = year;
         var m = month+1;
         if (m > 12){
             m = 1;
             y++;
         }
-        var period = y + '-' + m,
-            search = window.location.search;
-        if (search.indexOf('period') < 0){
-            search += '&period=' + period;
-        }else{
-            search = search.replace(/period=[^&]+/, 'period=' + period);
-        }
-        $('#period-next')
-            .attr('href', '/dash.html' + search)
-            .text('(' + period + ' >>)');
-    })();
+        return y + '-' + m;
+    });
 })();
 
 var chart06 = new Keen.Dataviz()
@@ -158,12 +153,8 @@ query('/users', render(chart10, function(chart, data){
 
 query('/customer', function(err, data){
     if (!err){
-        $('#cust-name')
-            .text(data.org.name)
-            .attr('href', 'https://wrms.catalyst.net.nz/requestlist.php?org_code=' + data.org.id);
-        $('#cust-system')
-            .text(data.system.name)
-            .attr('href', 'https://wrms.catalyst.net.nz/requestlist.php?org_code=' + data.org.id);
+        $('#cust-name').text(data.system.name);
+        $('#period-current').attr('href', 'https://wrms.catalyst.net.nz/requestlist.php?org_code=' + data.org.id);
     }
 });
 
@@ -377,16 +368,32 @@ function draw_custom_charts(){
 } // google charts
 
 var gophers = [
+    'ASHLEY_STEVE.png',
+    'BELGIUM.png',
+    'BUFFALO_CASTS.png',
+    'CouchPotatoGopher.png',
     'COWBOY_GOPHER.png',
+    'DRAWING_GOPHER.png',
     'GIRL_GOPHER.png',
     'GO_BUFFALO.png',
+    'GO_LEARN.png',
     'GOPHERCON.png',
     'GOPHER_DENVER.png',
+    'GOPHER_INCLUSION.png',
+    'GOPHER_LAPTOP.png',
+    'GOPHER_MIC_DROP_WITH_BACKGROUND.png',
     'GOPHER_SAFARI.png',
+    'GopherSpaceCommunity.png',
+    'GopherSpaceMentor.png',
+    'LazyGopher.png',
     'LION_GOPHER.png',
-    // 'ZERO_FUCKS.png',
-    'STAR_TREK_GOPHER.png'
+    'MovingGopher.png',
+    'NERDY.png',
+    'pride_circle.png',
+    'SPACEGIRL_GOPHER.png',
+    'This_is_Fine_Gopher.png',
+    'Unicorn_Gopher.png'
 ];
 
-document.getElementById('gopher').src = './' + gophers[Math.round(Math.random()*(gophers.length-1))];
+document.getElementById('gopher').src = './assets/img/gophers/' + gophers[Math.round(Math.random()*(gophers.length-1))];
 

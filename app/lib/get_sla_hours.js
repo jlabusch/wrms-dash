@@ -42,7 +42,7 @@ module.exports = query.prepare(
         }else if (sla_uri){ // If we can get SLA config, do that
             let hrq = http.request(sla_uri, (hresp) => {
                 if (hresp.statusCode !== 200){
-                    console.log('sla_hours: request to ' + sla_uri + ' failed: ' + hresp.statusCode);
+                    util.log(__filename, 'request to ' + sla_uri + ' failed: ' + hresp.statusCode);
                     produce_result();
                     return;
                 }
@@ -54,7 +54,7 @@ module.exports = query.prepare(
                         json = JSON.parse(d);
                         cache.put('sla_config', json);
                     }catch(ex){
-                        console.log('sla_hours: ' + ex);
+                        util.log(__filename, ex);
                     }
                     if (json[ctx.org] && json[ctx.org].monthly){
                         budget = json[ctx.org].monthly;
@@ -63,7 +63,7 @@ module.exports = query.prepare(
                 });
             });
             hrq.on('error', err => {
-                console.log('sla_hours: ' + err);
+                util.log(__filename, err);
                 produce_result();
             });
             hrq.end();
@@ -84,7 +84,7 @@ module.exports = query.prepare(
                         // Delete timesheets if there has ever been any kind of quote,
                         // even if it's for a different month.
                         delete ts[row.request_id];
-                        //console.log('get_sla_hours: deleting timesheets for ' + row.request_id + ', it has a quote');
+                        //util.log(__filename, 'deleting timesheets for ' + row.request_id + ', it has a quote');
                     });
                     let t = Object.keys(ts).reduce((acc, val) => {
                         return acc + ts[val];

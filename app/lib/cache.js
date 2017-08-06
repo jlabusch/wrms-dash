@@ -1,3 +1,5 @@
+var util = require('./util');
+
 var cache = {};
 
 const MINS = 60*1000,
@@ -23,11 +25,11 @@ function cache_get(key, limit){
             limit = DEFAULT_CACHE_TIMELIMIT;
         }
         if (item.ts + limit > now){
-            //console.log('CACHE HIT [' + key + ']');
+            //util.log(__filename, 'CACHE HIT [' + key + ']');
             return JSON.parse(JSON.stringify(item.val));
         }
     }
-    console.log('CACHE MISS [' + key + ']');
+    util.log(__filename, 'CACHE MISS [' + key + ']');
     return null;
 }
 
@@ -58,13 +60,13 @@ function setup_wait(key){
 
 function do_wait(key, next, on_timeout, count, limit){
     if (count > limit){
-        console.log('CACHE WAIT: Giving up on ' + key);
+        util.log(__filename, 'CACHE WAIT: Giving up on ' + key);
         on_timeout && on_timeout();
         return;
     }
     let c = cache_get(key);
     if (c){
-        console.log('CACHE WAIT -> HIT [' + key + ']');
+        util.log(__filename, 'CACHE WAIT -> HIT [' + key + ']');
         next && next(c, true);
     }else{
         setTimeout(function(){ do_wait(key, next, on_timeout, count+1, limit); }, 50*count);

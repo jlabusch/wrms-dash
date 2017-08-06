@@ -7,7 +7,7 @@ module.exports = function(req, res, next){
     let ctx = get_dash_context(req);
 
     if (ctx.error){
-        console.log('get_sla_unquoted: ' + ctx.error);
+        util.log(__filename, ctx.error);
         res.json({error: ctx.error});
         return;
     }

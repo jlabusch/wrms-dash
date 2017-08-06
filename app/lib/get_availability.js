@@ -24,7 +24,7 @@ module.exports = query.prepare(
             r.result  = x.percent_total_time_ok;
             r.host    = x.host_display_name;
             r.service = x.service_display_name;
-            //console.log(ctx.org + ' availability => ' + r.result + '%');
+            //util.log(__filename, ctx.org + ' availability => ' + r.result + '%');
         }
         next(r);
     },
@@ -69,7 +69,7 @@ module.exports = query.prepare(
         let req = https.request(options, (res) => {
             if (res.statusCode !== 200){
                 let e = 'availability: ' + options.path + ' => ' + res.statusCode;
-                console.log(e);
+                util.log(__filename, e);
                 return error(e);
             }
             let data = '';
@@ -79,10 +79,10 @@ module.exports = query.prepare(
                 try{
                     json = JSON.parse(data);
                     cache.put(key, json);
-                    console.log('availability: ' + options.path);
+                    util.log(__filename, 'availability: ' + options.path);
                 }catch(ex){
                     let e = 'availability: ' + ex;
-                    console.log(e);
+                    util.log(__filename, e);
                     return error(e);
                 }
                 next(json);

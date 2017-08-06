@@ -40,7 +40,7 @@ function fill_row(m, sev_by_wr){
     list.forEach(wr => {
         nr[ sev_by_wr[wr].number+1 ]++;
     });
-    // console.log('get_wrs_over_time: at the end of ' + m + ' these ' + list.length + ' WRs were open: ' + JSON.stringify(list));
+    // util.log(__filename, 'at the end of ' + m + ' these ' + list.length + ' WRs were open: ' + JSON.stringify(list));
     return nr;
 }
 
@@ -50,7 +50,7 @@ function find_gaps(from, to){
         tp = util.parse_period(to);
 
     if (!fp || !tp){
-        console.log("wrs_over_time: can't parse periods");
+        util.log(__filename, "can't parse periods");
         return gaps;
     }
 

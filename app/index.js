@@ -10,10 +10,6 @@ var config  = require('config'),
 
 const GENERIC_ERROR = {error: 'Service interruption - please try again later'};
 
-function _L(f){
-    return require('path').basename(__filename) + '#' + f + ' - ';
-}
-
 var server = restify.createServer({
     name: 'wrms-dash-api',
     versions: [config.get('server.version')]
@@ -32,7 +28,7 @@ server.use(restify.bodyParser({mapParams: true}));
 server.use(restify.queryParser({mapParams: true}));
 
 server.on('uncaughtException', (req, res, route, err) => {
-    console.log('restify.uncaughtException - ' + err.stack);
+    util.log(__filename, err.stack);
     res.send(500, GENERIC_ERROR);
 });
 
@@ -83,7 +79,7 @@ setup('get', '/wrs_created_count', require('./lib/get_wrs_created_count'));
 setup('get', '/wrs_over_time', require('./lib/get_wrs_over_time'));
 
 setup('get', '/users', function(req, res, next){
-    console.log('users()');
+    util.log(__filename, 'users()');
     res.json({
         result: 0
     });
@@ -122,7 +118,7 @@ function main(port){
         if (err){
             throw err;
         }
-        console.log(_L('listen') + '%s listening at %s', server.name, server.url);
+        util.log(__filename, `${server.name} listening at ${server.url}`);
     });
 }
 

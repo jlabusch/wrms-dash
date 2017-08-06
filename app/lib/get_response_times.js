@@ -19,7 +19,7 @@ function same_day(a, b){
 }
 
 function log(wr, sev, start, end, elapsed){
-        //console.log('calculate_response_duration(' + wr + '/' + sev + ',\t' + start.toISOString() + ', ' + end.toISOString() + ') => ' + to_hours(elapsed) + ' hrs');
+        //util.log(__filename, 'calculate_response_duration(' + wr + '/' + sev + ',\t' + start.toISOString() + ', ' + end.toISOString() + ') => ' + to_hours(elapsed) + ' hrs');
 }
 
 function calculate_response_duration(wr, sev, start, end){
@@ -64,7 +64,7 @@ function calculate_response_duration(wr, sev, start, end){
 module.exports = function(req, res, next){
     let ctx = get_dash_context(req);
     if (ctx.error){
-        console.log(o.error);
+        util.log(__filename, o.error);
         res.json({error: ctx.error});
         return;
     }
@@ -96,7 +96,7 @@ module.exports = function(req, res, next){
                 )
             }
         }else{
-            console.log('response_times: no WRs in list');
+            util.log(__filename, 'no WRs in list');
             res.json({result: []});
         }
     }
@@ -145,7 +145,7 @@ module.exports = function(req, res, next){
             if (times[sev].length){
                 times[sev].sort((a,b)=>{ return a-b });
                 let index = Math.round(times[sev].length*percentile) - 1;
-                //console.log('sev=' + sev + ',\trt=' + JSON.stringify(times[sev]) + ', ' + percentile + '%=' + index);
+                //util.log(__filename, 'sev=' + sev + ',\trt=' + JSON.stringify(times[sev]) + ', ' + percentile + '%=' + index);
                 arr[1] = to_hours(times[sev][index]);
             }
             r.result.push(arr);

@@ -1,4 +1,11 @@
-var config = require('config');
+var config = require('config'),
+    basename = require('path').basename;
+
+function log(sourcefile, msg){
+    console.log((new Date()).toISOString() + ' ' + basename(sourcefile) + ' | ' + msg);
+}
+
+exports.log = log;
 
 exports.exclude_additional_quote_statuses = ['F', 'H', 'M'];
 
@@ -26,7 +33,7 @@ function describe_quote(row){
         }
     }
 
-    console.log('WR ' + row.request_id + ' quote ' + row.quote_id + ': "' + row.invoice_to + '" -> ' + JSON.stringify(r));
+    log(__filename, 'WR ' + row.request_id + ' quote ' + row.quote_id + ': "' + row.invoice_to + '" -> ' + JSON.stringify(r));
     return r;
 }
 
@@ -63,7 +70,7 @@ exports.parse_period = function(str){
             month: parseInt(m[2])
         }
     }else{
-        console.log('parse_period: "' + str + '" failed');
+        log(__filename, 'parse_period: "' + str + '" failed');
     }
     return r;
 }
