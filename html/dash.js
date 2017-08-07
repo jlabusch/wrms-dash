@@ -372,7 +372,8 @@ function draw_custom_charts(){
             return;
         }
         var table = new google.visualization.DataTable();
-        table.addColumn('string', 'Deployment WR#');
+        table.addColumn('string', 'WR#');
+        table.addColumn('string', 'Brief');
         table.addColumn('string', 'Description');
 
         var formatted_data = data.map(function(row){
@@ -382,7 +383,8 @@ function draw_custom_charts(){
             }).join('<br>');
 
             return [
-                'WR ' + row.request_id + ' ' + row.brief,
+                '' + row.request_id,
+                row.brief,
                 desc
             ];
         });
