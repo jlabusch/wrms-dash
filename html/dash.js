@@ -365,6 +365,35 @@ function draw_custom_charts(){
         var viz = new google.visualization.Table(document.getElementById('chart-13'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     });
+
+    query('/deployments', function(err, data){
+        if (err){
+            console.log('deployments: ' + err);
+            return;
+        }
+        var table = new google.visualization.DataTable();
+        table.addColumn('string', 'Deployment WR#');
+        table.addColumn('string', 'Description');
+
+        var formatted_data = data.map(function(row){
+            var arr = row.description.split('\n');
+            var desc = arr.filter(function(element){
+                return element[0] === '*';
+            }).join('<br>');
+
+            return [
+                'WR ' + row.request_id + ' ' + row.brief,
+                desc
+            ];
+        });
+        if (formatted_data.length < 1){
+            formatted_data.push(['No deployments', '']);
+        }
+        table.addRows(formatted_data);
+        var viz = new google.visualization.Table(document.getElementById('chart-12'));
+        viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
+    });
+
 } // google charts
 
 var gophers = [
@@ -396,4 +425,3 @@ var gophers = [
 ];
 
 document.getElementById('gopher').src = './assets/img/gophers/' + gophers[Math.round(Math.random()*(gophers.length-1))];
-
