@@ -10,7 +10,7 @@ module.exports = query.prepare(
     'sla_hours',
     'sla_hours',
     function(ctx){
-        return `SELECT r.request_id,r.brief,SUM(ts.work_quantity) AS hours
+        return `SELECT r.request_id,r.brief,r.invoice_to,SUM(ts.work_quantity) AS hours
                 FROM request r
                 JOIN request_timesheet ts ON r.request_id=ts.request_id
                 LEFT JOIN request_tag rtag ON r.request_id=rtag.request_id
@@ -28,7 +28,8 @@ module.exports = query.prepare(
         let ts = {};
         if (data && data.rows && data.rows.length > 0){
             data.rows.forEach(row => {
-                ts[row.request_id] = util.round_hrs(row.hours);
+                let n = util.parse_timesheet_adjustment(row.invoice_to, ctx);
+                ts[row.request_id] = util.round_hrs(row.hours + n);
             });
         }
         let budget = 0,

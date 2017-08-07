@@ -1,4 +1,5 @@
 var config = require('config'),
+    crypto = require('crypto'),
     basename = require('path').basename;
 
 function log(sourcefile, msg){
@@ -6,6 +7,26 @@ function log(sourcefile, msg){
 }
 
 exports.log = log;
+
+exports.encrypt = function encrypt(text){
+    let cipher = crypto.createCipher('aes-256-ctr', 'timesheet_adjustments'),
+        out = cipher.update(text, 'utf8', 'hex');
+
+    out += cipher.final('hex');
+
+    return out;
+}
+
+function decrypt(text){
+    let cipher = crypto.createCipher('aes-256-ctr', 'timesheet_adjustments'),
+        out = cipher.update(text, 'hex', 'utf8')
+
+    out += cipher.final('utf8');
+
+    return out;
+}
+
+exports.decrypt = decrypt;
 
 exports.exclude_additional_quote_statuses = ['F', 'H', 'M'];
 
@@ -16,6 +37,37 @@ exports.orgs = (function(cfg){
     });
     return o;
 })(config.get('orgs'));
+
+exports.parse_timesheet_adjustment = function(invoice_to, ctx){
+    if (!invoice_to){
+        return 0;
+    }
+
+    let adj = invoice_to.match(/Adjust:\s*([a-f0-9]+)/i);
+
+    if (!adj){
+        return 0;
+    }
+
+    let cmd = decrypt(adj[1]),
+        // Example: 2017-07 timesheets -7 hours
+        parts = cmd.match(new RegExp(ctx.year + '-0?' + ctx.month + '\\s+time[a-z]*\\s*([+-]?[0-9.]+)\\s*hours', 'i'));
+
+    if (!parts){
+        log(__filename, "Timesheet adjustment not valid: " + cmd);
+        return 0;
+    }
+
+    let r = parseFloat(parts[1]);
+
+    if (isNaN(r)){
+        log(__filename, "Couldn't parse timesheet adjustment value: " + cmd);
+        return 0;
+    }
+
+    log(__filename, 'Manual timesheet adjustment: ' + cmd + ' -> ' + r);
+    return r;
+}
 
 function describe_quote(row){
     let r = {

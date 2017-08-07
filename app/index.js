@@ -42,6 +42,16 @@ function setup(method, uri, handler){
     server[method](uri + '/:org/:sys/:period', handler);
 }
 
+server.post('/enc', function(req, res, next){
+    res.send(util.encrypt(req.body));
+    next && next(false);
+});
+
+server.post('/dec', function(req, res, next){
+    res.send(util.decrypt(req.body));
+    next && next(false);
+});
+
 var get_quotes = require('./lib/get_quotes');
 
 setup(
