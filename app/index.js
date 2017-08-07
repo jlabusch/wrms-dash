@@ -88,6 +88,8 @@ setup('get', '/wrs_created_count', require('./lib/get_wrs_created_count'));
 
 setup('get', '/wrs_over_time', require('./lib/get_wrs_over_time'));
 
+setup('get', '/deployments', require('./lib/get_deployments'));
+
 setup('get', '/users', function(req, res, next){
     util.log(__filename, 'users()');
     res.json({
@@ -137,4 +139,3 @@ if (require.main === module){
 }
 
 exports.run = main;
-
