@@ -369,7 +369,7 @@ function draw_custom_charts(){
         table.addRows(
             data.map(function(row){
                 return [
-                    'WR ' + row.request_id,
+                    '<a href="https://wrms.catalyst.net.nz/' + row.request_id + '">' + row.request_id + '</a>',
                     row.brief,
                     row.status,
                     row.urgency
@@ -393,7 +393,7 @@ function draw_custom_charts(){
             }).join('<br>');
 
             return [
-                '' + row.request_id,
+                '<a href="https://wrms.catalyst.net.nz/' + row.request_id + '">' + row.request_id + '</a>',
                 row.brief,
                 desc
             ];
