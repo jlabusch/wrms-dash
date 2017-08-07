@@ -18,6 +18,21 @@ For now:
 
 Ashley Mcnamara's Gophers licensed under CC (https://github.com/ashleymcnamara/gophers).
 
+### WRMS interface
+
+In addition to reading timesheets and approved quotes, we consult the `invoice_to` field for additional metadata.
+
+Quote ID 1234 can be allocated to the March 2016 SLA budget by saying:
+
+> 1234: 2016-3 SLA
+
+Quote ID 1234 can instead be allocated to Additional Service hours if the SLA budget has been exhausted:
+
+> 1234: 2016-3 Additional
+
+For T&M requests timesheet adjustments (e.g. writing off new staff training hours) can be added using the "Adjust" keyword. While this is possible, using adjustments probably means you're doing something wrong, so the exact syntax isn't documented here.
+
+
 ### How to contribute
 
 *Imposter syndrome disclaimer*: I want your help. No really, I do.
