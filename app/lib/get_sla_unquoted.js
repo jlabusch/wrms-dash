@@ -23,9 +23,11 @@ module.exports = function(req, res, next){
                 delete wrs_with_time[row.request_id];
             });
             r.result = Object.keys(wrs_with_time).sort().map(key => {
-                let row = wrs_with_time[key],
-                    n = util.parse_timesheet_adjustment(row.invoice_to, ctx);
-                return [{wr: row.request_id + ': ' + row.brief, result: util.round_hrs(row.hours + n)}];
+                let row = wrs_with_time[key];
+                return [{
+                    wr: row.request_id + ': ' + row.brief,
+                    result: util.calculate_timesheet_hours(row.hours, row.invoice_to, ctx)
+                }];
             });
         }else{
             r.result.push({wr: "None", result: 0});

@@ -28,8 +28,7 @@ module.exports = query.prepare(
         let ts = {};
         if (data && data.rows && data.rows.length > 0){
             data.rows.forEach(row => {
-                let n = util.parse_timesheet_adjustment(row.invoice_to, ctx);
-                ts[row.request_id] = util.round_hrs(row.hours + n);
+                ts[row.request_id] = util.calculate_timesheet_hours(row.hours, row.invoice_to, ctx);
             });
         }
         let budget = 0,
