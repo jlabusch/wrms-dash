@@ -56,12 +56,12 @@ DB.prototype.query = function(){
         args.push(function(err, data){
             let end = new Date();
             data = data || {rows: []};
-            util.log(__filename, data.rows.length + ' rows, rtt ' + (end.getTime() - start.getTime()) + 'ms');
+            util.log(__filename, query_name + ': ' + data.rows.length + ' rows, rtt ' + (end.getTime() - start.getTime()) + 'ms');
             if (err){
                 reject(err);
             }else{
                 if (debug){
-                    util.log(__filename, JSON.stringify(data.rows, null, 2));
+                    util.log(__filename, query_name + ': ' + JSON.stringify(data.rows, null, 2));
                 }
                 let j = JSON.stringify(data, null, 2);
                 resolve(JSON.parse(j));

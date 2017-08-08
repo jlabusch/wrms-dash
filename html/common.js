@@ -58,7 +58,9 @@ function render(chart, pre){
             if (pre){
                 pre(chart, data);
             }
-            chart.data(data).render();
+            if (!data.__skip_render){
+                chart.data(data).render();
+            }
         }
     }
 }

@@ -172,6 +172,14 @@ var donut_options = {
     }
 }
 
+function handle_empty_data(chart, data){
+    if (data.result.length === 1 && data.result[0].wr === 'None'){
+        chart.type('message')
+            .message('No data');
+        data.__skip_render = true;
+    }
+}
+
 var chart02 = new Keen.Dataviz()
     .el('#chart-02')
     .colors(default_colors)
@@ -180,7 +188,7 @@ var chart02 = new Keen.Dataviz()
     .chartOptions(donut_options)
     .prepare();
 
-query('/sla_quotes', render(chart02));
+query('/sla_quotes', render(chart02, handle_empty_data));
 
 var chart14 = new Keen.Dataviz()
     .el('#chart-14')
@@ -190,7 +198,7 @@ var chart14 = new Keen.Dataviz()
     .chartOptions(donut_options)
     .prepare();
 
-query('/sla_unquoted', render(chart14));
+query('/sla_unquoted', render(chart14, handle_empty_data));
 
 var chart03 = new Keen.Dataviz()
     .el('#chart-03')
@@ -200,7 +208,7 @@ var chart03 = new Keen.Dataviz()
     .chartOptions(donut_options)
     .prepare();
 
-query('/additional_quotes', render(chart03));
+query('/additional_quotes', render(chart03, handle_empty_data));
 
 google.charts.load('current', {packages: ['corechart', 'bar', 'table', 'line']});
 google.charts.setOnLoadCallback(draw_custom_charts);
@@ -307,7 +315,10 @@ function draw_custom_charts(){
             return;
         }
         if (data.result.length < 2){
-            console.log('response_times: no data');
+            (new Keen.Dataviz())
+                .el('#chart-08')
+                .type('message')
+                .message('No data');
             return;
         }
         data.result.forEach((row, i) => { row.push(sev_colors[i]) });
@@ -344,7 +355,10 @@ function draw_custom_charts(){
             return;
         }
         if (data.length < 1){
-            console.log('wr_list: no data');
+            (new Keen.Dataviz())
+                .el('#chart-13')
+                .type('message')
+                .message('No data');
             return;
         }
         var table = new google.visualization.DataTable();
@@ -355,7 +369,7 @@ function draw_custom_charts(){
         table.addRows(
             data.map(function(row){
                 return [
-                    'WR ' + row.request_id,
+                    '<a href="https://wrms.catalyst.net.nz/' + row.request_id + '">' + row.request_id + '</a>',
                     row.brief,
                     row.status,
                     row.urgency
@@ -371,9 +385,6 @@ function draw_custom_charts(){
             console.log('deployments: ' + err);
             return;
         }
-        var table = new google.visualization.DataTable();
-        table.addColumn('string', 'Deployment WR#');
-        table.addColumn('string', 'Description');
 
         var formatted_data = data.map(function(row){
             var arr = row.description.split('\n');
@@ -382,14 +393,27 @@ function draw_custom_charts(){
             }).join('<br>');
 
             return [
-                'WR ' + row.request_id + ' ' + row.brief,
+                '<a href="https://wrms.catalyst.net.nz/' + row.request_id + '">' + row.request_id + '</a>',
+                row.brief,
                 desc
             ];
         });
+
         if (formatted_data.length < 1){
-            formatted_data.push(['No deployments', '']);
+            (new Keen.Dataviz())
+                .el('#chart-12')
+                .type('message')
+                .height(250)
+                .message('No deployments');
+            return;
         }
+
+        var table = new google.visualization.DataTable();
+        table.addColumn('string', 'WR#');
+        table.addColumn('string', 'Brief');
+        table.addColumn('string', 'Description');
         table.addRows(formatted_data);
+
         var viz = new google.visualization.Table(document.getElementById('chart-12'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     });
