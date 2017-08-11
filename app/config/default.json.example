@@ -18,7 +18,10 @@
             "availability": "ELB backend count",
             "default_system": "1234",
             "storage": "host=myhost&service=Check+disk+space",
-            "storage_pattern": "sitedata=(\\d+)MB"
+            "storage_pattern": "sitedata=(\\d+)MB",
+            "users_hostname": "moodle.example.com",
+            "users_protocol": "https:",
+            "users_token": "1234567890abcdef1234567890abcdef"
         }
     }
 }
