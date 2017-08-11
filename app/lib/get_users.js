@@ -35,7 +35,7 @@ module.exports = query.prepare(
         let req = http.request(options, (res) => {
             // This will only have a non-200 OK in pretty exceptional circumstances.
             if (res.statusCode !== 200) {
-                let e = 'users: ' + options.base_uri + ' => ' + res.statusCode;
+                let e = 'users: ' + options.users_hostname + ' => ' + res.statusCode;
                 util.log(__filename, e);
                 return error(e);
             }
