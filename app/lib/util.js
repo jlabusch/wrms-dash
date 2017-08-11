@@ -38,35 +38,61 @@ exports.orgs = (function(cfg){
     return o;
 })(config.get('orgs'));
 
-exports.parse_timesheet_adjustment = function(invoice_to, ctx){
+function parse_timesheet_adjustment(invoice_to, ctx){
+    let r = (h) => { return h };
+
     if (!invoice_to){
-        return 0;
+        return r;
     }
 
     let adj = invoice_to.match(/Adjust:\s*([a-f0-9]+)/i);
 
     if (!adj){
-        return 0;
+        return r;
     }
 
     let cmd = decrypt(adj[1]),
-        // Example: 2017-07 timesheets -7 hours
-        parts = cmd.match(new RegExp(ctx.year + '-0?' + ctx.month + '\\s+time[a-z]*\\s*([+-]?[0-9.]+)\\s*hours', 'i'));
+        // Examples: 2017-07 timesheets -7 hours
+        //           2017-6  timesheets *0.5 hours
+        //           2017-4  timesheets +1.5 hours
+        // We only match one adjustment.
+        parts = cmd.match(new RegExp(ctx.year + '-0?' + ctx.month + '\\s+time[0-9a-z]*\\s*([+*-]?)\\s*([0-9.]+)\\s*hours', 'i'));
 
     if (!parts){
         log(__filename, "Timesheet adjustment not valid: " + cmd);
-        return 0;
+        return r;
     }
 
-    let r = parseFloat(parts[1]);
+    let op = parts[1],
+        n  = parseFloat(parts[2]);
 
-    if (isNaN(r)){
-        log(__filename, "Couldn't parse timesheet adjustment value: " + cmd);
-        return 0;
+    if (isNaN(n)){
+        log(__filename, "Couldn't parse timesheet adjustment value '" + parts[2] + "' in " + cmd);
+        return r;
     }
 
-    log(__filename, 'Manual timesheet adjustment: ' + cmd + ' -> ' + r);
+    log(__filename, 'Manual timesheet adjustment: ' + cmd + ' -> ' + op + r);
+
+    switch(op){
+        case '-':
+            r = (h) => { return h-n };
+            break;
+        case '*':
+            r = (h) => { return h*n };
+            break;
+        default:
+            // '' or '+'
+            r = (h) => { return h+n };
+    }
+
     return r;
+}
+
+exports.parse_timesheet_adjustment = parse_timesheet_adjustment;
+
+exports.calculate_timesheet_hours = function(hours, invoice_to, context){
+    let adj = parse_timesheet_adjustment(invoice_to, context);
+    return round_hrs(adj(hours));
 }
 
 function describe_quote(row){
@@ -157,7 +183,7 @@ exports.wr_list_sql = function(context, this_period_only, exclude_statuses){
             ORDER BY r.urgency,r.last_status ASC`.replace(/\s+/g, ' ');
 }
 
-exports.round_hrs = function(h){
+function round_hrs(h){
     let i = h|0;
     h-=i;
     if (h > 0.5) h = 1;
@@ -165,6 +191,8 @@ exports.round_hrs = function(h){
     else h = 0;
     return i+h;
 }
+
+exports.round_hrs = round_hrs;
 
 exports.map_severity = function(urg, imp){
     const urgs = {
