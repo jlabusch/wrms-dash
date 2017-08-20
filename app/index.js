@@ -3,6 +3,7 @@ var config  = require('config'),
     cache   = require('./lib/cache'),
     get_dash_context = require('./lib/context'),
     util    = require('./lib/util'),
+    auth    = require('./lib/auth'),
     query   = require('./lib/query'),
     restify = require('restify');
 
@@ -37,51 +38,10 @@ function preflight(req, res, next){
     return next();
 }
 
-function parse_auth(s){
-    if (!s){
-        return null;
-    }
+function setup(method, func, handler){
+    server.opts('/api' + func + '/:org/:sys/:period', preflight);
 
-    let parts = s.match(/([^:\/]+).(.+)/);
-    if (!parts){
-        return null;
-    }
-
-    return {user: parts[1], pass: parts[2]};
-}
-
-function check_auth(header, ctx){
-    let parts = header.match(/basic\s+([^ ]+)/i),
-        result = false;
-
-    if (parts){
-        let o = util.orgs[ctx.org];
-
-        let server_creds = parse_auth(config.get('server.password'), ctx),
-            org_creds = o.name && o.password ? parse_auth(o.password) : null,
-            req_creds = parse_auth(new Buffer(parts[1], 'base64').toString());
-
-        if (req_creds){
-            if (req_creds.user === server_creds.user){
-                // If we're staff, we see everything
-                result = req_creds.pass === server_creds.pass;
-            }else{
-                // If we're a customer, we only see our org.
-                // That implies config(orgs).password exists.
-                result = org_creds &&
-                         req_creds.user === org_creds.user &&
-                         req_creds.pass === org_creds.pass;
-            }
-            util.log(__filename, req_creds.user + ' access for org ' + ctx.org + ' -> ' + result);
-        }
-    }
-    return result;
-}
-
-function setup(method, uri, handler){
-    server.opts('/api' + uri + '/:org/:sys/:period', preflight);
-
-    server[method]('/api' + uri + '/:org/:sys/:period', function(req, res, next){
+    server[method]('/api' + func + '/:org/:sys/:period', function(req, res, next){
         let ctx = get_dash_context(req);
 
         if (ctx.error){
@@ -90,7 +50,7 @@ function setup(method, uri, handler){
             return;
         }
 
-        if (req.headers.authorization && check_auth(req.headers.authorization, ctx)){
+        if (req.headers && auth(req.headers.authorization, ctx)){
             handler(req, res, next, ctx);
         }else{
             res.send(401);
