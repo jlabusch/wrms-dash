@@ -30,14 +30,14 @@ function query(path, next, override_uri, refresh_interval_secs){
         if (xhr.readyState !== 4){
             return;
         }
-        if (xhr.status !== 200){
-            next(new Error('' + xhr.status));
-            return;
-        }
         if (refresh_interval_secs){
             setTimeout(function(){
                 query(path, next, override_uri, refresh_interval_secs);
             }, refresh_interval_secs*SECS);
+        }
+        if (xhr.status !== 200){
+            next(new Error('' + xhr.status));
+            return;
         }
         var json = undefined;
         try{
