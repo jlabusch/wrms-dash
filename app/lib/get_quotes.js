@@ -1,6 +1,5 @@
 var config= require('config'),
     query = require('./query'),
-    get_dash_context = require('./context'),
     util  = require('./util');
 
 module.exports = function(pred){

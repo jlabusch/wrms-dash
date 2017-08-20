@@ -1,17 +1,8 @@
-var get_dash_context = require('./context'),
-    query = require('./query'),
+var query = require('./query'),
     cache = require('./cache'),
     util  = require('./util');
 
-module.exports = function(req, res, next){
-    let ctx = get_dash_context(req);
-
-    if (ctx.error){
-        util.log(__filename, ctx.error);
-        res.json({error: ctx.error});
-        return;
-    }
-
+module.exports = function(req, res, next, ctx){
     function process_results(tsdata, qdata){
         let r = {result: []};
         if (tsdata && tsdata.rows && tsdata.rows.length > 0 && qdata && Array.isArray(qdata.rows)){
