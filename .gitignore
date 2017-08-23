@@ -1,3 +1,5 @@
 .*.swp
 .htpasswd
 app/config/default.json
+*/db.sqlite3
+**/__pycache__
