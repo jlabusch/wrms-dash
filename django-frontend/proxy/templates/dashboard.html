@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html>
+<head>
+  <title>Catalyst WRMS Dashboard</title>
+  <meta charset="utf-8">
+  <script src="//d26b395fwzu5fz.cloudfront.net/keen-analysis-1.2.2.js"></script>
+  <link href="//d26b395fwzu5fz.cloudfront.net/keen-dataviz-1.1.3.css" rel="stylesheet" />
+  <script src="//d26b395fwzu5fz.cloudfront.net/keen-dataviz-1.1.3.js"></script>
+
+  <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+  <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.min.css" %}" />
+  <link rel="stylesheet" type="text/css" href="{% static "css/keen-dashboards.css" %}" />
+</head>
+<body class="application" data-client="{{ client }}" data-month="{{ month }}">
+
+  <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+
+
+      </button>
+      <a class="navbar-brand" href={% url 'proxy:index' %}>
+        <span class="glyphicon glyphicon-chevron-left"></span>
+      </a>
+      <a class="navbar-brand" id="cust-name" href={% url 'proxy:index' %}>WRMS Dashboard</a>
+      </div>
+      <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav navbar-left">
+        <li><a href="{% url 'proxy:dashboard' client=client month=prev_month %}" id="period-prev">
+          <span class="glyphicon glyphicon-backward"></span>
+        </a></li>
+        <li><a href="{% url 'proxy:dashboard' client=client month=month %}" id="period-current" style="font-weight:bold;">Current month</a></li>
+        <li><a href="{% url 'proxy:dashboard' client=client month=next_month %}" id="period-next">
+          <span class="glyphicon glyphicon-forward"></span>
+        </a></li>
+      </ul>
+
+        <ul class="nav navbar-nav navbar-right">
+          <li><a class="navbar-brand" id="cust-name" href="/accounts/logout">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <div class="chart-title">New requests for PERIOD</div>
+          <div class="chart-stage"><div id="chart-06"></div></div>
+          <div class="chart-notes">All statuses</div>
+        </div>
+      </div>
+
+      <div class="col-sm-7">
+        <div class="chart-wrapper">
+          <div class="chart-title">New requests for PERIOD</div>
+          <div class="chart-stage"><div id="chart-13"></div></div>
+          <div class="chart-notes">All statuses</div>
+        </div>
+      </div>
+
+      <div class="col-sm-3">
+        <div class="chart-wrapper">
+          <div class="chart-title">SLA hours for PERIOD</div>
+          <div class="chart-stage"><div id="chart-01"></div></div>
+          <div id="chart-01-notes" class="chart-notes">Monthly SLA budget</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="col-sm-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">Approved SLA quotes for PERIOD</div>
+          <div class="chart-stage"><div id="chart-02"></div></div>
+          <div class="chart-notes">Only includes quotes specifically allocated to this period</div>
+        </div>
+      </div>
+
+      <div class="col-sm-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">Unquoted SLA hours for PERIOD</div>
+          <div class="chart-stage"><div id="chart-14"></div></div>
+          <div class="chart-notes">Excludes warranty tickets</div>
+        </div>
+      </div>
+
+      <div class="col-sm-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">Approved additional quotes for PERIOD</div>
+          <div class="chart-stage"><div id="chart-03"></div></div>
+          <div class="chart-notes">Excludes On Hold or Parked, includes quotes with no explicit month designation</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="col-sm-3">
+        <div class="chart-wrapper">
+          <div class="chart-title">95% percentile SLA response times for PERIOD</div>
+          <div class="chart-stage"><div id="chart-08"></div></div>
+          <div class="chart-notes">Max WRMS response time, measured in hours</div>
+        </div>
+      </div>
+
+      <div class="col-sm-3">
+        <div class="chart-wrapper">
+          <div class="chart-title">Severity (all open WRs, present day)</div>
+          <div class="chart-stage"><div id="chart-04"></div></div>
+          <div class="chart-notes">Excludes Finished, Cancelled and Ongoing Maintenance</div>
+        </div>
+      </div>
+
+      <div class="col-sm-6">
+        <div class="chart-wrapper">
+          <div class="chart-title">Statuses (all open WRs, present day)</div>
+          <div class="chart-stage"><div id="chart-05"></div></div>
+          <div class="chart-notes">Excludes Finished, Cancelled and Ongoing Maintenance</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="col-sm-6">
+        <div class="chart-wrapper">
+          <div class="chart-title">Open WR count over time</div>
+          <div class="chart-stage"><div id="chart-11"></div></div>
+          <div class="chart-notes">Excludes Finished, Cancelled, On Hold, Blocked, Parked and Ongoing Maintenance</div>
+        </div>
+      </div>
+
+      <div class="col-sm-6">
+        <div class="chart-wrapper">
+          <div class="chart-title">Deployments for PERIOD</div>
+          <div class="chart-stage"><div id="chart-12"></div></div>
+          <div class="chart-notes">&nbsp;</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="col-sm-3">
+        <div class="chart-wrapper">
+          <div class="chart-title">Availability for PERIOD</div>
+          <div class="chart-stage"><div id="chart-07"></div></div>
+          <div class="chart-notes" id="avail-notes">Production environment</div>
+        </div>
+      </div>
+
+      <div class="col-sm-3">
+        <div class="chart-wrapper">
+          <div class="chart-title">Storage used (present day)</div>
+          <div class="chart-stage"><div id="chart-09"></div></div>
+          <div class="chart-notes" id="storage-notes">Production environment</div>
+        </div>
+      </div>
+
+      <div class="col-sm-3">
+        <div class="chart-wrapper">
+          <div class="chart-title">Active users (present day)</div>
+          <div class="chart-stage"><div id="chart-10"></div></div>
+          <div class="chart-notes">Production env. for past 12 months</div>
+        </div>
+      </div>
+
+      <div class="col-sm-3">
+        <div class="chart-wrapper">
+          <img style="margin-left:5%;margin-top:10px;margin-bottom:10px;" height="303px" width="auto" id="gopher">
+        </div>
+      </div>
+
+    </div>
+
+    <hr>
+
+    <p class="small text-muted">Built with &#9829; by <a href="https://keen.io">Keen IO</a> and <a href="https://catalyst-eu.net">Catalyst</a></p>
+
+  </div>
+  <script type="text/javascript" src="{% static "jquery.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "bootstrap.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "holder.js" %}"></script>
+
+
+  <script>
+    Holder.add_theme("white", { background:"#fff", foreground:"#a7a7a7", size:10 });
+  </script>
+
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <script type="text/javascript" src="{% static "common.js" %}"></script>
+  <script type="text/javascript" src="{% static "dash.js" %}"></script>
+</body>
+</html>

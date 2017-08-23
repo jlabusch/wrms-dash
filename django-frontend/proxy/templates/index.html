@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<h4>Clients:</h4>
+<ul>
+  {% for g in groups %}
+    <li>
+      <a href="{% url 'proxy:dashboard' client=g.name %}">{{ g }}</a>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}
