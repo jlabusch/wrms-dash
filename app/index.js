@@ -107,13 +107,7 @@ setup('get', '/wrs_over_time', require('./lib/get_wrs_over_time'));
 
 setup('get', '/deployments', require('./lib/get_deployments'));
 
-setup('get', '/users', function(req, res, next){
-    util.log(__filename, 'users()');
-    res.json({
-        result: 0
-    });
-    next && next(false);
-});
+setup('get', '/users', require('./lib/get_users'));
 
 setup('get', '/storage', require('./lib/get_storage'));
 
