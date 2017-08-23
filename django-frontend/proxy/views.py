@@ -46,7 +46,8 @@ class DashboardView(generic.TemplateView):
             month = datetime.datetime.now().strftime("%Y-%m")
         month_dt = datetime.datetime.strptime(month, "%Y-%m")
         min_dt = datetime.datetime.strptime("2017-7", "%Y-%m") #min date to view.
-
+        if month_dt < min_dt:
+            return redirect('proxy:dashboard', client=client)
         if not request.user.is_superuser: #If not admin, cannot view any months earlier than July 2017. TODO: fix this properly with a database for the client SLA dates instead of hard coding
             month = max(month_dt, min_dt).strftime("%Y-%m")
 
