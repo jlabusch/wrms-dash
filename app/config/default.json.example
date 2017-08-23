@@ -20,10 +20,11 @@
             "availability": "elb-backend-count",
             "storage": "host=fs1&service=Check+disk+space",
             "storage_pattern": "sitedata=(\\d+)MB",
-            "default_system": "1000"
-            "users_hostname": "moodle.example.com",
-            "users_protocol": "https:",
-            "users_token": "1234567890abcdef1234567890abcdef"
+            "default_system": "1000",
+            "users": {
+                "hostname": "moodle.example.com",
+                "token": "1234567890abcdef1234567890abcdef"
+            }
         }
     }
 }

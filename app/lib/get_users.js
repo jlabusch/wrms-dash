@@ -1,6 +1,6 @@
 var config= require('config'),
     query = require('./query'),
-    http  = require('http'),
+    https  = require('https'),
     cache = require('./cache'),
     util  = require('./util');
 
@@ -15,9 +15,15 @@ module.exports = query.prepare(
         next(r);
     },
     (key, ctx, next, error) => {
-        if (!util.orgs[ctx.org] || !util.orgs[ctx.org].users_hostname || !util.orgs[ctx.org].users_token){
+        if (!util.orgs[ctx.org] ||
+            !util.orgs[ctx.org].users ||
+            !util.orgs[ctx.org].users.hostname ||
+            !util.orgs[ctx.org].users.token)
+        {
             return error('No user lookup configured for ' + ctx.org);
         }
+
+        let u = util.orgs[ctx.org].users;
 
         const template = '/webservice/rest/server.php?wsfunction=local_user_count_api_count&' + 
                 'moodlewsrestformat=json&' +
@@ -26,16 +32,15 @@ module.exports = query.prepare(
                 'duration_unit=year';
 
         const options = {
-            path: template
-                .replace('USER_TOKEN', util.orgs[ctx.org].users_token),
-            protocol: util.orgs[ctx.org].users_protocol ? util.orgs[ctx.org].users_protocol : 'https:',
-            hostname: util.orgs[ctx.org].users_hostname
+            path: template.replace('USER_TOKEN', u.token),
+            protocol: 'https:',
+            hostname: u.hostname
         }
 
-        let req = http.request(options, (res) => {
+        let req = https.request(options, (res) => {
             // This will only have a non-200 OK in pretty exceptional circumstances.
             if (res.statusCode !== 200) {
-                let e = 'users: ' + options.users_hostname + ' => ' + res.statusCode;
+                let e = 'users: ' + options.hostname + ' => ' + res.statusCode;
                 util.log(__filename, e);
                 return error(e);
             }
@@ -48,7 +53,9 @@ module.exports = query.prepare(
                     json = JSON.parse(data);
                     if (json.exception) {
                         // Something went wrong with the WS request itself, eg bad token.
-                        throw json.message ? json.message : json.exception;
+                        let msg = json.message ? json.message : json.exception;
+                        util.log(__filename, msg);
+                        return error(msg);
                     }
                     cache.put(key, json);
                     util.log(__filename, 'users: ' + json.count);
@@ -57,7 +64,7 @@ module.exports = query.prepare(
                     util.log(__filename, e);
                     return error(e);
                 }
-                next(json.count);
+                next({result: json.count});
             });
         });
         req.on('error', error);
