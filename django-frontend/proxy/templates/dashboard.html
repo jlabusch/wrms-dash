@@ -34,9 +34,11 @@
       </div>
       <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav navbar-left">
-        <li><a href="{% url 'proxy:dashboard' client=client month=prev_month %}" id="period-prev">
-          <span class="glyphicon glyphicon-backward"></span>
-        </a></li>
+        {% if not min_reached %}
+          <li><a href="{% url 'proxy:dashboard' client=client month=prev_month %}" id="period-prev">
+            <span class="glyphicon glyphicon-backward"></span>
+            </a></li>
+        {% endif %}
         <li><a href="{% url 'proxy:dashboard' client=client month=month %}" id="period-current" style="font-weight:bold;">Current month</a></li>
         <li><a href="{% url 'proxy:dashboard' client=client month=next_month %}" id="period-next">
           <span class="glyphicon glyphicon-forward"></span>

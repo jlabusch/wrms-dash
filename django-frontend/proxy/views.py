@@ -49,6 +49,11 @@ class DashboardView(generic.TemplateView):
 
         if not request.user.is_superuser: #If not admin, cannot view any months earlier than July 2017. TODO: fix this properly with a database for the client SLA dates instead of hard coding
             month = max(month_dt, min_dt).strftime("%Y-%m")
+
+        if month == "2017-07": #TODO: remove hard coding
+            self.min_reached = True
+        else:
+            self.min_reached = False
         self.month = month
         self.client = client
         if not is_member(request.user, client) and not request.user.is_superuser:
@@ -62,13 +67,18 @@ class DashboardView(generic.TemplateView):
         context["month"] = self.month
         context["prev_month"] = get_prev_month(self.month)
         context["next_month"] = get_next_month(self.month)
+        context["min_reached"] = self.min_reached
+        print(context)
         return context
 
 
 @method_decorator(login_required, name='dispatch')
 class Api(generic.TemplateView):
     def get(self, request, item, client, month):
-
+        month_dt = datetime.datetime.strptime(month, "%Y-%m")
+        min_dt = datetime.datetime.strptime("2017-7", "%Y-%m") #min date to view.
+        if not request.user.is_superuser: #If not admin, cannot view any months earlier than July 2017. TODO: fix this properly with a database for the client SLA dates instead of hard coding
+            month = max(month_dt, min_dt).strftime("%Y-%m")
         if not is_member(request.user, client) and not request.user.is_superuser:
             raise PermissionDenied()
 
