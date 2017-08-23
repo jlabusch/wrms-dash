@@ -6,7 +6,7 @@ var default_colors = [
         // Catalyst colors:
         // "#5b9aa9", "#e6ad30", "#889a3a", "#ba2025", "#c6b253", "#dd8545", "#50433c"
     ],
-    URI_BASE_DEFAULT = 'http://mango.btn.catalyst-eu.net:8004',
+    URI_BASE_DEFAULT = '/api',
     SECS = 1000;
 
 var ORG = (function(s){ var a = s.match(/org=([^&]+)/); return a ? a[1] : 1137; })(window.location.search),
@@ -30,14 +30,14 @@ function query(path, next, override_uri, refresh_interval_secs){
         if (xhr.readyState !== 4){
             return;
         }
-        if (xhr.status !== 200){
-            next(new Error('' + xhr.status));
-            return;
-        }
         if (refresh_interval_secs){
             setTimeout(function(){
                 query(path, next, override_uri, refresh_interval_secs);
             }, refresh_interval_secs*SECS);
+        }
+        if (xhr.status !== 200){
+            next(new Error('' + xhr.status));
+            return;
         }
         var json = undefined;
         try{

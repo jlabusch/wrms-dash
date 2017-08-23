@@ -1,2 +1,3 @@
 .*.swp
+.htpasswd
 app/config/default.json

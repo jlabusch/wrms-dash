@@ -1,7 +1,6 @@
 var query = require('./query'),
     cache   = require('./cache'),
     db      = require('./db').get(),
-    get_dash_context = require('./context'),
     util = require('./util');
 
 const hours = 60*60*1000,
@@ -61,13 +60,7 @@ function calculate_response_duration(wr, sev, start, end){
     return elapsed;
 }
 
-module.exports = function(req, res, next){
-    let ctx = get_dash_context(req);
-    if (ctx.error){
-        util.log(__filename, o.error);
-        res.json({error: ctx.error});
-        return;
-    }
+module.exports = function(req, res, next, ctx){
     let wr_data = undefined;
 
     function handle_wrs(data, wr_cache_hit){

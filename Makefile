@@ -5,7 +5,11 @@ COMPOSE=docker-compose
 test:
 	make -C app
 
-build:
+.htpasswd: SHELL:=/bin/bash
+.htpasswd: app/config/default.json
+	grep -E password.*/ app/config/default.json | perl ./htpasswd.pl
+
+build: .htpasswd
 	$(COMPOSE) build
 
 run: build

@@ -1,8 +1,9 @@
 var config  = require('config'),
     db      = require('./lib/db').create(),
     cache   = require('./lib/cache'),
-    util    = require('./lib/util'),
     get_dash_context = require('./lib/context'),
+    util    = require('./lib/util'),
+    auth    = require('./lib/auth'),
     query   = require('./lib/query'),
     restify = require('restify');
 
@@ -37,9 +38,25 @@ function preflight(req, res, next){
     return next();
 }
 
-function setup(method, uri, handler){
-    server.opts(uri + '/:org/:sys/:period', preflight);
-    server[method](uri + '/:org/:sys/:period', handler);
+function setup(method, func, handler){
+    server.opts('/api' + func + '/:org/:sys/:period', preflight);
+
+    server[method]('/api' + func + '/:org/:sys/:period', function(req, res, next){
+        let ctx = get_dash_context(req);
+
+        if (ctx.error){
+            util.log(__filename, 'get_dash_context: ' + ctx.error);
+            res.json({error: ctx.error});
+            return;
+        }
+
+        if (req.headers && auth(req.headers.authorization, ctx)){
+            handler(req, res, next, ctx);
+        }else{
+            res.send(401);
+            next && next(false);
+        }
+    });
 }
 
 server.post('/enc', function(req, res, next){
@@ -90,13 +107,7 @@ setup('get', '/wrs_over_time', require('./lib/get_wrs_over_time'));
 
 setup('get', '/deployments', require('./lib/get_deployments'));
 
-setup('get', '/users', function(req, res, next){
-    util.log(__filename, 'users()');
-    res.json({
-        result: 0
-    });
-    next && next(false);
-});
+setup('get', '/users', require('./lib/get_users'));
 
 setup('get', '/storage', require('./lib/get_storage'));
 

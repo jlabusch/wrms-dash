@@ -8,17 +8,23 @@
     },
     "server": {
         "version": "1.0.0",
-        "listen_port": 80
+        "listen_port": 80,
+        "password": "admin/hunter2"
     },
-    "sla_uri": "http://sla.example.com/sla_config",
+    "sla_uri": "http://example.com/sla_config",
     "icinga_uri": "icinga.example.com",
     "orgs": {
-        "acme": {
-            "id": 1000,
-            "availability": "ELB backend count",
-            "default_system": "1234",
-            "storage": "host=myhost&service=Check+disk+space",
-            "storage_pattern": "sitedata=(\\d+)MB"
+        "AcmeCo": {
+            "id": 1,
+            "password": "AcmeCo/hunter2",
+            "availability": "elb-backend-count",
+            "storage": "host=fs1&service=Check+disk+space",
+            "storage_pattern": "sitedata=(\\d+)MB",
+            "default_system": "1000",
+            "users": {
+                "hostname": "moodle.example.com",
+                "token": "1234567890abcdef1234567890abcdef"
+            }
         }
     }
 }

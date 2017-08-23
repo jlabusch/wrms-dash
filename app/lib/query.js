@@ -1,5 +1,4 @@
-var get_dash_context = require('./context'),
-    cache   = require('./cache'),
+var cache   = require('./cache'),
     util    = require('./util'),
     db      = require('./db').get();
 
@@ -22,15 +21,7 @@ function prepare_query(
     cache_timelimit_override,
     cache_key_override
 ){
-    return function(req, res, next){
-        let ctx = get_dash_context(req);
-
-        if (ctx.error){
-            util.log(__filename, label + ': ' + ctx.error);
-            res.json({error: ctx.error});
-            return;
-        }
-
+    return function(req, res, next, ctx){
         let ck = cache_key_override ? cache_key_override(ctx) : cache.key(cache_key_base, ctx);
 
         let success = function(data, cache_hit){
