@@ -1,9 +1,6 @@
-.PHONY: app run
+.PHONY: run
 
 COMPOSE=docker-compose
-
-test:
-	make -C app
 
 build:
 	$(COMPOSE) build

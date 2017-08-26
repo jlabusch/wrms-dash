@@ -15,7 +15,7 @@ services:
 
     frontend:
         image: jlabusch/wrms-dash-frontend
-        build: django-frontend
+        build: frontend
         expose:
             - "80"
         environment:
@@ -29,7 +29,7 @@ services:
 
     api:
         image: jlabusch/wrms-dash-api
-        build: app
+        build: api
         expose:
             - "80"
         entrypoint:
@@ -39,5 +39,5 @@ services:
             - ICINGA_BASIC_AUTH
         volumes:
             - /etc/localtime:/etc/localtime:ro
-            - ./app/config/default.json:/opt/config/default.json:ro
+            - ./api/config/default.json:/opt/config/default.json:ro
 
