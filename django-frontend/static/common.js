@@ -9,16 +9,9 @@ var default_colors = [
     URI_BASE_DEFAULT = '/api',
     SECS = 1000;
 
-var ORG = (function(s){ var a = s.match(/org=([^&]+)/); return a ? a[1] : 1137; })(window.location.search),
-    SYS = (function(s){ var a = s.match(/sys=([^&]+)/); return a ? a[1] : 'default'; })(window.location.search),
-    DEFAULT_PERIOD = (function(){
-        var now     = new Date(),
-            YEAR    = now.getFullYear(),
-            MONTH   = (now.getMonth()+1)%12;
-        return YEAR + '-' + MONTH;
-    })(),
-    PERIOD = (function(s){ var a = s.match(/period=(\d\d\d\d-\d\d?)/); return a ? a[1] : DEFAULT_PERIOD; })(window.location.search),
-    URI_EXT = ORG + '/' + SYS + '/' + PERIOD;
+var ORG = $("body").data("client"),
+    PERIOD = $('body').data('month'),
+    URI_EXT = ORG + '/default/' + PERIOD;
 
 function query(path, next, override_uri, refresh_interval_secs){
     let xhr = new XMLHttpRequest();
