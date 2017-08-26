@@ -9,12 +9,10 @@ var default_colors = [
     URI_BASE_DEFAULT = '/api',
     SECS = 1000;
 
-console.log("comomon");
-
 var ORG = $("body").data("client"),
     PERIOD = $('body').data('month'),
     URI_EXT = ORG + '/default/' + PERIOD;
-console.log(ORG, SYS, PERIOD);
+
 function query(path, next, override_uri, refresh_interval_secs){
     let xhr = new XMLHttpRequest();
     if (refresh_interval_secs === undefined){
@@ -25,14 +23,14 @@ function query(path, next, override_uri, refresh_interval_secs){
         if (xhr.readyState !== 4){
             return;
         }
-        if (xhr.status !== 200){
-            next(new Error('' + xhr.status));
-            return;
-        }
         if (refresh_interval_secs){
             setTimeout(function(){
                 query(path, next, override_uri, refresh_interval_secs);
             }, refresh_interval_secs*SECS);
+        }
+        if (xhr.status !== 200){
+            next(new Error('' + xhr.status));
+            return;
         }
         var json = undefined;
         try{

@@ -15,6 +15,7 @@ For now:
  - There are no public instances of `sla_uri` and `db.host`; get in touch if you need any more info
  - To point a widget at a different data source at the front end (i.e. bypassing the Node back end), set `override_uri` in the call to `html/dash.js:query()`
  - check out https://github.com/keen/keen-dataviz.js/blob/master/docs/README.md#chart-types for front-end options
+ - When running this for real, you need to set at least two environment variables: `DJANGO_SECRET` and `ICINGA_BASIC_AUTH`.
 
 Ashley Mcnamara's Gophers licensed under CC (https://github.com/ashleymcnamara/gophers).
 

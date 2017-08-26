@@ -5,10 +5,8 @@ var sev_colors = [
     default_colors[10]
 ];
 
-console.log("dash");
 
 (function(){
-  console.log(PERIOD);
     for (var i = 0; i < 7; ++i){
         for (var j = 0; j < 5; ++j){
             [
@@ -21,41 +19,6 @@ console.log("dash");
     }
 
     $('#period-current').html(PERIOD);
-    /*
-    var pparts = PERIOD.split(/-/),
-        year   = parseInt(pparts[0]),
-        month  = parseInt(pparts[1]);
-
-    function period_selection_formatter(sel, next_period){
-        var period = next_period(),
-            search = window.location.search;
-        if (search.indexOf('period') < 0){
-            search += '&period=' + period;
-        }else{
-            search = search.replace(/period=[^&]+/, 'period=' + period);
-        }
-        $(sel).attr('href', '/dash.html' + search);
-    }
-
-    period_selection_formatter('#period-prev', function(){
-        var y = year;
-        var m = month-1;
-        if (m < 1){
-            m = 12;
-            y--;
-        }
-        return y + '-' + m;
-    });
-
-    period_selection_formatter('#period-next', function(){
-        var y = year;
-        var m = month+1;
-        if (m > 12){
-            m = 1;
-            y++;
-        }
-        return y + '-' + m;
-    });*/
 })();
 
 var chart06 = new Keen.Dataviz()

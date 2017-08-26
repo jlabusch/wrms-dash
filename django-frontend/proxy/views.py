@@ -9,10 +9,10 @@ from django.views import generic, View
 from django.shortcuts import redirect
 
 import requests
+import os
 
 
-MANGO_SERVER = "http://mango.btn.catalyst-eu.net:8004"
-
+MANGO_SERVER = os.getenv("DJANGO_BACKEND_URI", "http://mango.btn.catalyst-eu.net:8004")
 
 @method_decorator(login_required, name='dispatch')
 class IndexView(generic.TemplateView):
@@ -48,7 +48,9 @@ class DashboardView(generic.TemplateView):
         min_dt = datetime.datetime.strptime("2017-7", "%Y-%m") #min date to view.
         if month_dt < min_dt:
             return redirect('proxy:dashboard', client=client)
-        if not request.user.is_superuser: #If not admin, cannot view any months earlier than July 2017. TODO: fix this properly with a database for the client SLA dates instead of hard coding
+        if not request.user.is_superuser: # If not admin, cannot view any months earlier than July 2017.
+                                          # TODO: fix this properly with a database for the client SLA
+                                          # dates instead of hard coding
             month = max(month_dt, min_dt).strftime("%Y-%m")
 
         if month == "2017-07": #TODO: remove hard coding
@@ -69,7 +71,6 @@ class DashboardView(generic.TemplateView):
         context["prev_month"] = get_prev_month(self.month)
         context["next_month"] = get_next_month(self.month)
         context["min_reached"] = self.min_reached
-        print(context)
         return context
 
 
@@ -78,12 +79,14 @@ class Api(generic.TemplateView):
     def get(self, request, item, client, month):
         month_dt = datetime.datetime.strptime(month, "%Y-%m")
         min_dt = datetime.datetime.strptime("2017-7", "%Y-%m") #min date to view.
-        if not request.user.is_superuser: #If not admin, cannot view any months earlier than July 2017. TODO: fix this properly with a database for the client SLA dates instead of hard coding
+        if not request.user.is_superuser: # If not admin, cannot view any months earlier than July 2017.
+                                          # TODO: fix this properly with a database for the client SLA
+                                          # dates instead of hard coding
             month = max(month_dt, min_dt).strftime("%Y-%m")
         if not is_member(request.user, client) and not request.user.is_superuser:
             raise PermissionDenied()
 
-        url = "{}/{}/{}/default/{}".format(MANGO_SERVER, item, client, month)
+        url = "{}/api/{}/{}/default/{}".format(MANGO_SERVER, item, client, month)
         jsondata = requests.get(url).text
         return HttpResponse(jsondata, content_type='application/json')
 

@@ -6,7 +6,6 @@ urlpatterns = [
     url(r'^$', views.IndexView.as_view(), name='index'),
     url(r'^dashboard/(?P<client>[a-zA-Z ]+)/$', views.DashboardView.as_view(), name='dashboard'),
     url(r'^dashboard/(?P<client>[a-zA-Z ]+)/(?P<month>[0-9\\-]+)$', views.DashboardView.as_view(), name='dashboard'),
-    #url(r'^dashboard/(?P<client>[a-zA-Z ]+)/(?P<month>[0-9\\-]+)$',views.DashboardView.as_view(), name='dashboard'),
     #url(r'^api$', views.Api.as_view(), name='dashboard')
     url(r'^api/(?P<item>[a-z_]+)/(?P<client>[a-zA-Z ]+)/default/(?P<month>[0-9\\-]+)$', views.Api.as_view(), name='api')
 

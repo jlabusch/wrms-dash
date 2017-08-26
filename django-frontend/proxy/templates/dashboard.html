@@ -24,26 +24,23 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-
-
-      </button>
-      <a class="navbar-brand" href={% url 'proxy:index' %}>
-        <span class="glyphicon glyphicon-chevron-left"></span>
-      </a>
-      <a class="navbar-brand" id="cust-name" href={% url 'proxy:index' %}>WRMS Dashboard</a>
+        <a class="navbar-brand" href={% url 'proxy:index' %}>
+          <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+        <a class="navbar-brand" id="cust-name" href={% url 'proxy:index' %}>WRMS Dashboard</a>
       </div>
       <div class="navbar-collapse collapse">
-      <ul class="nav navbar-nav navbar-left">
-        {% if not min_reached %}
+        <ul class="nav navbar-nav navbar-left">
+          {% if not min_reached %}
           <li><a href="{% url 'proxy:dashboard' client=client month=prev_month %}" id="period-prev">
             <span class="glyphicon glyphicon-backward"></span>
-            </a></li>
-        {% endif %}
-        <li><a href="{% url 'proxy:dashboard' client=client month=month %}" id="period-current" style="font-weight:bold;">Current month</a></li>
-        <li><a href="{% url 'proxy:dashboard' client=client month=next_month %}" id="period-next">
-          <span class="glyphicon glyphicon-forward"></span>
-        </a></li>
-      </ul>
+          </a></li>
+          {% endif %}
+          <li><a href="{% url 'proxy:dashboard' client=client month=month %}" id="period-current" style="font-weight:bold;">Current month</a></li>
+          <li><a href="{% url 'proxy:dashboard' client=client month=next_month %}" id="period-next">
+            <span class="glyphicon glyphicon-forward"></span>
+          </a></li>
+        </ul>
 
         <ul class="nav navbar-nav navbar-right">
           <li><a class="navbar-brand" id="cust-name" href="/accounts/logout">Logout</a></li>
@@ -198,9 +195,9 @@
   </div>
   <script type="text/javascript" src="{% static "jquery.min.js" %}"></script>
   <script type="text/javascript" src="{% static "bootstrap.min.js" %}"></script>
+
+
   <script type="text/javascript" src="{% static "holder.js" %}"></script>
-
-
   <script>
     Holder.add_theme("white", { background:"#fff", foreground:"#a7a7a7", size:10 });
   </script>

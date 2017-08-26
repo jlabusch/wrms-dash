@@ -1,4 +1,4 @@
-\
+
 URI_EXT = ORG + '/' + 1661 + '/' + PERIOD;
 
 query('/customer_list', function(err, data){
@@ -13,3 +13,4 @@ query('/customer_list', function(err, data){
         );
     });
 });
+

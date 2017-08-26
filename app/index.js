@@ -50,12 +50,7 @@ function setup(method, func, handler){
             return;
         }
 
-        if (req.headers && auth(req.headers.authorization, ctx)){
-            handler(req, res, next, ctx);
-        }else{
-            res.send(401);
-            next && next(false);
-        }
+        handler(req, res, next, ctx);
     });
 }
 
