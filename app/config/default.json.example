@@ -8,15 +8,13 @@
     },
     "server": {
         "version": "1.0.0",
-        "listen_port": 80,
-        "password": "admin/hunter2"
+        "listen_port": 80
     },
     "sla_uri": "http://example.com/sla_config",
     "icinga_uri": "icinga.example.com",
     "orgs": {
         "AcmeCo": {
             "id": 1,
-            "password": "AcmeCo/hunter2",
             "availability": "elb-backend-count",
             "storage": "host=fs1&service=Check+disk+space",
             "storage_pattern": "sitedata=(\\d+)MB",
