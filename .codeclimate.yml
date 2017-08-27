@@ -6,7 +6,6 @@ engines:
         javascript:
           mass_threshold: 90
 exclude_paths:
-- "html/"
 - "frontend/static/bootstrap.min.js"
 - "frontend/static/holder.js"
 - "frontend/static/jquery.min.js"
