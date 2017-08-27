@@ -1,5 +1,6 @@
 .*.swp
 .htpasswd
+ssl/*.pem
 api/config/default.json
 */db.sqlite3
 **/__pycache__
