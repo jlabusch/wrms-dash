@@ -1,10 +1,15 @@
 {% extends "base.html" %}
 
+{% block extraheadings %}
+    <meta http-equiv="refresh" content="2; url=/">
+{% endblock %}
+
 {% block content %}
 
-<h3>Logged out</h3>
-<br/>
-<p>Thank you for visiting the Catalyst Dashboard</p>
-<a href="/accounts/login">Log in again</a>
+    <div class="container">
+        <h2 class="form-signin-heading">Logged out</h2>
+        <br/>
+        <p>Redirecting...</p>
+    </div>
 
 {% endblock %}
