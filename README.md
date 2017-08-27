@@ -15,19 +15,28 @@ For now:
  - There are no public instances of `sla_uri` and `db.host`; get in touch if you need any more info
  - To point a widget at a different data source at the front end (i.e. bypassing the Node back end), set `override_uri` in the call to `html/dash.js:query()`
  - check out https://github.com/keen/keen-dataviz.js/blob/master/docs/README.md#chart-types for front-end options
- - When running this for real, you need to set at least two environment variables: `DJANGO_SECRET` and `ICINGA_BASIC_AUTH`.
 
 
-If you're starting from a blank database, after doing `make run` you need to:
+### Administration
 
- - Create a superuser: `docker exec` into the `frontend` container and run `./manage.py createsuperuser`
+ - Prerequisites: `docker` and `docker-compose`
+ - You probably want to set at least two environment variables: `DJANGO_SECRET` and `ICINGA_BASIC_AUTH`
+ - To turn on debug mode, export `DJANGO_DEBUG=Y` and/or `API_DEBUG=Y`
+ - Run the system with `docker-compose up`, stop it with `docker-compose down`
+
+
+If you're starting from a blank database, after starting the system you need to:
+
+ - Create a superuser: `docker exec -it wrmsdash_frontend_1 ./manage.py createsuperuser`
  - Copy the DB back to the host: `docker cp wrmsdash_frontend_1:/opt/db.sqlite3 frontend/`
- - Restart the container, which is already configured to mount `frontend/db.sqlite3` as a volume.
+ - Restart the container, which is already configured to mount `frontend/db.sqlite3` as a volume
+
+(Note that the actual container name, e.g. `wrmsdash_frontend_1`, depends on your environment. Use `docker-compose ps` to see what the real name is.)
+
+To change a user's password, run `docker exec -it wrmsdash_frontend_1 ./manage.py changepassword <username>`
 
 
-Ashley Mcnamara's Gophers licensed under CC (https://github.com/ashleymcnamara/gophers).
-
-### WRMS interface
+### WRMS metadata
 
 In addition to reading timesheets and approved quotes, we consult the `invoice_to` field for additional metadata.
 
@@ -40,6 +49,11 @@ Quote ID 1234 can instead be allocated to Additional Service hours if the SLA bu
 > 1234: 2016-3 Additional
 
 For T&M requests timesheet adjustments (e.g. writing off new staff training hours) can be added using the "Adjust" keyword. While this is possible, using adjustments probably means you're doing something wrong, so the exact syntax isn't documented here.
+
+
+### Thanks
+
+Ashley Mcnamara's Gophers licensed under CC (https://github.com/ashleymcnamara/gophers).
 
 
 ### How to contribute
