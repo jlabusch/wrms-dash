@@ -17,6 +17,14 @@ For now:
  - check out https://github.com/keen/keen-dataviz.js/blob/master/docs/README.md#chart-types for front-end options
  - When running this for real, you need to set at least two environment variables: `DJANGO_SECRET` and `ICINGA_BASIC_AUTH`.
 
+
+If you're starting from a blank database, after doing `make run` you need to:
+
+ - Create a superuser: `docker exec` into the `frontend` container and run `./manage.py createsuperuser`
+ - Copy the DB back to the host: `docker cp wrmsdash_frontend_1:/opt/db.sqlite3 frontend/`
+ - Restart the container, which is already configured to mount `frontend/db.sqlite3` as a volume.
+
+
 Ashley Mcnamara's Gophers licensed under CC (https://github.com/ashleymcnamara/gophers).
 
 ### WRMS interface
