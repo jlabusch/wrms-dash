@@ -13,4 +13,4 @@ exclude_paths:
 ratings:
   paths:
   - "api/**/*"
-  - "frontend/**/*
+  - "frontend/**/*"
