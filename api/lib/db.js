@@ -46,6 +46,9 @@ DB.prototype.query = function(){
     let start = new Date(),
         args = Array.prototype.slice.call(arguments, 0),
         query_name = args.shift(),
+        // Note: we usually want debug on a per-query bases, so using the
+        // API_DEBUG env isn't good enough. To turn on debugging, throw
+        // the text "-debug" on the end of the query name.
         debug = query_name.indexOf('debug') > -1;
 
     if (debug){

@@ -18,7 +18,7 @@ function same_day(a, b){
 }
 
 function log(wr, sev, start, end, elapsed){
-        //util.log(__filename, 'calculate_response_duration(' + wr + '/' + sev + ',\t' + start.toISOString() + ', ' + end.toISOString() + ') => ' + to_hours(elapsed) + ' hrs');
+    util.log_debug(__filename, 'calculate_response_duration(' + wr + '/' + sev + ',\t' + start.toISOString() + ', ' + end.toISOString() + ') => ' + to_hours(elapsed) + ' hrs');
 }
 
 function calculate_response_duration(wr, sev, start, end){
@@ -138,7 +138,7 @@ module.exports = function(req, res, next, ctx){
             if (times[sev].length){
                 times[sev].sort((a,b)=>{ return a-b });
                 let index = Math.round(times[sev].length*percentile) - 1;
-                //util.log(__filename, 'sev=' + sev + ',\trt=' + JSON.stringify(times[sev]) + ', ' + percentile + '%=' + index);
+                util.log_debug(__filename, 'sev=' + sev + ',\trt=' + JSON.stringify(times[sev]) + ', ' + percentile + '%=' + index);
                 arr[1] = to_hours(times[sev][index]);
             }
             r.result.push(arr);

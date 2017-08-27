@@ -3,7 +3,6 @@ var config  = require('config'),
     cache   = require('./lib/cache'),
     get_dash_context = require('./lib/context'),
     util    = require('./lib/util'),
-    auth    = require('./lib/auth'),
     query   = require('./lib/query'),
     restify = require('restify');
 

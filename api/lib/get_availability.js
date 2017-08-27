@@ -24,7 +24,7 @@ module.exports = query.prepare(
             r.result  = x.percent_total_time_ok;
             r.host    = x.host_display_name;
             r.service = x.service_display_name;
-            //util.log(__filename, ctx.org + ' availability => ' + r.result + '%');
+            util.log_debug(__filename, ctx.org + ' availability => ' + r.result + '%');
         }
         next(r);
     },
@@ -79,7 +79,7 @@ module.exports = query.prepare(
                 try{
                     json = JSON.parse(data);
                     cache.put(key, json);
-                    util.log(__filename, 'availability: ' + options.path);
+                    util.log_debug(__filename, 'availability: ' + options.path);
                 }catch(ex){
                     let e = 'availability: ' + ex;
                     util.log(__filename, e);

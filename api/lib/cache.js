@@ -25,11 +25,11 @@ function cache_get(key, limit){
             limit = DEFAULT_CACHE_TIMELIMIT;
         }
         if (item.ts + limit > now){
-            //util.log(__filename, 'CACHE HIT [' + key + ']');
+            util.log_debug(__filename, 'CACHE HIT [' + key + ']');
             return JSON.parse(JSON.stringify(item.val));
         }
     }
-    util.log(__filename, 'CACHE MISS [' + key + ']');
+    util.log_debug(__filename, 'CACHE MISS [' + key + ']');
     return null;
 }
 
@@ -66,7 +66,7 @@ function do_wait(key, next, on_timeout, count, limit){
     }
     let c = cache_get(key);
     if (c){
-        util.log(__filename, 'CACHE WAIT -> HIT [' + key + ']');
+        util.log_debug(__filename, 'CACHE WAIT -> HIT [' + key + ']');
         next && next(c, true);
     }else{
         setTimeout(function(){ do_wait(key, next, on_timeout, count+1, limit); }, 50*count);

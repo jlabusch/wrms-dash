@@ -58,7 +58,7 @@ module.exports = query.prepare(
                         return error(msg);
                     }
                     cache.put(key, json);
-                    util.log(__filename, 'users: ' + json.count);
+                    util.log_debug(__filename, 'users: ' + json.count);
                 } catch (ex) {
                     let e = 'users: ' + ex;
                     util.log(__filename, e);

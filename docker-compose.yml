@@ -19,13 +19,14 @@ services:
         expose:
             - "80"
         environment:
-            - DJANGO_DEBUG=True
+            - DJANGO_DEBUG
             - DJANGO_BACKEND_URI=http://api:80
             - DJANGO_SECRET
         links:
             - api
         volumes:
             - /etc/localtime:/etc/localtime:ro
+            - ./frontend/db.sqlite3:/opt/db.sqlite3
 
     api:
         image: jlabusch/wrms-dash-api
@@ -37,6 +38,7 @@ services:
             - start
         environment:
             - ICINGA_BASIC_AUTH
+            - API_DEBUG
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - ./api/config/default.json:/opt/config/default.json:ro

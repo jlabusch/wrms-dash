@@ -24,14 +24,14 @@ module.exports = query.prepare(
             r.host    = data.extinfo.service_info.host_display_name;
             r.service = data.extinfo.service_info.service_display_name;
 
-            // util.log(__filename, 'storage => ' + data.extinfo.service_info.performance_data);
+            util.log_debug(__filename, 'storage => ' + data.extinfo.service_info.performance_data);
 
             let sz = data.extinfo.service_info.performance_data.match(new RegExp(o.storage_pattern))
             if (sz){
                 r.result = parseInt(sz[1]);
             }
 
-            // util.log(__filename, ctx.org + ' storage => ' + r.result);
+            util.log_debug(__filename, ctx.org + ' storage => ' + r.result);
         }
         next(r);
     },
@@ -61,7 +61,7 @@ module.exports = query.prepare(
                 try{
                     json = JSON.parse(data);
                     cache.put(key, json);
-                    util.log(__filename, options.path);
+                    util.log_debug(__filename, options.path);
                 }catch(ex){
                     let e = 'storage: ' + ex;
                     util.log(__filename, e);

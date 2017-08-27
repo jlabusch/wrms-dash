@@ -40,7 +40,7 @@ function fill_row(m, sev_by_wr){
     list.forEach(wr => {
         nr[ sev_by_wr[wr].number+1 ]++;
     });
-    // util.log(__filename, 'at the end of ' + m + ' these ' + list.length + ' WRs were open: ' + JSON.stringify(list));
+    util.log_debug(__filename, 'at the end of ' + m + ' these ' + list.length + ' WRs were open: ' + JSON.stringify(list));
     return nr;
 }
 

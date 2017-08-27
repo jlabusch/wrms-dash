@@ -8,6 +8,14 @@ function log(sourcefile, msg){
 
 exports.log = log;
 
+function log_debug(sourcefile, msg){
+    if (process.env['API_DEBUG']){
+        log.apply(this, arguments);
+    }
+}
+
+exports.log_debug = log_debug;
+
 exports.encrypt = function encrypt(text){
     let cipher = crypto.createCipher('aes-256-ctr', 'timesheet_adjustments'),
         out = cipher.update(text, 'utf8', 'hex');
@@ -112,7 +120,7 @@ function describe_quote(row){
         }
     }
 
-    log(__filename, 'WR ' + row.request_id + ' quote ' + row.quote_id + ': "' + row.invoice_to + '" -> ' + JSON.stringify(r));
+    log_debug(__filename, 'WR ' + row.request_id + ' quote ' + row.quote_id + ': "' + row.invoice_to + '" -> ' + JSON.stringify(r));
     return r;
 }
 
@@ -149,7 +157,7 @@ exports.parse_period = function(str){
             month: parseInt(m[2])
         }
     }else{
-        log(__filename, 'parse_period: "' + str + '" failed');
+        log_debug(__filename, 'parse_period: "' + str + '" failed');
     }
     return r;
 }
