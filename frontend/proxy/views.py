@@ -12,7 +12,7 @@ import requests
 import os
 
 
-MANGO_SERVER = os.getenv("DJANGO_BACKEND_URI", "http://mango.btn.catalyst-eu.net:8004")
+API_SERVER = os.getenv("DJANGO_BACKEND_URI", "http://mango.btn.catalyst-eu.net:8004")
 
 @method_decorator(login_required, name='dispatch')
 class IndexView(generic.TemplateView):
@@ -86,7 +86,7 @@ class Api(generic.TemplateView):
         if not is_member(request.user, client) and not request.user.is_superuser:
             raise PermissionDenied()
 
-        url = "{}/api/{}/{}/default/{}".format(MANGO_SERVER, item, client, month)
+        url = "{}/api/{}/{}/default/{}".format(API_SERVER, item, client, month)
         jsondata = requests.get(url).text
         return HttpResponse(jsondata, content_type='application/json')
 

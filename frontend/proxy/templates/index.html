@@ -15,6 +15,7 @@
       <div class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-left">
           <li><a class="navbar-brand" id="cust-name" href="/">Home</a></li>
+          <li><a class="navbar-brand" id="cust-name" href="/admin/">Admin</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li><a class="navbar-brand" id="cust-name" href="/accounts/logout">Logout</a></li>
@@ -25,12 +26,236 @@
 {% endblock %}
 
 {% block content %}
-<h4>Clients:</h4>
-<ul>
-  {% for g in groups %}
-    <li>
-      <a href="{% url 'proxy:dashboard' client=g.name %}">{{ g }}</a>
-    </li>
-  {% endfor %}
-</ul>
+  <style>
+    a:hover {
+        text-decoration: none;
+    }
+    .index-tile {
+        text-align: center;
+        font-size: 25px;
+        line-height: 150px;
+        height: 150px;
+        background-color: #00bbde;/*#00cfbb;*/
+        color: #f3f3f3;
+    }
+  </style>
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <img data-src="holder.js/100%x150/white">
+        </div>
+      </div>
+
+    </div>
+
+    <hr>
+
+    <p class="small text-muted">Built with &#9829; by <a href="https://keen.io">Keen IO</a> and <a href="https://catalyst-eu.net">Catalyst IT</a></p>
+
+  </div>
+
+  <script type="text/javascript" src="{% static "jquery.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "bootstrap.min.js" %}"></script>
+
+  <script type="text/javascript" src="{% static "holder.js" %}"></script>
+  <script>
+    Holder.add_theme("white", { background:"#fff", foreground:"#a7a7a7", size:10 });
+  </script>
+
+  <script type="text/javascript" src="{% static "common.js" %}"></script>
+  <script type="text/javascript" src="{% static "index.js" %}"></script>
+
 {% endblock %}

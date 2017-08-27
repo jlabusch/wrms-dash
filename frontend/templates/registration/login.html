@@ -71,8 +71,9 @@ body {
             <button class="btn btn-lg btn-primary btn-block" type="submit" value="login">Sign in</button>
             <input type="hidden" name="next" value="{{ next }}" />
 
-            {# Assumes you setup the password_reset view in your URLconf #}
-            <p class="pw-reset"><a href="{% url 'password_reset' %}">Lost password?</a></p>
+            <p class="pw-reset">
+                Trouble logging in? Please contact info@catalyst-eu.net.
+            </p>
         </form>
 
     </div> <!-- /container -->

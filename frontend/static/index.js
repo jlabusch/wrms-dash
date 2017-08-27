@@ -1,5 +1,5 @@
 
-URI_EXT = ORG + '/' + 1661 + '/' + PERIOD;
+URI_EXT = 'Catalyst%20EU/default/2017-7';
 
 query('/customer_list', function(err, data){
     if (err){
@@ -9,7 +9,7 @@ query('/customer_list', function(err, data){
     Object.keys(data).sort().forEach(function(name, i){
         console.log(name);
         $('.chart-wrapper:eq(' + i + ')').html(
-            '<a href="/dash.html?org=' + name + '"><div class="index-tile">' + name + '</div></a>'
+            '<a href="/dashboard/' + name + '/"><div class="index-tile">' + name + '</div></a>'
         );
     });
 });
