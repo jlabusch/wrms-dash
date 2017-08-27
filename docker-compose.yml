@@ -2,8 +2,8 @@ version: "2"
 
 services:
 
-    nginx:
-        image: nginx:1.13
+    waf:
+        image: dmgnx/nginx-naxsi
         restart: always
         ports:
             - "8005:80"
