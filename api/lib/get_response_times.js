@@ -153,7 +153,7 @@ module.exports = function(req, res, next, ctx){
     }else{
         db.query(
                 'wr_list-limited',
-                util.wr_list_sql(ctx, true, ["'C'"])
+                util.wr_list_sql(ctx, true, ["'C'", "'M'", "'H'"])
             )
             .then(
                 handle_wrs,

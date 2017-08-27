@@ -42,27 +42,32 @@ class DashboardView(generic.TemplateView):
     template_name = 'dashboard.html'
 
     def dispatch(self, request, client, month=None):
-        if month is None:
-            month = datetime.datetime.now().strftime("%Y-%m")
-        month_dt = datetime.datetime.strptime(month, "%Y-%m")
-        min_dt = datetime.datetime.strptime("2017-7", "%Y-%m") #min date to view.
-        if month_dt < min_dt:
-            return redirect('proxy:dashboard', client=client)
-        if not request.user.is_superuser: # If not admin, cannot view any months earlier than July 2017.
-                                          # TODO: fix this properly with a database for the client SLA
-                                          # dates instead of hard coding
-            month = max(month_dt, min_dt).strftime("%Y-%m")
-
-        if month == "2017-07": #TODO: remove hard coding
-            self.min_reached = True
-        else:
-            self.min_reached = False
-        self.month = month
-        self.client = client
         if not is_member(request.user, client) and not request.user.is_superuser:
             raise PermissionDenied()
+
+        if month is None:
+            month = datetime.datetime.now().strftime("%Y-%m")
+
+        month_dt = datetime.datetime.strptime(month, "%Y-%m")
+        min_dt = datetime.datetime.strptime("2017-7", "%Y-%m") #min date to view.
+
+        if request.user.is_superuser:
+            self.min_reached = False
         else:
-            return super().dispatch(request, client)
+            # If not admin, cannot view any months earlier than July 2017.
+            # TODO: fix this properly with a database for the client SLA
+            # dates instead of hard coding
+            if month_dt < min_dt:
+                return redirect('proxy:dashboard', client=client)
+            if month == "2017-7": #TODO: remove hard coding
+                self.min_reached = True
+            else:
+                self.min_reached = False
+
+        self.month = month
+        self.client = client
+
+        return super().dispatch(request, client)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -77,14 +82,21 @@ class DashboardView(generic.TemplateView):
 @method_decorator(login_required, name='dispatch')
 class Api(generic.TemplateView):
     def get(self, request, item, client, month):
-        month_dt = datetime.datetime.strptime(month, "%Y-%m")
-        min_dt = datetime.datetime.strptime("2017-7", "%Y-%m") #min date to view.
-        if not request.user.is_superuser: # If not admin, cannot view any months earlier than July 2017.
-                                          # TODO: fix this properly with a database for the client SLA
-                                          # dates instead of hard coding
-            month = max(month_dt, min_dt).strftime("%Y-%m")
         if not is_member(request.user, client) and not request.user.is_superuser:
             raise PermissionDenied()
+
+        if month is None:
+            month = datetime.datetime.now().strftime("%Y-%m")
+
+        month_dt = datetime.datetime.strptime(month, "%Y-%m")
+        min_dt = datetime.datetime.strptime("2017-7", "%Y-%m") #min date to view.
+
+        if not request.user.is_superuser:
+            # If not admin, cannot view any months earlier than July 2017.
+            # TODO: fix this properly with a database for the client SLA
+            # dates instead of hard coding
+            if month_dt < min_dt:
+                month = min_dt.strftime("%Y-%m")
 
         url = "{}/api/{}/{}/default/{}".format(API_SERVER, item, client, month)
         jsondata = requests.get(url).text
