@@ -68,7 +68,7 @@ function parse_timesheet_adjustment(invoice_to, ctx){
         parts = cmd.match(new RegExp(ctx.year + '-0?' + ctx.month + '\\s+time[0-9a-z]*\\s*([+*-]?)\\s*([0-9.]+)\\s*hours', 'i'));
 
     if (!parts){
-        log(__filename, "Timesheet adjustment not valid: " + cmd);
+        log_debug(__filename, "Timesheet adjustment invalid or not for this month: " + cmd);
         return r;
     }
 

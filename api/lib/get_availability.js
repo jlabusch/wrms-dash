@@ -21,7 +21,7 @@ module.exports = query.prepare(
             data.avail.service_availability.services.length > 0)
         {
             let x = data.avail.service_availability.services[0];
-            r.result  = x.percent_total_time_ok;
+            r.result  = x.percent_total_time_ok + x.percent_total_time_undetermined;
             r.host    = x.host_display_name;
             r.service = x.service_display_name;
             util.log_debug(__filename, ctx.org + ' availability => ' + r.result + '%');
@@ -79,7 +79,8 @@ module.exports = query.prepare(
                 try{
                     json = JSON.parse(data);
                     cache.put(key, json);
-                    util.log_debug(__filename, 'availability: ' + options.path);
+                    util.log_debug(__filename, 'request:  ' + options.path);
+                    util.log_debug(__filename, 'response: ' + JSON.stringify(json, null, 2));
                 }catch(ex){
                     let e = 'availability: ' + ex;
                     util.log(__filename, e);
