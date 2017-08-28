@@ -1,6 +1,4 @@
 .git
 .gitignore
-README.md
-docker-compose.yml
 .*.swp
 .codeclimate.yml
