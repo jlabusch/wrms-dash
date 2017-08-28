@@ -10,4 +10,12 @@ COPY . /opt/
 
 RUN test -e db.sqlite3 || ./manage.py makemigrations && ./manage.py migrate
 
-CMD ["./manage.py", "runserver", "0.0.0.0:80"]
+CMD [ \
+    "gunicorn", \
+    "-w", "4", \
+    "--error-logfile", "-", \
+    "--log-level", "info", \
+    "-b", "0.0.0.0:80", \
+    "--env", "DJANGO_SETTINGS_MODULE=dashboard.settings", \
+    "dashboard.wsgi" \
+]

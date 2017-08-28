@@ -3,7 +3,7 @@ var util = require('./util');
 var cache = {};
 
 const MINS = 60*1000,
-    DEFAULT_CACHE_TIMELIMIT = 5*MINS;
+    DEFAULT_CACHE_TIMELIMIT = 1.5*MINS;
 
 function cache_key(name, context){
     if (context.error){
