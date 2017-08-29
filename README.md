@@ -30,8 +30,7 @@ For now:
 If you're starting from a blank database, after starting the system you need to:
 
  - Create a superuser: `docker exec -it wrmsdash_frontend_1 ./manage.py createsuperuser`
- - Copy the DB back to the host: `docker cp wrmsdash_frontend_1:/opt/db.sqlite3 frontend/`
- - Restart the container, which is already configured to mount `frontend/db.sqlite3` as a volume
+ - Note that `frontend/db.sqlite3` will be mounted as a volume
 
 (Note that the actual container name, e.g. `wrmsdash_frontend_1`, depends on your environment. Use `docker-compose ps` to see what the real name is.)
 

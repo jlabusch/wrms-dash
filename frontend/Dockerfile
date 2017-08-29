@@ -1,5 +1,7 @@
 FROM python:3
 
+RUN apt-get update && apt-get install -y sqlite3
+
 WORKDIR /opt
 
 COPY requirements.txt /opt/
@@ -8,7 +10,8 @@ RUN pip install -r requirements.txt
 
 COPY . /opt/
 
-RUN test -e db.sqlite3 || ./manage.py makemigrations && ./manage.py migrate
+RUN test -e db.sqlite3 || \
+    sqlite3 db.sqlite3 ".databases" && ./manage.py makemigrations && ./manage.py migrate
 
 CMD [ \
     "gunicorn", \
