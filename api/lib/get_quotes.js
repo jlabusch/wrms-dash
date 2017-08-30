@@ -22,6 +22,7 @@ module.exports = function(pred){
                       AND r.last_status NOT IN ('C')
                       AND q.approved_by_id IS NOT NULL
                       AND q.quote_cancelled_by IS NULL
+                      AND q.quote_units in ('days', 'hours')
                     ORDER BY r.request_id`
         },
         (data, ctx, next) => {

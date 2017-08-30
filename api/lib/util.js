@@ -139,12 +139,17 @@ exports.is_additional_quote = function(row, context){
             ['H', 'M'].indexOf(row.last_status) < 0;
 }
 
+// We've made an explicit decision here to IGNORE quotes that are
+// not measured in time. Hours and days are fine, GBP/EUR/USD are
+// ignored.
 exports.convert_quote_amount = function(row){
-    return row.quote_units === 'days'
-            ? 8*row.quote_amount
-            : row.quote_units === 'pounds'
-                ? row.quote_amount/85
-                : row.quote_amount;
+    if (row.quote_units === 'days'){
+        return row.quote_amount * 8;
+    }
+    if (row.quote_units === 'hours'){
+        return row.quote_amount;
+    }
+    return 0;
 }
 
 exports.parse_period = function(str){
