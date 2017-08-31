@@ -4,34 +4,41 @@ var config= require('config'),
     cache = require('./cache'),
     util  = require('./util');
 
+var DEBUG = false;
+
 module.exports = query.prepare(
     'storage',
     'storage',
     null,
     (data, ctx, next) => {
         let r = {
-            result: 0,
-            host: 'unknown',
-            service: 'unknown'
-        };
+            result: [/* [{disk: 'unknown', result: 0}] */]
+        }
+
         if (data &&
             data.extinfo &&
             data.extinfo.service_info)
         {
             let o = util.orgs[ctx.org];
-            o.storage_pattern = o.storage_pattern || 'sitedata=(\\d+)MB';
-            r.result  = 0;
+            o.storage_pattern = o.storage_pattern || '(sitedata)=(\\d+)MB';
             r.host    = data.extinfo.service_info.host_display_name;
             r.service = data.extinfo.service_info.service_display_name;
 
-            util.log_debug(__filename, 'storage => ' + data.extinfo.service_info.performance_data);
+            util.log_debug(__filename, 'storage => ' + data.extinfo.service_info.performance_data, DEBUG);
 
-            let sz = data.extinfo.service_info.performance_data.match(new RegExp(o.storage_pattern))
-            if (sz){
-                r.result = parseInt(sz[1]);
+            let arr = data.extinfo.service_info.performance_data.match(new RegExp(o.storage_pattern))
+
+            if (arr){
+                arr.shift();
+                for (let i = 0; i < arr.length/2; ++i){
+                    r.result.push([{
+                        disk: arr[i*2],
+                        result: parseInt(arr[i*2 + 1])
+                    }]);
+                }
             }
 
-            util.log_debug(__filename, ctx.org + ' storage => ' + r.result);
+            util.log(__filename, ctx.org + ' storage => ' + JSON.stringify(r));
         }
         next(r);
     },
@@ -61,7 +68,7 @@ module.exports = query.prepare(
                 try{
                     json = JSON.parse(data);
                     cache.put(key, json);
-                    util.log_debug(__filename, options.path);
+                    util.log(__filename, 'request:  ' + options.hostname + options.path);
                 }catch(ex){
                     let e = 'storage: ' + ex;
                     util.log(__filename, e);

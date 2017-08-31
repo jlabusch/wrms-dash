@@ -3,7 +3,8 @@ var util = require('./util');
 var cache = {};
 
 const MINS = 60*1000,
-    DEFAULT_CACHE_TIMELIMIT = 1.5*MINS;
+    DEFAULT_CACHE_TIMELIMIT = 1.5*MINS,
+    DEBUG = false;
 
 function cache_key(name, context){
     if (context.error){
@@ -25,11 +26,11 @@ function cache_get(key, limit){
             limit = DEFAULT_CACHE_TIMELIMIT;
         }
         if (item.ts + limit > now){
-            util.log_debug(__filename, 'CACHE HIT [' + key + ']');
+            util.log_debug(__filename, 'CACHE HIT [' + key + ']', DEBUG);
             return JSON.parse(JSON.stringify(item.val));
         }
     }
-    util.log_debug(__filename, 'CACHE MISS [' + key + ']');
+    util.log_debug(__filename, 'CACHE MISS [' + key + ']', DEBUG);
     return null;
 }
 
@@ -66,7 +67,7 @@ function do_wait(key, next, on_timeout, count, limit){
     }
     let c = cache_get(key);
     if (c){
-        util.log_debug(__filename, 'CACHE WAIT -> HIT [' + key + ']');
+        util.log_debug(__filename, 'CACHE WAIT -> HIT [' + key + ']', DEBUG);
         next && next(c, true);
     }else{
         setTimeout(function(){ do_wait(key, next, on_timeout, count+1, limit); }, 50*count);

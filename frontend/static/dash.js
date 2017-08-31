@@ -5,6 +5,40 @@ var sev_colors = [
     default_colors[10]
 ];
 
+var std_gchart_options = {
+    titlePosition: 'none',
+    legend: {position: 'none'},
+    chartArea: {height: 200, left: '10%', width: '90%' },
+    height: 250,
+    orientation: 'horizontal',
+    annotations: {
+        alwaysOutside: true,
+        textStyle: {
+            fontSize: 12,
+            auraColor: 'none',
+            color: '#555'
+        },
+        boxStyle: {
+            stroke: '#ccc',
+            strokeWidth: 1,
+            gradient: {
+                color1: '#f3e5f5',
+                color2: '#f3e5f5',
+                x1: '0%', y1: '0%',
+                x2: '100%', y2: '100%'
+            }
+        }
+    },
+    hAxis: {
+        title: 'Category'
+    },
+    vAxis: {
+        title: 'Number of WRs',
+        minValue: 0
+    },
+    axisTitlesPosition: 'none'
+};
+
 
 (function(){
     for (var i = 0; i < 7; ++i){
@@ -31,14 +65,6 @@ var chart06 = new Keen.Dataviz()
 
 query('/wrs_created_count', render(chart06));
 
-var chart07 = new Keen.Dataviz()
-    .el('#chart-07')
-    .title('uptime')
-    .height(250)
-    .chartOptions({suffix: '%'})
-    .type('metric')
-    .prepare();
-
 function format_icinga_note(obj){
     if (obj.service.indexOf(obj.host) > -1){
         return obj.service;
@@ -47,61 +73,87 @@ function format_icinga_note(obj){
     }
 }
 
-query('/availability', render(chart07, function(c, d){
-    if (d.error || !d.result){
-        d.result = 0;
-        console.log('availability: ' + d.error);
-        setTimeout(function(){ $('#chart-07 .keen-dataviz-metric-value').text('N/A'); }, 10);
-        return;
-    }
-    if (d.host && d.service){
-        $('#avail-notes').text(format_icinga_note(d));
-    }
-    if (d.result < 99.5){
-        c.colors([default_colors[1]]);
-    }else if (d.result < 99.9){
-        c.colors([default_colors[2]]);
-    }else{
-        c.colors([default_colors[7]]);
-    }
-}));
-
-var chart09 = new Keen.Dataviz()
-    .el('#chart-09')
-    .title('disk used')
+var chart07 = new Keen.Dataviz()
+    .el('#chart-07')
+    .title('uptime')
     .height(250)
-    .colors([default_colors[5]])
+    .chartOptions({suffix: '%'})
     .type('metric')
     .prepare();
 
+// See the /availability query in draw_custom_charts() for chart07 rendering...
+
+var chart09 = new Keen.Dataviz()
+    .el('#chart-09')
+    .height(250)
+    .prepare();
+
+var GB = 1000,
+    TB = 1000*GB;
+
+function format_disk_size(v){
+    if (v < GB){
+        return [v, 'MB'];
+    }else if (v < TB){
+        v = Math.round(v/GB*10)/10;
+        return [v, 'GB'];
+    }else{
+        v = Math.round(v/TB*10)/10;
+        return [v, 'TB'];
+    }
+}
+
 // TODO: for clients with storage limits defined by contract, make this a guage chart instead.
 query('/storage', render(chart09, function(chart, data){
-    if (data.error || !data.result){
+    if (data.error || !data.result || data.result.length < 1){
         data.result = 0;
         console.log('storage: ' + data.error);
+        chart09
+            .colors([default_colors[5]])
+            .title('disk used')
+            .type('metric');
         setTimeout(function(){ $('#chart-09 .keen-dataviz-metric-value').text('N/A'); }, 10);
         return;
     }
     if (data.host && data.service){
-        $('#storage-notes').text(format_icinga_note(data) + ' (' + data.result + 'MB)');
+        $('#storage-notes').text(format_icinga_note(data));
     }
-    var GB = 1000,
-        TB = 1000*GB;
-    if (data.result < GB){
-        chart.chartOptions({suffix: 'MB'})
-    }else if (data.result < TB){
-        data.result = Math.round(data.result/GB*10)/10;
-        chart.chartOptions({suffix: 'GB'})
+    if (data.result.length > 1){
+        var opt = JSON.parse(JSON.stringify(donut_options));
+        opt.pie = {
+            expand: true,
+            label: {
+                format: function(v, r, i){
+                    return v + ' GB';
+                }
+            }
+        };
+        var total = 0;
+        data.result.forEach(function (v){
+            total += v[0].result;
+            v[0].result = Math.round(v[0].result/GB*10)/10;
+        });
+        var sz = format_disk_size(total);
+        $('#storage-notes').text($('#storage-notes').text() + ' (' + sz[0] + ' ' + sz[1] + ' total)');
+        chart09
+            .colors(default_colors)
+            .type('pie')
+            .chartOptions(opt);
     }else{
-        data.result = Math.round(data.result/TB*10)/10;
-        chart.chartOptions({suffix: 'TB'})
+        chart09
+            .colors([default_colors[5]])
+            .title('disk used')
+            .type('metric');
+
+        var sz = format_disk_size(data.result[0][0].result);
+        data.result = sz[0];
+        chart.chartOptions({suffix: sz[1]})
     }
 }));
 
 var chart10 = new Keen.Dataviz()
     .el('#chart-10')
     .colors([default_colors[9]])
-    .title('user accounts')
     .height(250)
     .type('metric')
     .prepare();
@@ -109,11 +161,16 @@ var chart10 = new Keen.Dataviz()
 // TODO: for clients with user limits defined by contract, e.g. Totara, make this a guage chart instead.
 query('/users', render(chart10, function(chart, data){
     if (data.error || !data.result){
-        data.result = 0;
+        chart10
+            .type('message')
+            .message('No data');
+        data.__skip_render = true;
         console.log('users: ' + data.error);
-        setTimeout(function(){ $('#chart-10 .keen-dataviz-metric-value').text('N/A'); }, 10);
         return;
     }
+    chart10
+        .type('metric')
+        .title('user accounts');
 }));
 
 query('/customer', function(err, data){
@@ -179,47 +236,13 @@ google.charts.load('current', {packages: ['corechart', 'bar', 'table', 'line']})
 google.charts.setOnLoadCallback(draw_custom_charts);
 
 function draw_custom_charts(){
-    var common_options = {
-        titlePosition: 'none',
-        legend: {position: 'none'},
-        chartArea: {height: 200, left: '10%', width: '90%' },
-        height: 250,
-        orientation: 'horizontal',
-        annotations: {
-            alwaysOutside: true,
-            textStyle: {
-                fontSize: 12,
-                auraColor: 'none',
-                color: '#555'
-            },
-            boxStyle: {
-                stroke: '#ccc',
-                strokeWidth: 1,
-                gradient: {
-                    color1: '#f3e5f5',
-                    color2: '#f3e5f5',
-                    x1: '0%', y1: '0%',
-                    x2: '100%', y2: '100%'
-                }
-            }
-        },
-        hAxis: {
-            title: 'Category'
-        },
-        vAxis: {
-            title: 'Number of WRs',
-            minValue: 0
-        },
-        axisTitlesPosition: 'none'
-    };
-
     query('/wrs_over_time', function(err, data){
         if (err){
             console.log('wrs_over_time: ' + err);
             return;
         }
 
-        var o = JSON.parse(JSON.stringify(common_options));
+        var o = JSON.parse(JSON.stringify(std_gchart_options));
         o.legend.position = 'right';
         o.curveType = 'function';
         o.colors = sev_colors;
@@ -240,7 +263,7 @@ function draw_custom_charts(){
             return;
         }
 
-        var o = JSON.parse(JSON.stringify(common_options));
+        var o = JSON.parse(JSON.stringify(std_gchart_options));
         o.orientation = 'vertical';
         o.chartArea = {height: 200, left: '25%', width: '75%' };
         o.__a = o.hAxis;
@@ -271,7 +294,7 @@ function draw_custom_charts(){
 
         var chart04 = new google.visualization.BarChart(document.getElementById('chart-04'));
 
-        chart04.draw(google.visualization.arrayToDataTable(data), common_options);
+        chart04.draw(google.visualization.arrayToDataTable(data), std_gchart_options);
     });
 
     query('/response_times', function(err, data){
@@ -291,7 +314,7 @@ function draw_custom_charts(){
 
         var chart08 = new google.visualization.BarChart(document.getElementById('chart-08'));
 
-        chart08.draw(google.visualization.arrayToDataTable(data.result), common_options);
+        chart08.draw(google.visualization.arrayToDataTable(data.result), std_gchart_options);
     });
 
     query('/statuses', function(err, data){
@@ -303,7 +326,7 @@ function draw_custom_charts(){
             console.log('statuses: no data');
             return;
         }
-        var o = JSON.parse(JSON.stringify(common_options));
+        var o = JSON.parse(JSON.stringify(std_gchart_options));
         o.chartArea.height = 150;
 
         data.forEach((row, i) => { row.push(default_colors[0]) });
@@ -382,6 +405,61 @@ function draw_custom_charts(){
         var viz = new google.visualization.Table(document.getElementById('chart-12'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     });
+
+    query('/availability', render(chart07, function(c, d){
+
+        var metric_chart = false;
+
+        if (d.error || d.length < 1){
+            d.result = 0;
+            console.log('availability: ' + d.error);
+            metric_chart = true;
+            setTimeout(function(){ $('#chart-07 .keen-dataviz-metric-value').text('N/A'); }, 10);
+            return;
+        }
+
+        if (d.length === 1){
+            $('#avail-notes').text(d[0][0]);
+            d.result = d[0][1];
+            metric_chart = true;
+        }else{
+            $('#avail-notes').text('Uptime percentage');
+        }
+
+        if (metric_chart){
+            if (d.result < 99.5){
+                c.colors([default_colors[1]]);
+            }else if (d.result < 99.9){
+                c.colors([default_colors[2]]);
+            }else{
+                c.colors([default_colors[7]]);
+            }
+        }else{
+            d.__skip_render = true; // rendered here
+
+            d.forEach(row => {
+                var k = default_colors[7];
+
+                if (row[1] < 99.5){
+                    k = default_colors[1];
+                }else if (d.result < 99.9){
+                    k = default_colors[2];
+                }
+
+                row.push(k)
+            });
+
+            d.unshift(['Service', 'Availability', {role: 'style'}]);
+
+            $('#chart-07').empty();
+
+            var o = JSON.parse(JSON.stringify(std_gchart_options));
+            o.hAxis.baseline = 90;
+
+            (new google.visualization.BarChart(document.getElementById('chart-07')))
+                .draw(google.visualization.arrayToDataTable(d), o);
+        }
+    }));
 
 } // google charts
 

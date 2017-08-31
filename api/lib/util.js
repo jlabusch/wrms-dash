@@ -8,8 +8,8 @@ function log(sourcefile, msg){
 
 exports.log = log;
 
-function log_debug(sourcefile, msg){
-    if (process.env['API_DEBUG']){
+function log_debug(sourcefile, msg, force_on){
+    if (force_on || process.env['API_DEBUG']){
         log.apply(this, arguments);
     }
 }

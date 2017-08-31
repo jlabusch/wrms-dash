@@ -7,6 +7,8 @@ const hours = 60*60*1000,
     work_hours_per_day = 8,
     work_end_hour = 17;
 
+const DEBUG = false;
+
 function to_hours(ms){
     return Math.round(ms/hours*10)/10;
 }
@@ -18,7 +20,7 @@ function same_day(a, b){
 }
 
 function log(wr, sev, start, end, elapsed){
-    util.log_debug(__filename, 'calculate_response_duration(' + wr + '/' + sev + ',\t' + start.toISOString() + ', ' + end.toISOString() + ') => ' + to_hours(elapsed) + ' hrs');
+    util.log_debug(__filename, 'calculate_response_duration(' + wr + '/' + sev + ',\t' + start.toISOString() + ', ' + end.toISOString() + ') => ' + to_hours(elapsed) + ' hrs', DEBUG);
 }
 
 function calculate_response_duration(wr, sev, start, end){
@@ -81,7 +83,8 @@ module.exports = function(req, res, next, ctx){
                      WHERE a.request_id IN (${data.rows.map(row => { return row.request_id }).join(',')})
                        AND a.source IN ('note', 'status')
                        AND u.email like '%@catalyst%'
-                     GROUP BY a.request_id`.replace(/\s+/g, ' ')
+                     GROUP BY a.request_id`.replace(/\s+/g, ' '),
+                     ctx
                 )
                 .then(
                     handle_timings,
@@ -138,7 +141,7 @@ module.exports = function(req, res, next, ctx){
             if (times[sev].length){
                 times[sev].sort((a,b)=>{ return a-b });
                 let index = Math.round(times[sev].length*percentile) - 1;
-                util.log_debug(__filename, 'sev=' + sev + ',\trt=' + JSON.stringify(times[sev]) + ', ' + percentile + '%=' + index);
+                util.log_debug(__filename, 'sev=' + sev + ',\trt=' + JSON.stringify(times[sev]) + ', ' + percentile + '%=' + index, DEBUG);
                 arr[1] = to_hours(times[sev][index]);
             }
             r.result.push(arr);
@@ -153,7 +156,8 @@ module.exports = function(req, res, next, ctx){
     }else{
         db.query(
                 'wr_list-limited',
-                util.wr_list_sql(ctx, true, ["'C'", "'M'", "'H'"])
+                util.wr_list_sql(ctx, true, ["'C'", "'M'", "'H'"]),
+                ctx
             )
             .then(
                 handle_wrs,

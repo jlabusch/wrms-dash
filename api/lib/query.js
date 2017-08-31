@@ -29,6 +29,7 @@ function prepare_query(
                 cache.put(ck, data);
             }
             process_data(data, ctx, (result) => {
+                res.charSet('utf-8');
                 res.json(result);
                 next && next(false);
             });
@@ -48,7 +49,8 @@ function prepare_query(
             }else{
                 db.query(
                         cache_key_base,
-                        sql(ctx).replace(/\s+/g, ' ')
+                        sql(ctx).replace(/\s+/g, ' '),
+                        ctx
                     )
                     .then(
                         success,

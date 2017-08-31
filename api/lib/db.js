@@ -46,26 +46,25 @@ DB.prototype.query = function(){
     let start = new Date(),
         args = Array.prototype.slice.call(arguments, 0),
         query_name = args.shift(),
-        // Note: we usually want debug on a per-query bases, so using the
-        // API_DEBUG env isn't good enough. To turn on debugging, throw
-        // the text "-debug" on the end of the query name.
-        debug = query_name.indexOf('debug') > -1;
+        ctx = args.pop(),
+        label = `${ctx.org}/${ctx.sys}/${ctx.period}/${query_name}`;
 
-    if (debug){
-        util.log(__filename, query_name + ': ' + args[0]);
-    }
+    // Note: we usually want debug on a per-query basis, so using the
+    // API_DEBUG env isn't good enough. To turn on debugging, throw
+    // the text "-debug" on the end of the query name.
+    const DEBUG = query_name.indexOf('debug') > -1;
+
+    util.log_debug(__filename, query_name + ': ' + args[0], DEBUG);
 
     return new Promise((resolve, reject) => {
         args.push(function(err, data){
             let end = new Date();
             data = data || {rows: []};
-            util.log(__filename, query_name + ': ' + data.rows.length + ' rows, rtt ' + (end.getTime() - start.getTime()) + 'ms');
+            util.log(__filename, `${label}: ${data.rows.length} rows, rtt ${end.getTime() - start.getTime()}ms`);
             if (err){
                 reject(err);
             }else{
-                if (debug){
-                    util.log(__filename, query_name + ': ' + JSON.stringify(data.rows, null, 2));
-                }
+                util.log_debug(__filename, `${label}: ${JSON.stringify(data.rows, null, 2)}`, DEBUG);
                 let j = JSON.stringify(data, null, 2);
                 resolve(JSON.parse(j));
             }

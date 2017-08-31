@@ -51,6 +51,7 @@ function render(chart, pre){
             if (pre){
                 pre(chart, data);
             }
+            //console.log('render() ' + JSON.stringify(data, null, 2));
             if (!data.__skip_render){
                 chart.data(data).render();
             }
