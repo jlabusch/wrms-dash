@@ -24,18 +24,22 @@ module.exports = query.prepare(
             r.host    = data.extinfo.service_info.host_display_name;
             r.service = data.extinfo.service_info.service_display_name;
 
-            util.log_debug(__filename, 'storage => ' + data.extinfo.service_info.performance_data, DEBUG);
+            util.log_debug(__filename, 'storage => ' + JSON.stringify(data, null, 2), DEBUG);
 
-            let arr = data.extinfo.service_info.performance_data.match(new RegExp(o.storage_pattern))
+            if (data.extinfo.service_info.status === 'OK'){
+                let arr = data.extinfo.service_info.performance_data.match(new RegExp(o.storage_pattern))
 
-            if (arr){
-                arr.shift();
-                for (let i = 0; i < arr.length/2; ++i){
-                    r.result.push([{
-                        disk: arr[i*2],
-                        result: parseInt(arr[i*2 + 1])
-                    }]);
+                if (arr){
+                    arr.shift();
+                    for (let i = 0; i < arr.length/2; ++i){
+                        r.result.push([{
+                            disk: arr[i*2],
+                            result: parseInt(arr[i*2 + 1])
+                        }]);
+                    }
                 }
+            }else{
+                r.error = 'Check ' + data.extinfo.service_info.status;
             }
 
             util.log(__filename, ctx.org + ' storage => ' + JSON.stringify(r));

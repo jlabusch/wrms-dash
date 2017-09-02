@@ -109,10 +109,9 @@ query('/storage', render(chart09, function(chart, data){
         data.result = 0;
         console.log('storage: ' + data.error);
         chart09
-            .colors([default_colors[5]])
-            .title('disk used')
-            .type('metric');
-        setTimeout(function(){ $('#chart-09 .keen-dataviz-metric-value').text('N/A'); }, 10);
+            .type('message')
+            .message('No data');
+        data.__skip_render = true;
         return;
     }
     if (data.host && data.service){
