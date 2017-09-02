@@ -441,7 +441,7 @@ function draw_custom_charts(){
 
                 if (row[1] < 99.5){
                     k = default_colors[1];
-                }else if (d.result < 99.9){
+                }else if (row[1] < 99.9){
                     k = default_colors[2];
                 }
 
@@ -453,7 +453,9 @@ function draw_custom_charts(){
             $('#chart-07').empty();
 
             var o = JSON.parse(JSON.stringify(std_gchart_options));
-            o.hAxis.baseline = 90;
+
+            o.vAxis.minValue = 99; // If you have values less than 99, the chart automatically
+                                   // extends the minimum so everything gets shown.
 
             (new google.visualization.BarChart(document.getElementById('chart-07')))
                 .draw(google.visualization.arrayToDataTable(d), o);
