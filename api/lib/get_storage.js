@@ -26,7 +26,7 @@ module.exports = query.prepare(
 
             util.log_debug(__filename, 'storage => ' + JSON.stringify(data, null, 2), DEBUG);
 
-            if (data.extinfo.service_info.status === 'OK'){
+            if (data.extinfo.service_info.performance_data){
                 let arr = data.extinfo.service_info.performance_data.match(new RegExp(o.storage_pattern))
 
                 if (arr){
