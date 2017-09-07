@@ -6,7 +6,7 @@ services:
         image: dmgnx/nginx-naxsi
         restart: always
         ports:
-            - "443:443"
+            - "80:80"
         links:
             - frontend
         volumes:
@@ -17,6 +17,7 @@ services:
 
     frontend:
         image: jlabusch/wrms-dash-frontend
+        restart: always
         build: frontend
         expose:
             - "80"
@@ -32,6 +33,7 @@ services:
 
     api:
         image: jlabusch/wrms-dash-api
+        restart: always
         build: api
         expose:
             - "80"

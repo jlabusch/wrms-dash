@@ -11,10 +11,10 @@ frontend/db.sqlite3:
     $(DOCKER) cp $$CONTAINER:/opt/db.sqlite3 ./frontend/ && \
     $(DOCKER) stop $$CONTAINER
 
-ssl/key.pem:
-	openssl req -x509 -nodes -newkey rsa:4096 -keyout ssl/key.pem -out ssl/cert.pem -days 365
+#ssl/key.pem:
+#	openssl req -x509 -nodes -newkey rsa:4096 -keyout ssl/key.pem -out ssl/cert.pem -days 365
 
-run: build frontend/db.sqlite3 ssl/key.pem
+run: build frontend/db.sqlite3
 	$(COMPOSE) up -d; $(COMPOSE) logs -f
 
 restart:

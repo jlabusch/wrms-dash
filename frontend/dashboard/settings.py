@@ -25,7 +25,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET', '-%h*$+qeklw-q(jvhbq2mowg_)p8wavq47n7toz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG') != None
 
-ALLOWED_HOSTS = ["frontend"]
+ALLOWED_HOSTS = ["frontend", "dashboard.catalyst-eu.net"]
 
 
 # Application definition
