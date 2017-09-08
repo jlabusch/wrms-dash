@@ -2,5 +2,6 @@
 .htpasswd
 ssl/*.pem
 api/config/default.json
+frontend/static/admin
 */db.sqlite3
 **/__pycache__
