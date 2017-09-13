@@ -41,17 +41,8 @@ var std_gchart_options = {
 
 
 (function(){
-    for (var i = 0; i < 7; ++i){
-        for (var j = 0; j < 5; ++j){
-            [
-                $('body > div.container-fluid > div:nth-child(' + i + ') > div:nth-child(' + j + ') > div > div.chart-notes'),
-                $('body > div.container-fluid > div:nth-child(' + i + ') > div:nth-child(' + j + ') > div > div.chart-title')
-            ].forEach(t => {
-                t.text( t.text().replace(/PERIOD/g, PERIOD) );
-            });
-        }
-    }
-
+    $('div.chart-title').each(function(i, e){ e.innerText = e.innerText.replace(/PERIOD/g, PERIOD); });
+    $('div.chart-notes').each(function(i, e){ e.innerText = e.innerText.replace(/PERIOD/g, PERIOD); });
     $('#period-current').html(PERIOD);
 })();
 

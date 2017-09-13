@@ -11,8 +11,6 @@ function DB(driver){
     this.client = null;
     this.config = config.get('db');
 
-    this.config.host = this.config.host ? this.config.host : 'catwgtn-prod-pg92.db.catalyst.net.nz';
-
     this.driver.on('error', function(err){
         util.log(__filename, (err.stack || err));
         reconnect(self);
