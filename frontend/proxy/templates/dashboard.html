@@ -11,7 +11,7 @@
         border: solid 1px #e2e2e2;
         padding: 5px 0px 0px 10px;
         color: #666;
-        margin: 0px 15px 5px 15px;
+        margin: 0px 0px 5px 0px;
         min-height: 125px;
     }
     div.faq .title {
@@ -65,66 +65,65 @@
   <div class="container-fluid">
     <div class="row">
 
-      <div class="col-sm-9">
-
-        <div class="row">
-          <div class="faq">
-            <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About "new requests" blocks:</span>
-            <ul>
-              <li>Only includes WRs raised this calendar month</li>
-              <li>Includes all statuses, i.e. even Finished or Cancelled WRs</li>
-            </ul>
-          </div>
+      <div class="col-sm-7">
+        <div class="faq">
+          <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About "new requests" blocks:</span>
+          <ul>
+            <li>Only includes WRs raised this calendar month</li>
+            <li>Includes all statuses, i.e. even Finished or Cancelled WRs</li>
+          </ul>
         </div>
-
-        <div class="row">
-          <div class="col-sm-4">
-            <div class="chart-wrapper">
-              <div class="chart-title">New requests for PERIOD</div>
-              <div class="chart-stage"><div id="chart-06"></div></div>
-              <div class="chart-notes">All statuses</div>
-            </div>
-          </div>
-          <div class="col-sm-8">
-            <div class="chart-wrapper">
-              <div class="chart-title">New requests for PERIOD</div>
-              <div class="chart-stage"><div id="chart-13"></div></div>
-              <div class="chart-notes">All statuses</div>
-            </div>
-          </div>
-        </div>
-
       </div>
-    
-      <div class="col-sm-3">
-        <div class="row">
-          <div class="faq">
-            <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About "SLA hours" block:</span>
-            <ul>
-              <li>SLA quotes: Quotes funded by SLA hours</li>
-              <li>SLA unquoted: Hours on WRs without quotes</li>
-              <li>Additional quotes: Quotes funded outside of SLA</li>
-            </ul>
-          </div>
-        </div>
 
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="chart-wrapper">
-              <div class="chart-title">SLA hours for PERIOD</div>
-              <div class="chart-stage"><div id="chart-01"></div></div>
-              <div id="chart-01-notes" class="chart-notes">Monthly SLA budget</div>
-            </div>
-          </div>
+      <div class="col-sm-5">
+        <div class="faq">
+          <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About "SLA hours" block:</span>
+          <ul>
+            <li>SLA quotes: Quotes funded by SLA hours</li>
+            <li>SLA unquoted: Hours on WRs without quotes</li>
+            <li>Additional quotes: Quotes funded outside of SLA</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <div class="chart-title">New requests for PERIOD</div>
+          <div class="chart-stage"><div id="chart-06"></div></div>
+          <div class="chart-notes">All statuses</div>
+        </div>
+      </div>
+
+      <div class="col-sm-5">
+        <div class="chart-wrapper">
+          <div class="chart-title">New requests for PERIOD</div>
+          <div class="chart-stage"><div id="chart-13"></div></div>
+          <div class="chart-notes">All statuses</div>
+        </div>
+      </div>
+
+      <div class="col-sm-3">
+        <div class="chart-wrapper">
+          <div class="chart-title">SLA hours for PERIOD</div>
+          <div class="chart-stage"><div id="chart-01"></div></div>
+          <div id="chart-01-notes" class="chart-notes">Monthly SLA budget</div>
+        </div>
+      </div>
+
+      <div class="col-sm-2">
+        <div class="chart-wrapper">
+          <div class="chart-title">Remaining hours</div>
+          <div class="chart-stage"><div id="chart-15"></div></div>
+          <div class="chart-notes">Excludes additional quotes</div>
         </div>
       </div>
 
     </div>
 
     <div class="row">
-
       <div class="col-sm-4">
-        <div class="row">
           <div class="faq">
             <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About "Approved SLA quotes" block:</span>
             <ul>
@@ -133,20 +132,9 @@
               <li>Includes all tickets, not just those raised this month</li>
             </ul>
           </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="chart-wrapper">
-              <div class="chart-title">Approved SLA quotes for PERIOD</div>
-              <div class="chart-stage"><div id="chart-02"></div></div>
-              <div class="chart-notes">Only includes quotes specifically allocated to this period</div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div class="col-sm-4">
-        <div class="row">
           <div class="faq">
             <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About "Unquoted SLA hours" block:</span>
             <ul>
@@ -155,20 +143,9 @@
               <li>Excludes tickets with the "Warranty" tag</li>
             </ul>
           </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="chart-wrapper">
-              <div class="chart-title">Unquoted SLA hours for PERIOD</div>
-              <div class="chart-stage"><div id="chart-14"></div></div>
-              <div class="chart-notes">Excludes warranty tickets</div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div class="col-sm-4">
-        <div class="row">
           <div class="faq">
             <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About "Additional quotes" block:</span>
             <ul>
@@ -177,24 +154,37 @@
               <li>Includes all tickets, not just those raised this month</li>
             </ul>
           </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-12">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-4">
+            <div class="chart-wrapper">
+              <div class="chart-title">Approved SLA quotes for PERIOD</div>
+              <div class="chart-stage"><div id="chart-02"></div></div>
+              <div class="chart-notes">Only includes quotes specifically allocated to this period</div>
+            </div>
+      </div>
+
+      <div class="col-sm-4">
+            <div class="chart-wrapper">
+              <div class="chart-title">Unquoted SLA hours for PERIOD</div>
+              <div class="chart-stage"><div id="chart-14"></div></div>
+              <div class="chart-notes">Excludes warranty tickets</div>
+            </div>
+      </div>
+
+      <div class="col-sm-4">
             <div class="chart-wrapper">
               <div class="chart-title">Approved additional quotes for PERIOD</div>
               <div class="chart-stage"><div id="chart-03"></div></div>
               <div class="chart-notes">Excludes On Hold or Parked, includes quotes with no explicit month designation</div>
             </div>
-          </div>
-        </div>
       </div>
-
     </div>
 
     <div class="row">
-
       <div class="col-sm-3">
-        <div class="row">
           <div class="faq">
             <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About "response times" block:</span>
             <ul>
@@ -202,21 +192,9 @@
               <li>Non-critical times are measured only within business hours</li>
             </ul>
           </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="chart-wrapper">
-              <div class="chart-title">95% percentile SLA response times for PERIOD (hours)</div>
-              <div class="chart-stage"><div id="chart-08"></div></div>
-              <div class="chart-notes">Excludes Cancelled, Parked and On Hold</div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div class="col-sm-9">
-
-        <div class="row">
           <div class="faq">
             <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About the "Severity" and "Status" blocks:</span>
             <ul>
@@ -224,27 +202,33 @@
               <li>Only Finished, Cancelled and Ongoing Maintenance WRs are excluded - all others are shown, even including Blocked, On Hold and For Sign Off</li>
             </ul>
           </div>
-        </div>
+      </div>
+    </div>
 
-        <div class="row">
-          <div class="col-sm-4">
+    <div class="row">
+      <div class="col-sm-3">
+            <div class="chart-wrapper">
+              <div class="chart-title">95% percentile SLA response times for PERIOD (hours)</div>
+              <div class="chart-stage"><div id="chart-08"></div></div>
+              <div class="chart-notes">Excludes Cancelled, Parked and On Hold</div>
+            </div>
+      </div>
+
+      <div class="col-sm-3">
             <div class="chart-wrapper">
               <div class="chart-title">Severity (all open WRs, present day)</div>
               <div class="chart-stage"><div id="chart-04"></div></div>
               <div class="chart-notes">Excludes Finished, Cancelled and Ongoing Maintenance</div>
             </div>
-          </div>
-          <div class="col-sm-8">
+      </div>
+
+      <div class="col-sm-6">
             <div class="chart-wrapper">
               <div class="chart-title">Statuses (all open WRs, present day)</div>
               <div class="chart-stage"><div id="chart-05"></div></div>
               <div class="chart-notes">Excludes Finished, Cancelled and Ongoing Maintenance</div>
             </div>
-          </div>
-        </div>
-
       </div>
-
     </div>
 
     <div class="row">
@@ -268,10 +252,7 @@
     </div>
 
     <div class="row">
-
       <div class="col-sm-6">
-
-        <div class="row">
           <div class="faq">
             <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About the "Availability" and "Storage" blocks:</span>
             <ul>
@@ -280,30 +261,9 @@
               <li>Any incident reports will provide additional detail beyond the estimates shown here</li>
             </ul>
           </div>
-        </div>
-
-        <div class="row">
-          <div class="col-sm-6">
-            <div class="chart-wrapper">
-              <div class="chart-title">Availability for PERIOD</div>
-              <div class="chart-stage"><div id="chart-07"></div></div>
-              <div class="chart-notes" id="avail-notes">Production environment</div>
-            </div>
-          </div>
-          <div class="col-sm-6">
-            <div class="chart-wrapper">
-              <div class="chart-title">Storage used (present day)</div>
-              <div class="chart-stage"><div id="chart-09"></div></div>
-              <div class="chart-notes" id="storage-notes">Production environment</div>
-            </div>
-          </div>
-        </div>
-
       </div>
 
       <div class="col-sm-6">
-
-        <div class="row">
           <div class="faq">
             <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About the "Users" block:</span>
             <ul>
@@ -311,25 +271,36 @@
               <li>Measures the number of users who have logged in within the past 12 months from present day (not from the period shown above)</li>
             </ul>
           </div>
-        </div>
+      </div>
+    </div>
 
-        <div class="row">
-          <div class="col-sm-6">
+    <div class="row">
+          <div class="col-sm-3">
+            <div class="chart-wrapper">
+              <div class="chart-title">Availability for PERIOD</div>
+              <div class="chart-stage"><div id="chart-07"></div></div>
+              <div class="chart-notes" id="avail-notes">Production environment</div>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="chart-wrapper">
+              <div class="chart-title">Storage used (present day)</div>
+              <div class="chart-stage"><div id="chart-09"></div></div>
+              <div class="chart-notes" id="storage-notes">Production environment</div>
+            </div>
+          </div>
+          <div class="col-sm-3">
             <div class="chart-wrapper">
               <div class="chart-title">Active users (present day)</div>
               <div class="chart-stage"><div id="chart-10"></div></div>
               <div class="chart-notes">Production env. for past 12 months</div>
             </div>
           </div>
-          <div class="col-sm-6">
+          <div class="col-sm-3">
             <div class="chart-wrapper">
               <img style="margin-left:5%;margin-top:10px;margin-bottom:10px;" height="303px" width="auto" id="gopher">
             </div>
           </div>
-        </div>
-
-      </div>
-
     </div>
 
     <hr>

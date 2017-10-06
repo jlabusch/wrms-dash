@@ -56,6 +56,17 @@ var chart06 = new Keen.Dataviz()
 
 query('/wrs_created_count', render(chart06));
 
+// chart15 rendered alongside chart-01, see sla_hours
+var chart15 = new Keen.Dataviz()
+    .el('#chart-15')
+    .title('Hours')
+    .height(250)
+    .colors([default_colors[0]])
+    .type('metric')
+    .prepare();
+
+
+
 function format_icinga_note(obj){
     if (obj.service.indexOf(obj.host) > -1){
         return obj.service;
@@ -261,10 +272,15 @@ function draw_custom_charts(){
         o.vAxis = o.__a;
 
         function sum_hours(sum, x){
-            return sum + x[1];
+            if (x[0].match(/SLA/)){
+                return sum + x[1];
+            }
+            return sum;
         }
 
-        document.getElementById('chart-01-notes').innerText = 'Monthly SLA budget: used ' + data.result.reduce(sum_hours, 0) + ' of ' + data.budget + ' hours';
+        var used_sla_hours = data.result.reduce(sum_hours, 0);
+
+        document.getElementById('chart-01-notes').innerText = 'Monthly SLA budget: used ' + used_sla_hours + ' of ' + data.budget + ' hours';
 
         // Target format is
         //  ['Category', 'Hours', {role: 'style'}],
@@ -276,6 +292,8 @@ function draw_custom_charts(){
         var chart01 = new google.visualization.BarChart(document.getElementById('chart-01'));
 
         chart01.draw(google.visualization.arrayToDataTable(data.result), o);
+
+        render(chart15)(null, {result: data.budget - used_sla_hours});
     });
 
     query('/severity', function(err, data){
