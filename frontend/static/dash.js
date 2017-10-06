@@ -260,7 +260,11 @@ function draw_custom_charts(){
         o.hAxis = o.vAxis;
         o.vAxis = o.__a;
 
-        document.getElementById('chart-01-notes').innerText = 'Monthly SLA budget: ' + data.budget + ' hours';
+        function sum_hours(sum, x){
+            return sum + x[1];
+        }
+
+        document.getElementById('chart-01-notes').innerText = 'Monthly SLA budget: used ' + data.result.reduce(sum_hours, 0) + ' of ' + data.budget + ' hours';
 
         // Target format is
         //  ['Category', 'Hours', {role: 'style'}],
