@@ -196,7 +196,10 @@ var donut_options = {
 }
 
 function handle_empty_data(chart, data){
-    if (data.result.length === 1 && data.result[0].wr === 'None'){
+    console.log(data);
+    if (data.result.length < 1 ||
+        data.result.length === 1 && data.result[0].wr === 'None')
+    {
         chart.type('message')
             .message('No data');
         data.__skip_render = true;
@@ -422,7 +425,7 @@ function draw_custom_charts(){
 
         var metric_chart = false;
 
-        if (d.error || d.length < 1){
+        if (d.error || !d.length){
             d.result = 0;
             console.log('availability: ' + d.error);
             metric_chart = true;
