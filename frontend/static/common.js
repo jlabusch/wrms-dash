@@ -13,19 +13,20 @@ var ORG = $("body").data("client"),
     PERIOD = $('body').data('month'),
     URI_EXT = ORG + '/default/' + PERIOD;
 
-function query(path, next, override_uri, refresh_interval_secs){
+function query(path, next, override_uri, refresh_interval_secs, override_uri_ext){
     let xhr = new XMLHttpRequest();
     if (refresh_interval_secs === undefined){
         refresh_interval_secs = 60;
     }
-    xhr.open('GET', (override_uri ? override_uri : URI_BASE_DEFAULT) + path + '/' + URI_EXT, true);
+    let uri_ext = override_uri_ext ? override_uri_ext : URI_EXT;
+    xhr.open('GET', (override_uri ? override_uri : URI_BASE_DEFAULT) + path + '/' + uri_ext, true);
     xhr.onreadystatechange = function(){
         if (xhr.readyState !== 4){
             return;
         }
         if (refresh_interval_secs){
             setTimeout(function(){
-                query(path, next, override_uri, refresh_interval_secs);
+                query(path, next, override_uri, refresh_interval_secs, override_uri_ext);
             }, refresh_interval_secs*SECS);
         }
         if (xhr.status !== 200){

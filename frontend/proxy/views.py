@@ -21,6 +21,8 @@ class IndexView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["month"] = datetime.datetime.now().strftime("%Y-%m")
+        context["client"] = "Catalyst EU"
         if self.request.user.is_superuser:
             context["groups"] = Group.objects.exclude(id__in=self.request.user.groups.all().values_list('id', flat=True))
         else:
