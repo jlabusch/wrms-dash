@@ -14,6 +14,7 @@
     "orgs": {
         "AcmeCo": {
             "id": 1,
+            "tz": "Europe/London",
             "budget_hours": 20,
             "availability": "host=elb-1&service=backend-count",
             "storage": "host=fs1&service=Check+disk+space",

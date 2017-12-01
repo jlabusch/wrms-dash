@@ -1,5 +1,4 @@
-var config = require('config'),
-    util = require('./util');
+var util = require('./util');
 
 module.exports = function(req){
     let context = {};
@@ -28,6 +27,8 @@ module.exports = function(req){
         context.error = "Couldn't parse sys=" + req.params.sys;
         return context;
     }
+
+    context.tz = util.orgs[context.org].tz || 'Europe/London';
 
     let p = util.parse_period(req.params.period);
     if (p){

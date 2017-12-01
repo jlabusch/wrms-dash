@@ -23,42 +23,65 @@ function log(wr, sev, start, end, elapsed){
     util.log_debug(__filename, 'calculate_response_duration(' + wr + '/' + sev + ',\t' + start.toISOString() + ', ' + end.toISOString() + ') => ' + to_hours(elapsed) + ' hrs', DEBUG);
 }
 
-function calculate_response_duration(wr, sev, start, end){
+function is_not_weekend(d){
+    return d.getDay() !== 0 && d.getDay() !== 6;
+}
+
+function calculate_response_duration(wr, sev, orig_start, end, tz){
+    let tz_start = new Date(orig_start.toLocaleString('en-NZ', { timeZone: tz })),
+        tz_end   = new Date(end.toLocaleString('en-NZ', { timeZone: tz }));
+
     if (sev === 'Critical'){
-        log(wr, sev, start, end, end-start);
-        return end - start;
+        log(wr, sev, tz_start, tz_end, tz_end - tz_start);
+        return tz_end - tz_start;
     }
 
     const work_start_hour = work_end_hour - work_hours_per_day;
 
-    let d = new Date(start.getTime());
+    let d = new Date(tz_start.getTime()),
+        amended_start = new Date(tz_start.getTime());
+
     d.setHours(work_end_hour, 0, 0, 0);
-    if (d < start){
+    if (d < tz_start){
         // Handle the case when it's raised and resolved out of hours, before next business day
-        start = d;
+        amended_start = d;
     }
-    let elapsed = (end > d ? d : end) - start;
-    if (!same_day(start, end)){
+
+    if (tz_start.getHours() < work_start_hour){
+        // Handle issues logged before start of day
+        amended_start.setHours(work_start_hour, 0, 0, 0);
+        util.log_debug(__filename, 'calculate_response_duration(' + wr + '/' + sev + ',\t' + "Resetting start to hour " + work_start_hour + ': ' + amended_start, DEBUG);
+    }
+
+    let elapsed = 0;
+    if (amended_start < d && is_not_weekend(amended_start)){ // if it starts within business hours
+        elapsed =
+            tz_end < d // did it end before 5pm?
+            ? tz_end - amended_start // yes, count start..end
+            : d - amended_start; // no, count start..5pm
+    }
+    util.log_debug(__filename, 'calculate_response_duration(' + wr + '/' + sev + ',\t' + 'initial elapsed = ' + elapsed, DEBUG);
+
+    if (!same_day(amended_start, tz_end)){
         while (true){
             d.setDate(d.getDate()+1);
-            if (same_day(d, end)){
+            if (same_day(d, tz_end)){
                 break;
             }else{
-                if (d.getDay() === 0 || d.getDay() === 6){
-                    // weekend
-                }else{
+                if (is_not_weekend(d)){
+                    util.log_debug(__filename, 'calculate_response_duration(' + wr + '/' + sev + ',\t' + `adding ${work_hours_per_day}h for ${d}`, DEBUG);
                     elapsed += work_hours_per_day * hours;
                 }
             }
         }
-        // Reached end date
-        d = new Date(end.getTime());
+        // Reached end day
+        d = new Date(tz_end.getTime());
         d.setHours(work_start_hour, 0, 0, 0);
-        if (end > d){
-            elapsed += (end - d);
+        if (tz_end > d){
+            elapsed += (tz_end - d);
         }
     }
-    log(wr, sev, start, end, elapsed);
+    log(wr, sev, tz_start, tz_end, elapsed);
     return elapsed;
 }
 
@@ -131,7 +154,7 @@ module.exports = function(req, res, next, ctx){
         Object.keys(state).forEach(id => {
             let o = state[id];
             times[state[id].severity].push(
-                calculate_response_duration(o.request_id, o.severity, o.start, o.end) // msec
+                calculate_response_duration(o.request_id, o.severity, o.start, o.end, ctx.tz) // msec
             );
         });
 

@@ -56,6 +56,17 @@ var chart06 = new Keen.Dataviz()
 
 query('/wrs_created_count', render(chart06));
 
+// chart15 rendered alongside chart-01, see sla_hours
+var chart15 = new Keen.Dataviz()
+    .el('#chart-15')
+    .title('Hours')
+    .height(250)
+    .colors([default_colors[0]])
+    .type('metric')
+    .prepare();
+
+
+
 function format_icinga_note(obj){
     if (obj.service.indexOf(obj.host) > -1){
         return obj.service;
@@ -185,7 +196,10 @@ var donut_options = {
 }
 
 function handle_empty_data(chart, data){
-    if (data.result.length === 1 && data.result[0].wr === 'None'){
+    console.log(data);
+    if (data.result.length < 1 ||
+        data.result.length === 1 && data.result[0].wr === 'None')
+    {
         chart.type('message')
             .message('No data');
         data.__skip_render = true;
@@ -260,7 +274,16 @@ function draw_custom_charts(){
         o.hAxis = o.vAxis;
         o.vAxis = o.__a;
 
-        document.getElementById('chart-01-notes').innerText = 'Monthly SLA budget: ' + data.budget + ' hours';
+        function sum_hours(sum, x){
+            if (x[0].match(/SLA/)){
+                return sum + x[1];
+            }
+            return sum;
+        }
+
+        var used_sla_hours = data.result.reduce(sum_hours, 0);
+
+        document.getElementById('chart-01-notes').innerText = 'Monthly SLA budget: used ' + used_sla_hours + ' of ' + data.budget + ' hours';
 
         // Target format is
         //  ['Category', 'Hours', {role: 'style'}],
@@ -272,6 +295,8 @@ function draw_custom_charts(){
         var chart01 = new google.visualization.BarChart(document.getElementById('chart-01'));
 
         chart01.draw(google.visualization.arrayToDataTable(data.result), o);
+
+        render(chart15)(null, {result: data.budget - used_sla_hours});
     });
 
     query('/severity', function(err, data){
@@ -400,7 +425,7 @@ function draw_custom_charts(){
 
         var metric_chart = false;
 
-        if (d.error || d.length < 1){
+        if (d.error || !d.length){
             d.result = 0;
             console.log('availability: ' + d.error);
             metric_chart = true;
