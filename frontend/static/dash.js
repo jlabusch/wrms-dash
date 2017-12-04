@@ -296,6 +296,12 @@ function draw_custom_charts(){
 
         chart01.draw(google.visualization.arrayToDataTable(data.result), o);
 
+        chart15.colors([default_colors[1]]);
+        if (used_sla_hours < data.budget * 0.75) {
+            chart15.colors([default_colors[7]]);
+        } else if (used_sla_hours < data.budget) {
+            chart15.colors([default_colors[2]]);
+        }
         render(chart15)(null, {result: data.budget - used_sla_hours});
     });
 
