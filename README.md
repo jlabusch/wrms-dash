@@ -1,6 +1,6 @@
 # wrms-dash
 
-[![Code Climate](https://codeclimate.com/github/jlabusch/wrms-dash/badges/gpa.svg)](https://codeclimate.com/github/jlabusch/wrms-dash)
+[![Maintainability](https://api.codeclimate.com/v1/badges/aa20cf63acacc13e2fa0/maintainability)](https://codeclimate.com/github/jlabusch/wrms-dash/maintainability)
 
 This dashboard replaces our previous monthly SLA report documents.
 
