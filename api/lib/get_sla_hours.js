@@ -11,6 +11,7 @@ module.exports = query.prepare(
     'sla_hours',
     'sla_hours',
     function(ctx){
+        // TODO: use the string_agg() trick to avoid multiple rows for multiple tags. See get_quotes.js.
         return `SELECT r.request_id,r.brief,r.invoice_to,SUM(ts.work_quantity) AS hours,otag.tag_description as tag
                 FROM request r
                 JOIN request_timesheet ts ON r.request_id=ts.request_id

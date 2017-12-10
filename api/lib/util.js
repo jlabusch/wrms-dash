@@ -105,12 +105,31 @@ exports.calculate_timesheet_hours = function(hours, invoice_to, context){
 }
 
 function describe_quote(row){
+    // Rule 1: In the absence of other metadata,
+    //  - treat this as SLA because it's in an SLA system,
+    //  - and period=actual time of approval.
     let r = {
-        additional: true,
-        sla: false,
+        additional: false,
+        sla: true,
         period: undefined
     };
 
+    if (row.approved_on){
+        let approval_match = row.approved_on.match(/^(\d\d\d\d-\d\d)/);
+        if (approval_match){
+            r.period = approval_match[1];
+            // TODO: timezones... but with month granularity, not a killer.
+        }
+    }
+
+    // Rule 2: If the WR has a tag named "Additional", make the default
+    // additional=true instead.
+    if (row.tags && row.tags.match(/\bAdditional\b/)){
+        r.additional = true;
+        r.sla = false;
+    }
+
+    // Rule 3: The invoice_to field always overrides everything else.
     if (row.invoice_to){
         let m = row.invoice_to.match(new RegExp(row.quote_id + '\\s*:\\s*(\\d\\d\\d\\d).0?(\\d+)\\s+(\\w+)'));
         if (m){

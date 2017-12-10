@@ -4,3 +4,4 @@
 .codeclimate.yml
 docker-compose.yml
 frontend/db.sqlite3
+api/config/default.json

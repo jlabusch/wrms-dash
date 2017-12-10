@@ -7,12 +7,19 @@ module.exports = function(pred){
         'approved_quotes',
         'approved_quotes',
         (ctx) => {
-            return `SELECT r.request_id,
+            return `SELECT  r.request_id,
                             r.brief,
                             r.invoice_to,
                             r.last_status,
+                            (
+                                SELECT string_agg(otag.tag_description, ',')
+                                FROM organisation_tag otag
+                                JOIN request_tag rtag ON rtag.tag_id=otag.tag_id
+                                WHERE rtag.request_id=r.request_id
+                            ) as tags,
                             q.quote_id,
                             q.quote_amount,
+                            q.approved_on,
                             q.quote_units
                     FROM request r
                     JOIN request_quote q ON q.request_id=r.request_id
