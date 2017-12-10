@@ -71,7 +71,7 @@ setup(
     get_quotes(
         function(context){
             return function(row){
-                return util.is_sla_quote(row, context);
+                return util.is_sla_quote_for_this_period(row, context);
             }
         }
     )
@@ -83,7 +83,7 @@ setup(
     get_quotes(
         function(context){
             return function(row){
-                return util.is_additional_quote(row, context);
+                return util.is_additional_quote_for_this_period(row, context);
             }
         }
     )

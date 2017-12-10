@@ -126,13 +126,13 @@ function describe_quote(row){
 
 exports.describe_quote = describe_quote;
 
-exports.is_sla_quote = function(row, context){
+exports.is_sla_quote_for_this_period = function(row, context){
     let q = describe_quote(row);
     return  q.sla &&
             q.period === context.period;
 }
 
-exports.is_additional_quote = function(row, context){
+exports.is_additional_quote_for_this_period = function(row, context){
     let q = describe_quote(row);
     return  q.additional &&
             (q.period === context.period || q.period === undefined) &&

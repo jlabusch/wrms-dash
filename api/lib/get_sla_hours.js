@@ -51,9 +51,9 @@ module.exports = query.prepare(
                 let sla = 0,
                     add = 0;
                 aq.rows.forEach(row => {
-                    if (util.is_sla_quote(row, ctx)){
+                    if (util.is_sla_quote_for_this_period(row, ctx)){
                         sla += util.convert_quote_amount(row);
-                    }else if (util.is_additional_quote(row, ctx)){
+                    }else if (util.is_additional_quote_for_this_period(row, ctx)){
                         add += util.convert_quote_amount(row);
                     }
                     // Delete timesheets if there has ever been any kind of quote,
