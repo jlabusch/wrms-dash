@@ -72,7 +72,7 @@ module.exports = query.prepare(
                     ]
                 });
             })
-            .limit(47);
+            .limit(7);
     }
 );
 

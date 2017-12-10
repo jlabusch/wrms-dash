@@ -32,10 +32,10 @@ module.exports = function(req, res, next, ctx){
             cache.wait(cache.key('approved_quotes', ctx))
                 .then((qdata) => { process_results(tsdata, qdata) })
                 .timeout(() => { query.error(res, next)(new Error('sla_unquoted: quote cache timed out')); })
-                .limit(40);
+                .limit(6);
         })
         .timeout(() => { query.error(res, next)(new Error('sla_unquoted: timesheet cache timed out')); })
-        .limit(40);
+        .limit(6);
 }
 
 

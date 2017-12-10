@@ -2,7 +2,7 @@ URI_EXT = 'Catalyst%20EU/default/2017-7';
 
 var FIRST_LOAD = true;
 
-function render(name, i, color){
+function draw_tile(name, i, color){
     $('.chart-wrapper:eq(' + i + ')').html(
         '<a href="/dashboard/' + name + '/"><div class="index-tile ' + color + '">' + name + '</div></a>'
     );
@@ -51,7 +51,7 @@ function fetch_hours(name, i, next){
             "/sla_hours",
             handle_hours(name, i, next),
             undefined,
-            undefined,
+            0,
             name + "/default/" + PERIOD
         );
     }
@@ -63,7 +63,7 @@ function fetch_quotes_from_queue(head, rest){
     }
     function after_fetches(name, i, color){
         if (name){
-            render(name, i, color);
+            draw_tile(name, i, color);
         }
         fetch_quotes_from_queue(rest.shift(), rest);
     }
@@ -71,7 +71,7 @@ function fetch_quotes_from_queue(head, rest){
         '/sla_quotes',
         fetch_hours(head.name, head.index, after_fetches),
         undefined,
-        undefined,
+        0,
         head.uri
     );
 }
@@ -80,7 +80,7 @@ var query_list = [];
 
 function build_queue(name, i) {
     if (FIRST_LOAD) {
-        render(name, i, 'blue');
+        draw_tile(name, i, 'blue');
     }
     query_list.push({
         name: name,
