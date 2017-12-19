@@ -3,6 +3,7 @@ var config  = require('config'),
     cache   = require('./lib/cache'),
     get_dash_context = require('./lib/context'),
     util    = require('./lib/util'),
+    qf      = require('./lib/quote_funcs'),
     query   = require('./lib/query'),
     restify = require('restify');
 
@@ -71,7 +72,7 @@ setup(
     get_quotes(
         function(context){
             return function(row){
-                return util.is_sla_quote_for_this_period(row, context);
+                return qf.is_sla_quote_for_this_period(row, context);
             }
         }
     )
@@ -83,7 +84,7 @@ setup(
     get_quotes(
         function(context){
             return function(row){
-                return util.is_additional_quote_for_this_period(row, context);
+                return qf.is_additional_quote_for_this_period(row, context);
             }
         }
     )

@@ -2,6 +2,7 @@ var config= require('config'),
     query = require('./query'),
     http  = require('http'),
     cache = require('./cache'),
+    qf    = require('./quote_funcs'),
     util  = require('./util');
 
 const HOURS = 60*60*1000,
@@ -52,10 +53,10 @@ module.exports = query.prepare(
                 let sla = 0,
                     add = 0;
                 aq.rows.forEach(row => {
-                    if (util.is_sla_quote_for_this_period(row, ctx)){
-                        sla += util.convert_quote_amount(row);
-                    }else if (util.is_additional_quote_for_this_period(row, ctx)){
-                        add += util.convert_quote_amount(row);
+                    if (qf.is_sla_quote_for_this_period(row, ctx)){
+                        sla += qf.convert_quote_amount(row);
+                    }else if (qf.is_additional_quote_for_this_period(row, ctx)){
+                        add += qf.convert_quote_amount(row);
                     }
                     // Delete timesheets if there has ever been any kind of quote,
                     // even if it's for a different month.
