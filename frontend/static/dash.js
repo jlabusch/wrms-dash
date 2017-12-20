@@ -41,6 +41,10 @@ var std_gchart_options = {
 
 
 (function(){
+    if (window.location.search.match(/nohelp/)){
+        document.querySelectorAll('.faq').forEach(function(el){ el.style.display = 'none'; });
+    }
+
     $('div.chart-title').each(function(i, e){ e.innerText = e.innerText.replace(/PERIOD/g, PERIOD); });
     $('div.chart-notes').each(function(i, e){ e.innerText = e.innerText.replace(/PERIOD/g, PERIOD); });
     $('#period-current').html(PERIOD);
