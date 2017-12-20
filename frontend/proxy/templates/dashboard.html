@@ -77,17 +77,19 @@
 
       <div class="col-sm-5">
         <div class="faq">
-          <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About "SLA hours" block:</span>
+          <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About "Pending quotes" block:</span>
           <ul>
-            <li>SLA quotes: Quotes funded by SLA hours</li>
-            <li>SLA unquoted: Hours on WRs without quotes</li>
-            <li>Additional quotes: Quotes funded outside of SLA</li>
+            <li>Shows quotes not yet approved</li>
+            <li>Ignores expired quotes (1 month)</li>
+            <li>Shows both SLA and Additional quotes</li>
           </ul>
         </div>
       </div>
+
     </div>
 
     <div class="row">
+
       <div class="col-sm-2">
         <div class="chart-wrapper">
           <div class="chart-title">New requests for PERIOD</div>
@@ -106,17 +108,17 @@
 
       <div class="col-sm-3">
         <div class="chart-wrapper">
-          <div class="chart-title">SLA hours for PERIOD</div>
+          <div class="chart-title">Pending quotes</div>
           <div class="chart-stage"><div id="chart-01"></div></div>
-          <div id="chart-01-notes" class="chart-notes">Monthly SLA budget</div>
+          <div id="chart-01-notes" class="chart-notes">Includes SLA and Additional quotes</div>
         </div>
       </div>
 
       <div class="col-sm-2">
         <div class="chart-wrapper">
-          <div class="chart-title">Remaining hours</div>
+          <div class="chart-title">Remaining hours for PERIOD</div>
           <div class="chart-stage"><div id="chart-15"></div></div>
-          <div class="chart-notes">Excludes additional quotes</div>
+          <div id="chart-15-notes" class="chart-notes">Monthly SLA budget</div>
         </div>
       </div>
 

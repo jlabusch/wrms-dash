@@ -83,38 +83,52 @@ exports.quote_sql = function(context, approved){
                         WHERE rtag.request_id=r.request_id
                     ) as tags,
                     q.quote_id,
-                    q.quote_amount,
+                    CASE WHEN q.quote_units = 'days' THEN q.quote_amount*8
+                         ELSE q.quote_amount
+                    END AS quote_amount,
                     q.approved_on,
-                    q.quote_units
+                    CASE WHEN q.quote_units = 'days' THEN 'hours'
+                         ELSE q.quote_units
+                    END AS quote_units
             FROM request r
             JOIN request_quote q ON q.request_id=r.request_id
             JOIN usr u ON u.user_no=r.requester_id
             WHERE u.org_code=${context.org}
               AND r.system_id IN (${context.sys.join(',')})
               AND r.last_status NOT IN ('C')
-              AND q.approved_by_id ${approved ? 'IS NOT' : 'IS'} NULL
+              ${
+                approved ?
+                    "AND q.approved_by_id IS NOT NULL "
+                :
+                    "AND q.approved_by_id IS NULL " +
+                    "AND q.quoted_on >= current_date - interval '1 month' "
+              }
               AND q.quote_cancelled_by IS NULL
               AND q.quote_units in ('days', 'hours')
             ORDER BY r.request_id`;
 }
 
-exports.make_query_handler = function(pred){
+exports.make_query_handler = function(pred, transform){
     return function(data, context, next){
         let r = { result: [ {wr: "None", result: 0} ] };
         if (data && data.rows){
-            let quote_sum = {},
+            let wr_data = {},
                 any = false;
             data.rows
                 .filter(pred(context))
                 .forEach(row => {
                     any = true;
                     let key = row.request_id + ': ' + row.brief;
-                    let x = quote_sum[key] || 0;
-                    quote_sum[key] = x + convert_quote_amount(row);
+                    if (!wr_data[key]){
+                        wr_data[key] = row;
+                        wr_data[key].quote_sum = 0;
+                    }
+                    let x = wr_data[key].quote_sum;
+                    wr_data[key].quote_sum = x + convert_quote_amount(row);
                 });
             if (any){
-                r.result = Object.keys(quote_sum).map(key => {
-                    return {wr: key, result: Math.round(quote_sum[key]*10)/10};
+                r.result = Object.keys(wr_data).map(key => {
+                    return transform(key, wr_data);
                 });
             }
         }

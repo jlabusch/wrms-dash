@@ -9,7 +9,9 @@ module.exports = function(pred){
         (ctx) => {
             return qf.quote_sql(ctx, true);
         },
-        qf.make_query_handler(pred)
+        qf.make_query_handler(pred, (key, wr_data) => {
+            return {wr: key, result: Math.round(wr_data[key].quote_sum*10)/10};
+        })
     );
 }
 

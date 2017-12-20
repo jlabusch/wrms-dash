@@ -64,6 +64,20 @@ server.post('/dec', function(req, res, next){
     next && next(false);
 });
 
+var get_pending_quotes = require('./lib/get_pending_quotes');
+
+setup(
+    'get',
+    '/pending_quotes',
+    get_pending_quotes(
+        function(context){
+            return function(row){
+                return true;
+            }
+        }
+    )
+);
+
 var get_quotes = require('./lib/get_quotes');
 
 setup(

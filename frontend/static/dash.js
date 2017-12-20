@@ -283,7 +283,7 @@ function draw_custom_charts(){
 
         var used_sla_hours = data.result.reduce(sum_hours, 0);
 
-        document.getElementById('chart-01-notes').innerText = 'Monthly SLA budget: used ' + used_sla_hours + ' of ' + data.budget + ' hours';
+        document.getElementById('chart-15-notes').innerText = 'Used ' + used_sla_hours + ' of ' + data.budget + ' hours';
 
         // Target format is
         //  ['Category', 'Hours', {role: 'style'}],
@@ -291,10 +291,6 @@ function draw_custom_charts(){
         //  [...]
         data.result.forEach((row, i) => { row.push(default_colors[i]) });
         data.result.unshift(['Category', 'Hours', {role: 'style'}]);
-
-        var chart01 = new google.visualization.BarChart(document.getElementById('chart-01'));
-
-        chart01.draw(google.visualization.arrayToDataTable(data.result), o);
 
         chart15.colors([default_colors[1]]);
         if (used_sla_hours < data.budget * 0.75) {
@@ -388,6 +384,41 @@ function draw_custom_charts(){
         var viz = new google.visualization.Table(document.getElementById('chart-13'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     });
+
+    query('/pending_quotes', function(err, data){
+        if (err){
+            console.log('pending_quotes: ' + err);
+            return;
+        }
+        if (data.length < 1){
+            (new Keen.Dataviz())
+                .el('#chart-01')
+                .type('message')
+                .message('No pending quotes');
+            return;
+        }
+        var table = new google.visualization.DataTable();
+        table.addColumn('string', 'WR#');
+        table.addColumn('string', 'Brief');
+        table.addColumn('number', 'Hours');
+        if (data && data.result && data.result.length > 0){
+            var pending_total = 0;
+            table.addRows(
+                data.result.map(function(row){
+                    pending_total += row.quote_amount;
+                    return [
+                        '<a href="https://wrms.catalyst.net.nz/' + row.request_id + '">' + row.request_id + '</a>',
+                        row.brief,
+                        row.quote_amount
+                    ];
+                })
+            );
+        }
+        document.getElementById('chart-01-notes').innerText = 'Total: ' + pending_total + ' hours';
+        var viz = new google.visualization.Table(document.getElementById('chart-01'));
+        viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
+    });
+
 
     query('/deployments', function(err, data){
         if (err){
