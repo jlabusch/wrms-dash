@@ -60,7 +60,6 @@ var chart06 = new Keen.Dataviz()
 
 query('/wrs_created_count', render(chart06));
 
-// chart15 rendered alongside chart-01, see sla_hours
 var chart15 = new Keen.Dataviz()
     .el('#chart-15')
     .title('Hours')
@@ -68,8 +67,6 @@ var chart15 = new Keen.Dataviz()
     .colors([default_colors[0]])
     .type('metric')
     .prepare();
-
-
 
 function format_icinga_note(obj){
     if (obj.service.indexOf(obj.host) > -1){
@@ -200,7 +197,6 @@ var donut_options = {
 }
 
 function handle_empty_data(chart, data){
-    console.log(data);
     if (data.result.length < 1 ||
         data.result.length === 1 && data.result[0].wr === 'None')
     {
@@ -394,7 +390,7 @@ function draw_custom_charts(){
             console.log('pending_quotes: ' + err);
             return;
         }
-        if (data.length < 1){
+        if (!data || !data.result || data.result.length < 1 || !data.result[0].request_id){
             (new Keen.Dataviz())
                 .el('#chart-01')
                 .type('message')
@@ -405,19 +401,17 @@ function draw_custom_charts(){
         table.addColumn('string', 'WR#');
         table.addColumn('string', 'Brief');
         table.addColumn('number', 'Hours');
-        if (data && data.result && data.result.length > 0){
-            var pending_total = 0;
-            table.addRows(
-                data.result.map(function(row){
-                    pending_total += row.quote_amount;
-                    return [
-                        '<a href="https://wrms.catalyst.net.nz/' + row.request_id + '">' + row.request_id + '</a>',
-                        row.brief,
-                        row.quote_amount
-                    ];
-                })
-            );
-        }
+        var pending_total = 0;
+        table.addRows(
+            data.result.map(function(row){
+                pending_total += row.quote_amount;
+                return [
+                    '<a href="https://wrms.catalyst.net.nz/' + row.request_id + '">' + row.request_id + '</a>',
+                    row.brief,
+                    row.quote_amount
+                ];
+            })
+        );
         document.getElementById('chart-01-notes').innerText = 'Total: ' + pending_total + ' hours';
         var viz = new google.visualization.Table(document.getElementById('chart-01'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
