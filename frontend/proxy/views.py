@@ -18,7 +18,6 @@ API_SERVER = os.getenv("DJANGO_BACKEND_URI", "http://mango.btn.catalyst-eu.net:8
 class IndexView(generic.TemplateView):
     template_name = 'index.html'
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["month"] = datetime.datetime.now().strftime("%Y-%m")
@@ -28,7 +27,6 @@ class IndexView(generic.TemplateView):
         else:
             context["groups"] = self.request.user.groups.all()
         return context
-        #return redirect(DashboardView, client = self.dispatch.client, month = self.dispatch.month)
 
     def dispatch(self, request):
         if not self.request.user.is_superuser:
@@ -37,6 +35,21 @@ class IndexView(generic.TemplateView):
         else:
             return super().dispatch(request)
 
+
+@method_decorator(login_required, name='dispatch')
+class CarouselView(generic.TemplateView):
+    template_name = 'carousel.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["month"] = datetime.datetime.now().strftime("%Y-%m")
+        context["client"] = "Catalyst EU"
+        return context
+
+    def dispatch(self, request):
+        if not request.user.is_superuser:
+            raise PermissionDenied()
+        return super().dispatch(request)
 
 
 @method_decorator(login_required, name='dispatch')
@@ -103,6 +116,7 @@ class Api(generic.TemplateView):
         url = "{}/api/{}/{}/default/{}".format(API_SERVER, item, client, month)
         jsondata = requests.get(url).text
         return HttpResponse(jsondata, content_type='application/json')
+
 
 def is_member(user, group):
     return user.groups.filter(name=group).exists()
