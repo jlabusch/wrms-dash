@@ -85,7 +85,7 @@ module.exports = query.prepare(
         next(rs);
     },
     (key, ctx, next, error) => {
-        if (!util.orgs[ctx.org] || !util.orgs[ctx.org].availability){
+        if (!util.get_org(ctx) || !util.get_org(ctx).availability){
             return error('No availability lookup configured for ' + ctx.org);
         }
 
@@ -102,7 +102,7 @@ module.exports = query.prepare(
             end.setDate(end.getDate()-1);
         }
 
-        let stat_names = util.orgs[ctx.org].availability;
+        let stat_names = util.get_org(ctx).availability;
         if (Array.isArray(stat_names)){
             // Clone it so that shift() doesn't destroy util.orgs.
             stat_names = stat_names.slice(0);

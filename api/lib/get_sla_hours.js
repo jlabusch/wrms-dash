@@ -1,5 +1,4 @@
-var config= require('config'),
-    query = require('./query'),
+var query = require('./query'),
     http  = require('http'),
     cache = require('./cache'),
     qf    = require('./quote_funcs'),
@@ -45,8 +44,8 @@ module.exports = query.prepare(
             util.log_debug(__filename, JSON.stringify(ts, null, 2), DEBUG);
         }
         let budget = 0;
-        if (util.orgs[ctx.org] && util.orgs[ctx.org].budget_hours){
-            budget = util.orgs[ctx.org].budget_hours;
+        if (util.get_org(ctx) && util.get_org(ctx).budget_hours){
+            budget = util.get_org(ctx).budget_hours;
         }
         cache.wait(cache.key('approved_quotes',ctx))
             .then((aq) => {

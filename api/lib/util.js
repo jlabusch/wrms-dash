@@ -36,14 +36,7 @@ function decrypt(text){
 
 exports.decrypt = decrypt;
 
-exports.orgs = (function(cfg){
-    let o = JSON.parse(JSON.stringify(cfg));
-    Object.keys(o).forEach(name => {
-        o[name].name = name;
-        o[ o[name].id ] = o[name];
-    });
-    return o;
-})(config.get('orgs'));
+exports.get_org = require('./org_data').get_org;
 
 function parse_timesheet_adjustment(invoice_to, ctx){
     let r = (h) => { return h };

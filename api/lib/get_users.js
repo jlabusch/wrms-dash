@@ -1,5 +1,4 @@
-var config= require('config'),
-    query = require('./query'),
+var query = require('./query'),
     https  = require('https'),
     cache = require('./cache'),
     util  = require('./util');
@@ -15,15 +14,15 @@ module.exports = query.prepare(
         next(r);
     },
     (key, ctx, next, error) => {
-        if (!util.orgs[ctx.org] ||
-            !util.orgs[ctx.org].users ||
-            !util.orgs[ctx.org].users.hostname ||
-            !util.orgs[ctx.org].users.token)
+        if (!util.get_org(ctx) ||
+            !util.get_org(ctx).users ||
+            !util.get_org(ctx).users.hostname ||
+            !util.get_org(ctx).users.token)
         {
             return error('No user lookup configured for ' + ctx.org);
         }
 
-        let u = util.orgs[ctx.org].users;
+        let u = util.get_org(ctx).users;
 
         const template = '/webservice/rest/server.php?wsfunction=local_user_count_api_count&' + 
                 'moodlewsrestformat=json&' +

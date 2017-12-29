@@ -19,7 +19,7 @@ module.exports = query.prepare(
             data.extinfo &&
             data.extinfo.service_info)
         {
-            let o = util.orgs[ctx.org];
+            let o = util.get_org(ctx);
             o.storage_pattern = o.storage_pattern || '(sitedata)=(\\d+)MB';
             r.host    = data.extinfo.service_info.host_display_name;
             r.service = data.extinfo.service_info.service_display_name;
@@ -47,7 +47,7 @@ module.exports = query.prepare(
         next(r);
     },
     (key, ctx, next, error) => {
-        if (!util.orgs[ctx.org] || !util.orgs[ctx.org].storage){
+        if (!util.get_org(ctx) || !util.get_org(ctx).storage){
             return error('No storage lookup configured for ' + ctx.org);
         }
 
@@ -56,7 +56,7 @@ module.exports = query.prepare(
             auth: process.env['ICINGA_BASIC_AUTH'], // export ICINGA_BASIC_AUTH=user:pass
             protocol: 'https:',
             hostname: config.get('icinga_uri'),
-            path: icinga_path_template.replace('HOST_AND_SERVICE', util.orgs[ctx.org].storage)
+            path: icinga_path_template.replace('HOST_AND_SERVICE', util.get_org(ctx).storage)
         }
 
         let req = https.request(options, (res) => {

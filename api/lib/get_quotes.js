@@ -1,5 +1,4 @@
-var config= require('config'),
-    query = require('./query'),
+var query = require('./query'),
     qf    = require('./quote_funcs');
 
 module.exports = function(pred){

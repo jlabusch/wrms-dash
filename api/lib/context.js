@@ -3,8 +3,8 @@ var util = require('./util');
 module.exports = function(req){
     let context = {};
 
-    if (util.orgs[req.params.org]){
-        context.org = util.orgs[req.params.org].id;
+    if (util.get_org(req.params.org)){
+        context.org = util.get_org(req.params.org).id;
     }else{
         context.org = parseInt(req.params.org);
     }
@@ -15,8 +15,8 @@ module.exports = function(req){
     }
 
     if (req.params.sys === 'default'){
-        if (util.orgs[context.org] && util.orgs[context.org].default_system){
-            context.sys = util.orgs[context.org].default_system.split(/,/);
+        if (util.get_org(context) && util.get_org(context).default_system){
+            context.sys = util.get_org(context).default_system.split(/,/);
         }else{
             context.error = "No default system for org=" + req.params.org;
             return context;
@@ -28,7 +28,7 @@ module.exports = function(req){
         return context;
     }
 
-    context.tz = util.orgs[context.org].tz || 'Europe/London';
+    context.tz = util.get_org(context).tz || 'Europe/London';
 
     let p = util.parse_period(req.params.period);
     if (p){
