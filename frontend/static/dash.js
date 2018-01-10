@@ -178,6 +178,7 @@ query('/users', render(chart10, function(chart, data){
 query('/customer', function(err, data){
     if (!err){
         $('#cust-name').text(data.system.name);
+        $('#cust-system').attr('href', 'https://wrms.catalyst.net.nz/kanban/?systems=' + data.system.id + '&hide_done=true&wr_edit_mode=false&board_title=' + encodeURIComponent(data.system.name));
         $('#period-current').attr('href', 'https://wrms.catalyst.net.nz/requestlist.php?org_code=' + data.org.id);
     }
 });
