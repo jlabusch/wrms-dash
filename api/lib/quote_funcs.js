@@ -13,9 +13,9 @@ function describe_quote(row){
     };
 
     if (row.approved_on){
-        let approval_match = row.approved_on.match(/^(\d\d\d\d-\d\d)/);
+        let approval_match = row.approved_on.match(/^(\d\d\d\d)-.0?(\d+)/);
         if (approval_match){
-            r.period = approval_match[1];
+            r.period = approval_match[1] + '-' + approval_match[2];
             // TODO: timezones... but with month granularity, not a killer.
         }
     }
