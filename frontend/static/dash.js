@@ -170,6 +170,7 @@ query('/users', render(chart10, function(chart, data){
         console.log('users: ' + data.error);
         return;
     }
+    data.result = data.result.result;
     chart10
         .type('metric')
         .title('user accounts');
