@@ -20,24 +20,26 @@ module.exports = query.prepare(
             data.extinfo.service_info)
         {
             let o = util.get_org(ctx);
-            o.storage_pattern = o.storage_pattern || '(sitedata)=(\\d+)MB';
+            o.storage_pattern = o.storage_pattern || 'sitedata';
             r.host    = data.extinfo.service_info.host_display_name;
             r.service = data.extinfo.service_info.service_display_name;
 
             util.log_debug(__filename, 'storage => ' + JSON.stringify(data, null, 2), DEBUG);
 
             if (data.extinfo.service_info.performance_data){
-                let arr = data.extinfo.service_info.performance_data.match(new RegExp(o.storage_pattern))
-
-                if (arr){
-                    arr.shift();
-                    for (let i = 0; i < arr.length/2; ++i){
+                let stats = data.extinfo.service_info.performance_data.split(' '),
+                    keys = o.storage_pattern.split(/,\s*/),
+                    pattern = '(' + keys.join('|') + ')=(\\d+)MB',
+                    re = new RegExp(pattern);
+                stats.forEach(stat => {
+                    let match = stat.match(re);
+                    if (match){
                         r.result.push([{
-                            disk: arr[i*2],
-                            result: parseInt(arr[i*2 + 1])
+                            disk: match[1],
+                            result: parseInt(match[2])
                         }]);
                     }
-                }
+                });
             }else{
                 r.error = 'Check ' + data.extinfo.service_info.status;
             }
