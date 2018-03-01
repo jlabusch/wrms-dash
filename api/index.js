@@ -39,9 +39,11 @@ function preflight(req, res, next){
 }
 
 function setup(method, func, handler){
-    server.opts('/api' + func + '/:org/:sys/:period', preflight);
+    let path = ':org/:sys/:period';
 
-    server[method]('/api' + func + '/:org/:sys/:period', function(req, res, next){
+    server.opts('/api' + func + '/' + path, preflight);
+
+    server[method]('/api' + func + '/' + path, function(req, res, next){
         let ctx = get_dash_context(req);
 
         if (ctx.error){
@@ -105,6 +107,10 @@ setup(
 );
 
 setup('get', '/sla_unquoted', require('./lib/get_sla_unquoted'));
+
+setup('get', '/wrs_to_invoice', require('./lib/get_wrs_to_invoice'));
+
+//setup('get', '/combined_budgets', require('./lib/get_combined_budgets'));
 
 setup('get', '/customer_list', require('./lib/get_customer_list'));
 

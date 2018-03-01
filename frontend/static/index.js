@@ -1,4 +1,4 @@
-URI_EXT = 'Catalyst%20EU/default/2017-7';
+URI_EXT = '__vendor/default/2017-7';
 
 var FIRST_LOAD = true;
 
@@ -95,7 +95,7 @@ query('/customer_list', function(err, data){
         return;
     }
     query_list = [];
-    Object.keys(data).sort().forEach(build_queue);
+    Object.keys(data).sort().filter(function(n){ return n !== '__vendor' }).forEach(build_queue);
     FIRST_LOAD = false;
     fetch_quotes_from_queue(query_list.shift(), query_list);
 });

@@ -21,7 +21,7 @@ class IndexView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["month"] = datetime.datetime.now().strftime("%Y-%m")
-        context["client"] = "Catalyst EU"
+        context["client"] = "__vendor"
         if self.request.user.is_superuser:
             context["groups"] = Group.objects.exclude(id__in=self.request.user.groups.all().values_list('id', flat=True))
         else:
@@ -37,13 +37,29 @@ class IndexView(generic.TemplateView):
 
 
 @method_decorator(login_required, name='dispatch')
+class OmnitoolView(generic.TemplateView):
+    template_name = 'omnitool.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["month"] = datetime.datetime.now().strftime("%Y-%m")
+        context["client"] = "__vendor"
+        return context
+
+    def dispatch(self, request):
+        if not request.user.is_superuser:
+            raise PermissionDenied()
+        return super().dispatch(request)
+
+
+@method_decorator(login_required, name='dispatch')
 class CarouselView(generic.TemplateView):
     template_name = 'carousel.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["month"] = datetime.datetime.now().strftime("%Y-%m")
-        context["client"] = "Catalyst EU"
+        context["client"] = "__vendor"
         return context
 
     def dispatch(self, request):
