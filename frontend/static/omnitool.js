@@ -24,7 +24,6 @@ function draw_custom_charts(){
             console.log('wrs_to_invoice: ' + err);
             return;
         }
-        console.log(JSON.stringify(data, null, 2));
         if (!data || !data || data.length < 1 || !data[0].request_id){
             (new Keen.Dataviz())
                 .el('#chart-01')
@@ -52,6 +51,40 @@ function draw_custom_charts(){
             })
         );
         var viz = new google.visualization.Table(document.getElementById('chart-01'));
+        viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
+    }, undefined, 0);
+
+    query('/new_sysadmin_wrs', function(err, data){
+        if (err){
+            console.log('new_sysadmin_wrs: ' + err);
+            return;
+        }
+        if (!data || !data || data.length < 1 || !data[0].request_id){
+            (new Keen.Dataviz())
+                .el('#chart-02')
+                .type('message')
+                .message('No WRs to show');
+            return;
+        }
+        console.log(JSON.stringify(data, null, 2));
+        var table = new google.visualization.DataTable();
+        table.addColumn('string', 'Client');
+        table.addColumn('string', 'WR#');
+        table.addColumn('string', 'Brief');
+        table.addColumn('number', 'Age');
+        table.addColumn('number', 'Activity');
+        table.addRows(
+            data.map(function(row){
+                return [
+                    '<a href="/dashboard/' + row.org_id + '/" target="_blank">' + row.org + '</a>',
+                    '<a href="https://wrms.catalyst.net.nz/' + row.request_id + '" target="_blank">' + row.request_id + '</a>',
+                    row.brief,
+                    row.age,
+                    row.activity|0
+                ];
+            })
+        );
+        var viz = new google.visualization.Table(document.getElementById('chart-02'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     }, undefined, 0);
 } // google charts
