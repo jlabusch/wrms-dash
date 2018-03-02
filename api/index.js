@@ -106,6 +106,8 @@ setup(
     )
 );
 
+setup('get', '/mis_report', require('./lib/get_mis_report'));
+
 setup('get', '/budget_summary', require('./lib/get_budget_summary_hack'));
 
 setup('get', '/sla_unquoted', require('./lib/get_sla_unquoted'));

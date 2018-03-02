@@ -1,6 +1,7 @@
 .*.swp
 .htpasswd
 ssl/*.pem
+mis.json
 api/config/default.json
 frontend/static/admin
 */db.sqlite3

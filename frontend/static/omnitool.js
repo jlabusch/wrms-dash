@@ -186,11 +186,42 @@ function draw_custom_charts(){
             return;
         }
 
-        data.unshift(['Client', 'Hrs left', {role: 'style'}]);
+        data.unshift(['Client', 'Hours left', {role: 'style'}]);
 
         var chart04 = new google.visualization.BarChart(document.getElementById('chart-04'));
 
         chart04.draw(google.visualization.arrayToDataTable(data), o);
+    }, undefined, 0);
+
+    query('/mis_report', function(err, mis){
+        if (err){
+            console.log('mis_report: ' + err);
+            return;
+        }
+        console.log(JSON.stringify(mis, null, 2));
+        var o = JSON.parse(JSON.stringify(std_gchart_options));
+        o.chartArea.height = 150;
+
+        if (!mis || !mis.result || mis.result.length < 12){
+            (new Keen.Dataviz())
+                .el('#chart-05')
+                .type('message')
+                .message('No data');
+            return;
+        }
+
+        mis.result.unshift(['Month', 'Sales']);
+
+        var chart05 = new google.visualization.AreaChart(document.getElementById('chart-05'));
+
+        var opt = {
+            colors: [default_colors[7]],
+            legend: {
+                position: 'none'
+            }
+        };
+
+        chart05.draw(google.visualization.arrayToDataTable(mis.result), opt);
     }, undefined, 0);
 } // google charts
 
