@@ -110,6 +110,17 @@ exports.parse_period = function(str){
     return r;
 }
 
+exports.current_period = function(){
+    let now = new Date(),
+        year = now.getFullYear(),
+        month = (now.getMonth()+1)%12;
+    return {
+        year: year,
+        month: month,
+        period: year + '-' + month
+    };
+}
+
 exports.wr_list_sql = function(context, this_period_only, exclude_statuses){
     exclude_statuses = exclude_statuses || ["'C'", "'F'"];
     let and_period =   `AND r.request_on >= '${context.period + '-01'}'                 

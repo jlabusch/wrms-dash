@@ -1,5 +1,6 @@
 var query = require('./query'),
     org_data = require('./org_data'),
+    qf = require('./quote_funcs'),
     util = require('./util');
 
 module.exports = query.prepare(
@@ -8,9 +9,16 @@ module.exports = query.prepare(
     function(ctx){
         return `SELECT q.request_id,
                        r.brief,
+                       r.invoice_to,
                        o.org_name AS org,
                        o.org_code AS org_id,
                        c.lookup_desc AS status,
+                       (
+                           SELECT string_agg(otag.tag_description, ',')
+                           FROM organisation_tag otag
+                           JOIN request_tag rtag ON rtag.tag_id=otag.tag_id
+                           WHERE rtag.request_id=r.request_id
+                       ) as tags,
                        q.quote_id,
                        q.quote_brief,
                        CASE WHEN q.quote_units = 'days' THEN q.quote_amount*8
@@ -33,23 +41,14 @@ module.exports = query.prepare(
                     q.quote_cancelled_by IS NULL AND
                     q.approved_by_id IS NOT NULL AND
                     q.invoice_no IS NULL AND
-                    q.request_id IN (
-                        SELECT request_id
-                        FROM request_tag
-                        WHERE
-                            tag_id IN (
-                                SELECT tag_id
-                                FROM organisation_tag
-                                WHERE tag_description='Additional'
-                            )
-                    )`.replace(/\s+/, ' ');
+                    o.org_code IN ( ${org_data.get_all_orgs().join(',')})`.replace(/\s+/, ' ');
     },
     function(data, ctx, next){
-        let r = [],
-            all_orgs = org_data.get_all_orgs();
+        let r = [];
         if (data && data.rows && data.rows.length > 0){
-            // Only include orgs we're interested in
-            r = data.rows.filter(row => { return all_orgs.indexOf(row.org_id) > -1; });
+            r = data.rows.filter(row => {
+                return qf.describe_quote(row).additional;
+            });
         }
         next(r);
     }

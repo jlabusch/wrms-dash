@@ -34,10 +34,10 @@ module.exports = function(req){
     if (p){
         ['year', 'month', 'period'].forEach(x => { context[x] = p[x]; });
     }else{
-        let now        = new Date();
-        context.year   = now.getFullYear(),
-        context.month  = (now.getMonth()+1)%12;
-        context.period = context.year + '-' + context.month;
+        let cp = util.current_period();
+        context.year   = cp.year;
+        context.month  = cp.month;
+        context.period = cp.period;
     }
 
     return context;

@@ -82,6 +82,7 @@ function do_wait(key, next, on_timeout, count, limit, use_last_known_good){
 }
 
 module.exports = {
+    __raw: cache,
     get: cache_get,
     put: cache_put,
     key: cache_key,
