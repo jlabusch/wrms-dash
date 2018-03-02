@@ -17,6 +17,14 @@ exports.get_org = function(id){
     return __orgs[id.org ? id.org : id];
 }
 
+exports.get_all_orgs = function(){
+    // not using __orgs because it doubles up ID and name keys
+    let o = JSON.parse(JSON.stringify(config.get('orgs')));
+    return Object.keys(o).map(name => {
+        return o[name].id;
+    });
+}
+
 exports.get_all_systems = function(){
     let arr = [];
     // not using __orgs because it doubles up ID and name keys

@@ -112,6 +112,8 @@ setup('get', '/new_sysadmin_wrs', require('./lib/get_new_sysadmin_wrs'));
 
 setup('get', '/wrs_to_invoice', require('./lib/get_wrs_to_invoice'));
 
+setup('get', '/additional_wrs_unquoted', require('./lib/get_additional_wrs_unquoted'));
+
 //setup('get', '/combined_budgets', require('./lib/get_combined_budgets'));
 
 setup('get', '/customer_list', require('./lib/get_customer_list'));

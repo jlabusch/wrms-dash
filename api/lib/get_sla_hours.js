@@ -7,10 +7,10 @@ var query = require('./query'),
 const HOURS = 60*60*1000,
       DEBUG = false;
 
-module.exports = query.prepare(
-    'sla_hours',
-    'sla_hours',
-    function(ctx){
+module.exports = query.prepare({
+    label: 'sla_hours',
+    cache_key_base: 'sla_hours',
+    sql: function(ctx){
         // TODO: use the string_agg() trick to avoid multiple rows for multiple tags. See get_quotes.js.
         return `SELECT r.request_id,r.brief,r.invoice_to,SUM(ts.work_quantity) AS hours,otag.tag_description as tag
                 FROM request r
@@ -25,7 +25,7 @@ module.exports = query.prepare(
                     AND ts.work_units='hours'
                 GROUP BY r.request_id,otag.tag_description`;
     },
-    function(data, ctx, next){
+    process_data: function(data, ctx, next){
         let ts = {};
         if (data && data.rows && data.rows.length > 0){
             let warranty_wrs = {};
@@ -76,6 +76,7 @@ module.exports = query.prepare(
                     ]
                 });
             })
+            .use_last_known_good(true)
             .timeout(() => {
                 next({
                     budget: 0,
@@ -87,6 +88,7 @@ module.exports = query.prepare(
                 });
             })
             .limit(17);
-    }
-);
+    },
+    use_last_known_good: true
+});
 

@@ -12,50 +12,70 @@ function db_error_handler(res, next){
 
 exports.error = db_error_handler;
 
-function prepare_query(
-    label,
-    cache_key_base,
-    sql,
-    process_data,
-    db_query_override,
-    cache_timelimit_override,
-    cache_key_override
-){
+function prepare_query(args){
+    if (arguments.length !== 1){
+        args = {
+            label:                  arguments[0],
+            cache_key_base:         arguments[1],
+            sql:                    arguments[2],
+            process_data:           arguments[3],
+            db_query_override:      arguments[4],
+            cache_timelimit_override: arguments[5],
+            cache_key_override:     arguments[6],
+            use_last_known_good:    arguments[7]
+        }
+    }
     return function(req, res, next, ctx){
-        let ck = cache_key_override ? cache_key_override(ctx) : cache.key(cache_key_base, ctx);
+        let ck = args.cache_key_override ? args.cache_key_override(ctx) : cache.key(args.cache_key_base, ctx);
 
         let success = function(data, cache_hit){
             if (!cache_hit){
                 cache.put(ck, data);
             }
-            process_data(data, ctx, (result) => {
+            args.process_data(data, ctx, (result) => {
                 res.charSet('utf-8');
                 res.json(result);
                 next && next(false);
             });
         }
 
-        var c = cache.get(ck, cache_timelimit_override);
+        var c = cache.get(ck, args.cache_timelimit_override);
         if (c){
             success(c, true);
         }else{
-            if (typeof(db_query_override) === 'function'){
-                db_query_override(
-                    cache_key_base,
+            let already_called_success = false;
+            if (args.use_last_known_good){
+                c = cache.get(ck, cache.LAST_KNOWN_GOOD_LIMIT);
+                if (c){
+                    util.log(__filename, 'Using last-known-good cache for [' + ck + ']');
+                    already_called_success = true;
+                    success(c, true);
+                }
+            }
+            if (typeof(args.db_query_override) === 'function'){
+                args.db_query_override(
+                    args.cache_key_base,
                     ctx,
                     success,
                     db_error_handler(res, next)
                 );
             }else{
                 db.query(
-                        cache_key_base,
-                        sql(ctx).replace(/\s+/g, ' '),
+                        args.cache_key_base,
+                        args.sql(ctx).replace(/\s+/g, ' '),
                         ctx
                     )
                     .then(
-                        success,
+                        (data, cache_hit) => {
+                            if (already_called_success){
+                                // Just update cache, don't return result
+                                cache.put(ck, data);
+                            }else{
+                                success(data, cache_hit);
+                            }
+                        },
                         db_error_handler(res, next)
-                    )
+                    );
             }
         }
     }

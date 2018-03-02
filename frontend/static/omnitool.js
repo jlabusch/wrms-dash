@@ -37,7 +37,8 @@ function draw_custom_charts(){
         table.addColumn('string', 'Brief');
         table.addColumn('string', 'Status');
         table.addColumn('string', 'Quote');
-        table.addColumn('number', 'Hours');
+        table.addColumn('number', 'Amount');
+        table.addColumn('string', 'Units');
         table.addRows(
             data.map(function(row){
                 return [
@@ -46,11 +47,45 @@ function draw_custom_charts(){
                     row.brief,
                     row.status,
                     row.quote_brief,
-                    row.quote_amount
+                    row.quote_amount,
+                    row.quote_units
                 ];
             })
         );
         var viz = new google.visualization.Table(document.getElementById('chart-01'));
+        viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
+    }, undefined, 0);
+
+    query('/additional_wrs_unquoted', function(err, data){
+        if (err){
+            console.log('additional_wrs_unquoted: ' + err);
+            return;
+        }
+        if (!data || !data || data.length < 1 || !data[0].request_id){
+            (new Keen.Dataviz())
+                .el('#chart-03')
+                .type('message')
+                .message('No WRs to show');
+            return;
+        }
+        var table = new google.visualization.DataTable();
+        table.addColumn('string', 'Client');
+        table.addColumn('string', 'WR#');
+        table.addColumn('string', 'Brief');
+        table.addColumn('string', 'Status');
+        table.addColumn('number', 'Hours');
+        table.addRows(
+            data.map(function(row){
+                return [
+                    '<a href="/dashboard/' + row.org_id + '/" target="_blank">' + row.org + '</a>',
+                    '<a href="https://wrms.catalyst.net.nz/' + row.request_id + '" target="_blank">' + row.request_id + '</a>',
+                    row.brief,
+                    row.status,
+                    row.worked
+                ];
+            })
+        );
+        var viz = new google.visualization.Table(document.getElementById('chart-03'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     }, undefined, 0);
 
@@ -71,8 +106,8 @@ function draw_custom_charts(){
         table.addColumn('string', 'Client');
         table.addColumn('string', 'WR#');
         table.addColumn('string', 'Brief');
-        table.addColumn('number', 'Age');
-        table.addColumn('number', 'Activity');
+        table.addColumn('number', 'Days old');
+        table.addColumn('number', 'Updates');
         table.addRows(
             data.map(function(row){
                 return [
