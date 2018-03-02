@@ -67,25 +67,29 @@ module.exports = query.prepare({
                     return acc + ts[val];
                 }, 0);
                 util.log_debug(__filename, 'sum of unquoted SLA hours: ' + t, DEBUG);
-                next({
+                let res = {
                     budget: budget,
                     result: [
                         ['SLA quotes', sla],
                         ['SLA unquoted', t],
                         ['Additional quotes', add]
                     ]
-                });
+                };
+                cache.put(cache.key('sla_hours_api',ctx), res);
+                next(res);
             })
             .use_last_known_good(true)
             .timeout(() => {
-                next({
+                let res = {
                     budget: 0,
                     result: [
                         ['SLA quotes', 0],
                         ['SLA unquoted', 0],
                         ['Additional quotes', 0]
                     ]
-                });
+                };
+                cache.put(cache.key('sla_hours_api',ctx), res);
+                next(res);
             })
             .limit(17);
     },

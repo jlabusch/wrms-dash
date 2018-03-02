@@ -276,14 +276,7 @@ function draw_custom_charts(){
         o.hAxis = o.vAxis;
         o.vAxis = o.__a;
 
-        function sum_hours(sum, x){
-            if (x[0].match(/SLA/)){
-                return sum + x[1];
-            }
-            return sum;
-        }
-
-        var used_sla_hours = data.result.reduce(sum_hours, 0);
+        var used_sla_hours = data.result.reduce(sum_sla_hours, 0);
 
         document.getElementById('chart-15-notes').innerText = 'Used ' + used_sla_hours + ' of ' + data.budget + ' hours';
 

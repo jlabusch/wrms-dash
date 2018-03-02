@@ -13,6 +13,13 @@ var ORG = $("body").data("client"),
     PERIOD = $('body').data('month'),
     URI_EXT = ORG + '/default/' + PERIOD;
 
+function sum_sla_hours(sum, x){
+    if (x[0].match(/SLA/)){
+        return sum + x[1];
+    }
+    return sum;
+}
+
 function query(path, next, override_uri, refresh_interval_secs, override_uri_ext){
     let xhr = new XMLHttpRequest();
     if (refresh_interval_secs === undefined){

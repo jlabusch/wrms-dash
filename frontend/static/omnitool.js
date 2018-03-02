@@ -15,6 +15,40 @@ function handle_empty_data(chart, data){
     }
 }
 
+var std_gchart_options = {
+    titlePosition: 'none',
+    legend: {position: 'none'},
+    chartArea: {height: 200, left: '10%', width: '90%' },
+    height: 250,
+    orientation: 'horizontal',
+    annotations: {
+        alwaysOutside: true,
+        textStyle: {
+            fontSize: 12,
+            auraColor: 'none',
+            color: '#555'
+        },
+        boxStyle: {
+            stroke: '#ccc',
+            strokeWidth: 1,
+            gradient: {
+                color1: '#f3e5f5',
+                color2: '#f3e5f5',
+                x1: '0%', y1: '0%',
+                x2: '100%', y2: '100%'
+            }
+        }
+    },
+    hAxis: {
+        title: 'Category'
+    },
+    vAxis: {
+        title: 'Number of WRs',
+        minValue: 0
+    },
+    axisTitlesPosition: 'none'
+};
+
 google.charts.load('current', {packages: ['corechart', 'bar', 'table', 'line']});
 google.charts.setOnLoadCallback(draw_custom_charts);
 
@@ -101,7 +135,6 @@ function draw_custom_charts(){
                 .message('No WRs to show');
             return;
         }
-        console.log(JSON.stringify(data, null, 2));
         var table = new google.visualization.DataTable();
         table.addColumn('string', 'Client');
         table.addColumn('string', 'WR#');
@@ -121,6 +154,43 @@ function draw_custom_charts(){
         );
         var viz = new google.visualization.Table(document.getElementById('chart-02'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
+    }, undefined, 0);
+
+    query('/budget_summary', function(err, budgets){
+        if (err){
+            console.log('budget_summary: ' + err);
+            return;
+        }
+        console.log(JSON.stringify(budgets, null, 2));
+        var o = JSON.parse(JSON.stringify(std_gchart_options));
+        o.chartArea.height = 150;
+
+        var data = Object.keys(budgets).map(function(name){
+            var used_sla_hours = budgets[name].result.reduce(sum_sla_hours, 0),
+                color = default_colors[1];
+
+            if (used_sla_hours < budgets[name].budget * 0.75) {
+                color = default_colors[7];
+            } else if (used_sla_hours < budgets[name].budget) {
+                color = default_colors[2];
+            }
+
+            return [name, budgets[name].budget - used_sla_hours, color];
+        });
+
+        if (data.length < 1){
+            (new Keen.Dataviz())
+                .el('#chart-04')
+                .type('message')
+                .message('No data');
+            return;
+        }
+
+        data.unshift(['Client', 'Hrs left', {role: 'style'}]);
+
+        var chart04 = new google.visualization.BarChart(document.getElementById('chart-04'));
+
+        chart04.draw(google.visualization.arrayToDataTable(data), o);
     }, undefined, 0);
 } // google charts
 

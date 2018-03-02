@@ -29,6 +29,7 @@ module.exports = query.prepare(
                     t.request_id=r.request_id AND
                     t.work_units='hours'
                 WHERE
+                    r.last_status NOT IN ('C') AND
                     r.request_id IN (
                         SELECT request_id
                         FROM request_tag
