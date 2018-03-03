@@ -208,6 +208,24 @@ function handle_empty_data(chart, data){
     }
 }
 
+function set_total(selector){
+    return function(chart, data){
+        if (data){
+            let n = 0;
+            if (data.result && Array.isArray(data.result)){
+                n = data.result.reduce((acc, val) => {
+                    return acc + (Array.isArray(val) ? val[0].result : val.result);
+                }, 0);
+            }else{
+                n = data.result;
+            }
+            if (n){
+                $(selector).text('Total: ' + n + ' hours');
+            }
+        }
+    }
+}
+
 var chart02 = new Keen.Dataviz()
     .el('#chart-02')
     .colors(default_colors)
@@ -216,7 +234,7 @@ var chart02 = new Keen.Dataviz()
     .chartOptions(donut_options)
     .prepare();
 
-query('/sla_quotes', render(chart02, handle_empty_data));
+query('/sla_quotes', render(chart02, [set_total('#chart-02-notes'), handle_empty_data]));
 
 var chart14 = new Keen.Dataviz()
     .el('#chart-14')
@@ -226,7 +244,7 @@ var chart14 = new Keen.Dataviz()
     .chartOptions(donut_options)
     .prepare();
 
-query('/sla_unquoted', render(chart14, handle_empty_data));
+query('/sla_unquoted', render(chart14, [set_total('#chart-14-notes'), handle_empty_data]));
 
 var chart03 = new Keen.Dataviz()
     .el('#chart-03')
@@ -236,7 +254,7 @@ var chart03 = new Keen.Dataviz()
     .chartOptions(donut_options)
     .prepare();
 
-query('/additional_quotes', render(chart03, handle_empty_data));
+query('/additional_quotes', render(chart03, [set_total('#chart-03-notes'), handle_empty_data]));
 
 google.charts.load('current', {packages: ['corechart', 'bar', 'table', 'line']});
 google.charts.setOnLoadCallback(draw_custom_charts);

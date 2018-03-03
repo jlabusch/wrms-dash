@@ -56,8 +56,12 @@ function render(chart, pre){
         if (err){
             chart.message(err.message);
         }else{
-            if (pre){
+            if (typeof(pre) === 'function'){
                 pre(chart, data);
+            }else if (Array.isArray(pre)){
+                pre.forEach(f => {
+                    f(chart, data);
+                });
             }
             //console.log('render() ' + JSON.stringify(data, null, 2));
             if (!data.__skip_render){
