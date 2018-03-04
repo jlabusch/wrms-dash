@@ -8,7 +8,11 @@
     },
     "server": {
         "version": "1.0.0",
-        "listen_port": 80
+        "listen_port": 80,
+        "wrms_details": {
+            "user_id": 4089,
+            "exclude_orgs": "37,1098"
+        }
     },
     "icinga_uri": "icinga.example.com",
     "orgs": {
