@@ -39,10 +39,19 @@ var std_gchart_options = {
     axisTitlesPosition: 'none'
 };
 
+function toggle_faqs(){
+    document.querySelectorAll('.faq').forEach(function(el){
+        if (el.style.display !== 'none'){
+            el.style.display = 'none';
+        }else{
+            el.style.display = 'block';
+        }
+    });
+}
 
 (function(){
     if (window.location.search.match(/nohelp/)){
-        document.querySelectorAll('.faq').forEach(function(el){ el.style.display = 'none'; });
+        toggle_faqs();
     }
 
     $('div.chart-title').each(function(i, e){ e.innerText = e.innerText.replace(/PERIOD/g, PERIOD); });
