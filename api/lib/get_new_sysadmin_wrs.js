@@ -1,4 +1,5 @@
 var query = require('./query'),
+    config = require('config'),
     util = require('./util');
 
 module.exports = query.prepare(
@@ -6,6 +7,11 @@ module.exports = query.prepare(
     'new_sysadmin_wrs',
     // TODO the sysadmin user account ID and other Catalyst branch IDs need to be configurable.
     function(ctx){
+        let server = config.get('server'),
+            wrms_details = server.wrms_details || {
+                user_id: 4089,
+                exclude_orgs: '37,1098'
+            };
         return `SELECT r.request_id,
                        r.brief,
                        current_date - r.request_on::date AS age,
@@ -21,8 +27,8 @@ module.exports = query.prepare(
                     o.org_code=s.org_code
                 WHERE
                     r.last_status='N' AND
-                    a.allocated_to_id=4089 AND
-                    o.org_code not in (37,1098)
+                    a.allocated_to_id=${wrms_details.user_id} AND
+                    o.org_code not in (${wrms_details.exclude_orgs})
                     `.replace(/\s+/, ' ');
     },
     function(data, ctx, next){
