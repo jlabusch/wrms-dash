@@ -14,7 +14,7 @@ module.exports = function(req, res, next, ctx){
         json.result.content.forEach(obj => {
             if (obj.kpi_name === 'Sales Revenue'){
                 let months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
-                resp.result = obj.cols.slice(0, 12).map(col => { return [months.shift(), col.val]; }).reverse();
+                resp.result = obj.cols.slice(0, 12).reverse().map(col => { return [months.shift(), col.val]; });
             }
         });
     }catch(ex){
