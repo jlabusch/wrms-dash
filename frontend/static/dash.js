@@ -449,7 +449,7 @@ function draw_custom_charts(){
         var formatted_data = data.map(function(row){
             var arr = row.description.split('\n');
             var desc = arr.filter(function(element){
-                return element[0] === '*';
+                return element && element.match(/^\s*\*/);
             }).join('<br>');
 
             return [
