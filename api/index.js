@@ -58,12 +58,14 @@ function setup(method, func, handler){
 
 server.post('/enc', function(req, res, next){
     res.send(util.encrypt(req.body));
-    next && next(false);
+    next(true);
+    next(false);
 });
 
 server.post('/dec', function(req, res, next){
     res.send(util.decrypt(req.body));
-    next && next(false);
+    next(true);
+    next(false);
 });
 
 var get_pending_quotes = require('./lib/get_pending_quotes');
@@ -72,10 +74,10 @@ setup(
     'get',
     '/pending_quotes',
     get_pending_quotes(
-        function(context){
-            return function(row){
+        function(){
+            return function(){
                 return true;
-            }
+            };
         }
     )
 );
@@ -89,7 +91,7 @@ setup(
         function(context){
             return function(row){
                 return qf.is_sla_quote_for_this_period(row, context);
-            }
+            };
         }
     )
 );
@@ -101,7 +103,7 @@ setup(
         function(context){
             return function(row){
                 return qf.is_additional_quote_for_this_period(row, context);
-            }
+            };
         }
     )
 );
@@ -132,6 +134,8 @@ setup('get', '/deployments', require('./lib/get_deployments'));
 
 setup('get', '/users', require('./lib/get_users'));
 
+setup('get', '/diskusage_moodle', require('./lib/get_diskusage_moodle'));
+
 setup('get', '/storage', require('./lib/get_storage'));
 
 setup('get', '/availability', require('./lib/get_availability'));
@@ -142,7 +146,7 @@ setup(
     'get',
     '/response_times_PLACEHOLDER',
     query.prepare('response_times', 'rtt',
-        function(ctx){
+        function(){
             return 'select 1';
         },
         function(data, ctx, next){
