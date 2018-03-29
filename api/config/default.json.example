@@ -11,7 +11,8 @@
         "listen_port": 80,
         "wrms_details": {
             "user_id": 4089,
-            "exclude_orgs": "37,1098"
+            "exclude_orgs": "37,1098",
+            "free_presales": true
         }
     },
     "icinga_uri": "icinga.example.com",

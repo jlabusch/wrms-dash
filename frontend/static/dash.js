@@ -296,6 +296,11 @@ function draw_custom_charts(){
             return;
         }
 
+        if (data.error){
+            console.log('sla_hours: ' + data.error);
+            return;
+        }
+
         var o = JSON.parse(JSON.stringify(std_gchart_options));
         o.orientation = 'vertical';
         o.chartArea = {height: 200, left: '25%', width: '75%' };

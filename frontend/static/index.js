@@ -70,23 +70,6 @@ function handle_hours(name, i, next){
     };
 }
 
-function fetch_hours(name, i, next){
-    return function(qerr) {
-        if (qerr){
-            console.log('sla_quotes: ' + JSON.stringify(qerr));
-            next();
-            return;
-        }
-        query(
-            "/sla_hours",
-            handle_hours(name, i, next),
-            undefined,
-            0,
-            name + "/default/" + PERIOD
-        );
-    }
-}
-
 function fetch_quotes_from_queue(head, rest){
     if (!head){
         return;
@@ -98,11 +81,11 @@ function fetch_quotes_from_queue(head, rest){
         fetch_quotes_from_queue(rest.shift(), rest);
     }
     query(
-        '/sla_quotes',
-        fetch_hours(head.name, head.index, after_fetches),
+        "/sla_hours",
+        handle_hours(head.name, head.index, after_fetches),
         undefined,
         0,
-        head.uri
+        head.name + "/default/" + PERIOD
     );
 }
 
