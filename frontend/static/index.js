@@ -89,26 +89,31 @@ function fetch_quotes_from_queue(head, rest){
     );
 }
 
-var query_list = [];
-
-function build_queue(name, i) {
-    if (FIRST_LOAD) {
-        draw_tile(name, i, 'blue');
-    }
-    query_list.push({
-        name: name,
-        index: i,
-        uri: name + '/default/' + PERIOD
-    });
-}
+var first_loads = {};
 
 query('/customer_list', function(err, data){
     if (err){
         console.log('customer_list: ' + err);
         return;
     }
-    query_list = [];
-    Object.keys(data).sort().filter(function(n){ return n !== '__vendor' }).forEach(build_queue);
-    FIRST_LOAD = false;
-    fetch_quotes_from_queue(query_list.shift(), query_list);
+
+    Object.keys(data).sort().filter(function(n){ return n !== '__vendor' }).forEach((name, i) => {
+        function after_fetches(){
+            if (arguments[0]){
+                draw_tile.apply(this, arguments);
+            }
+            fetch_quotes_from_queue(rest.shift(), rest);
+        }
+        if (!first_loads[name]){
+            draw_tile(name, i, 'blue');
+            first_loads[name] = true;
+        }
+        query(
+            "/sla_hours",
+            handle_hours(name, i, after_fetches),
+            undefined,
+            0,
+            name + "/default/" + PERIOD
+        );
+    });
 });

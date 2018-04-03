@@ -106,18 +106,6 @@ function all(){
     }
 }
 
-function int_req_handler(key, next){
-    return function(){
-        let d = cache.get(key);
-        util.log_debug(__filename, 'IR handler "' + key + '" cache get: ' + JSON.stringify(d, null, 2), DEBUG);
-        if (d){
-            next(d);
-        }else{
-            next({error: "Couldn't calculate SLA breakdown"});
-        }
-    }
-}
-
 module.exports = query.prepare({
     label: 'sla_hours',
     cache_key_base: 'sla_hours',
@@ -143,7 +131,8 @@ module.exports = query.prepare({
                 send_internal_request(
                     require('./get_quotes')(all),
                     ctx,
-                    int_req_handler(cache.key('approved_quotes', ctx), get_pending_quotes)
+                    cache.key('approved_quotes', ctx),
+                    get_pending_quotes
                 );
             })
             .limit(2);
@@ -160,7 +149,8 @@ module.exports = query.prepare({
                     send_internal_request(
                         require('./get_pending_quotes')(all),
                         ctx,
-                        int_req_handler(cache.key('pending_quotes', ctx), calculate_result)
+                        cache.key('pending_quotes', ctx),
+                        calculate_result
                     );
                 })
                 .limit(2);

@@ -1,4 +1,5 @@
-var util  = require('./util');
+var util  = require('./util'),
+    cache = require('./cache');
 
 let empty_fn = function(){};
 
@@ -18,9 +19,16 @@ Response.prototype.json = function(j){
     this.handler(j);
 }
 
-module.exports = function(fn, ctx, next){
+module.exports = function(fn, ctx, key, next){
     util.log_debug(__filename, JSON.stringify(ctx, null, 2), DEBUG);
-    let res = new Response(next);
+    let res = new Response(() => {
+        let data = cache.get(key);
+        if (data){
+            next(data);
+        }else{
+            next({error: "Couldn't resolve " + key});
+        }
+    });
     fn({}, res, empty_fn, ctx);
 }
 
