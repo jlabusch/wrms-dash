@@ -17,6 +17,11 @@
     },
     "icinga_uri": "icinga.example.com",
     "orgs": {
+        "__vendor": {
+            "id": 777,
+            "budget_hours": 0,
+            "default_system": "1"
+        },
         "AcmeCo": {
             "id": 1,
             "tz": "Europe/London",
