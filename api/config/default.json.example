@@ -28,7 +28,7 @@
             "budget_hours": 20,
             "availability": "host=elb-1&service=backend-count",
             "storage": "host=fs1&service=Check+disk+space",
-            "storage_pattern": "(sitedata)=(\\d+)MB",
+            "storage_pattern": "sitedata",
             "default_system": "1000",
             "users": {
                 "hostname": "moodle.example.com",
