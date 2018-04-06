@@ -580,7 +580,6 @@ var gophers = [
     'GopherSpaceMentor.png',
     'HALLOWEEN_GOPHER.png',
     'LazyGopher.png',
-    'LICENSE',
     'LION_GOPHER.png',
     'MOTORCYCLE_GOPHER.png',
     'MovingGopher.png',
