@@ -30,8 +30,8 @@ function populate_timesheets(data, ctx){
         warranty_wrs = {};
 
     data.rows.forEach(row => {
-        // Don't add hours if we find a Warranty tag.
-        if (row.tag === 'Warranty'){
+        // Don't add hours if we find a Warranty or Maintenance tag.
+        if (row.tag === 'Warranty' || row.tag === 'Maintenance'){
             warranty_wrs[row.request_id] = true;
             delete ts[row.request_id];
         }else if (!warranty_wrs[row.request_id]){

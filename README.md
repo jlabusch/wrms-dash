@@ -46,7 +46,9 @@ To change a user's password, run `docker exec -it wrmsdash_frontend_1 ./manage.p
 
 ### WRMS metadata
 
-You can mostly ignore this, but it's possible to move quotes to the SLA budgets of different months using the `invoice_to` field.
+WRs tagged with "Warranty" or "Maintenance" won't have their timesheet hours counted.
+
+And you can mostly ignore this next bit, but know that it's possible to move quotes to the SLA budgets of different months using the `invoice_to` field.
 
 Quote ID 1234 can be allocated to the March 2016 SLA budget by saying:
 
