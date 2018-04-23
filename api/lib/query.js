@@ -26,6 +26,9 @@ function prepare_query(args){
             use_last_known_good:    arguments[7]
         };
     }
+    if (!args.cache_key_base){
+        args.cache_key_base = args.label;
+    }
     return function(req, res, next, ctx){
         let ck = args.cache_key_override ? args.cache_key_override(ctx) : cache.key(args.cache_key_base, ctx);
 

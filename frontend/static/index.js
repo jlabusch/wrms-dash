@@ -2,15 +2,39 @@ URI_EXT = '__vendor/default/2017-7';
 
 var FIRST_LOAD = true;
 
-function draw_tile(name, i, color){
+function draw_tile(name, i, color, count){
+    if (count === undefined){
+        count = '';
+    }
     $('.chart-wrapper:eq(' + i + ')').html(
-        '<a href="/dashboard/' + name + '/"><div class="index-tile ' + color + '">' + name + '</div></a>'
+        '<a href="/dashboard/' + name + '/">' +
+            '<div class="index-tile ' + color + '">' +
+                '<span class="tile-count">' + count + '</span>' +
+                '<span class="tile-name">' + name + '</span>' +
+            '</div>' +
+        '</a>'
     );
 }
 
+function handle_count(name, i, color, next){
+    return function(qerr, data) {
+        if (qerr){
+            console.log('wrs_created_count: ' + JSON.stringify(qerr));
+            next();
+            return;
+        }
+        var count = '';
+        if (typeof(data.result) === 'number'){
+            console.log(name + ': ' + data.result);
+            count = data.result;
+        }
+        next(name, i, color, count);
+    }
+}
+
 function handle_hours(name, i, next){
-    return function(cerr, data) {
-        if (cerr){
+    return function(qerr, data) {
+        if (qerr){
             console.log('sla_quotes: ' + JSON.stringify(qerr));
             next();
             return;
@@ -36,66 +60,60 @@ function handle_hours(name, i, next){
             color = "yellow";
         }
 
-        next(name, i, color);
-    };
-}
-
-function fetch_hours(name, i, next){
-    return function(qerr) {
-        if (qerr){
-            console.log('sla_quotes: ' + JSON.stringify(qerr));
-            next();
-            return;
-        }
         query(
-            "/sla_hours",
-            handle_hours(name, i, next),
+            "/wrs_created_count",
+            handle_count(name, i, color, next),
             undefined,
             0,
             name + "/default/" + PERIOD
         );
-    }
+    };
 }
 
 function fetch_quotes_from_queue(head, rest){
     if (!head){
         return;
     }
-    function after_fetches(name, i, color){
-        if (name){
-            draw_tile(name, i, color);
+    function after_fetches(){
+        if (arguments[0]){
+            draw_tile.apply(this, arguments);
         }
         fetch_quotes_from_queue(rest.shift(), rest);
     }
     query(
-        '/sla_quotes',
-        fetch_hours(head.name, head.index, after_fetches),
+        "/sla_hours",
+        handle_hours(head.name, head.index, after_fetches),
         undefined,
         0,
-        head.uri
+        head.name + "/default/" + PERIOD
     );
 }
 
-var query_list = [];
-
-function build_queue(name, i) {
-    if (FIRST_LOAD) {
-        draw_tile(name, i, 'blue');
-    }
-    query_list.push({
-        name: name,
-        index: i,
-        uri: name + '/default/' + PERIOD
-    });
-}
+var first_loads = {};
 
 query('/customer_list', function(err, data){
     if (err){
         console.log('customer_list: ' + err);
         return;
     }
-    query_list = [];
-    Object.keys(data).sort().filter(function(n){ return n !== '__vendor' }).forEach(build_queue);
-    FIRST_LOAD = false;
-    fetch_quotes_from_queue(query_list.shift(), query_list);
+
+    Object.keys(data).sort().filter(function(n){ return n !== '__vendor' }).forEach((name, i) => {
+        function after_fetches(){
+            if (arguments[0]){
+                draw_tile.apply(this, arguments);
+            }
+            fetch_quotes_from_queue(rest.shift(), rest);
+        }
+        if (!first_loads[name]){
+            draw_tile(name, i, 'blue');
+            first_loads[name] = true;
+        }
+        query(
+            "/sla_hours",
+            handle_hours(name, i, after_fetches),
+            undefined,
+            0,
+            name + "/default/" + PERIOD
+        );
+    });
 });

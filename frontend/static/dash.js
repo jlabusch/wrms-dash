@@ -40,19 +40,26 @@ var std_gchart_options = {
 };
 
 function toggle_faqs(){
+    set_faqs(!window.localStorage.getItem('dashboard-faq-hidden'));
+}
+
+function set_faqs(hidden){
+    var d;
+    if (hidden){
+        d = 'none';
+        window.localStorage.setItem('dashboard-faq-hidden', true);
+    }else{
+        d = 'block';
+        window.localStorage.removeItem('dashboard-faq-hidden');
+    }
+
     document.querySelectorAll('.faq').forEach(function(el){
-        if (el.style.display !== 'none'){
-            el.style.display = 'none';
-        }else{
-            el.style.display = 'block';
-        }
+        el.style.display = d;
     });
 }
 
 (function(){
-    if (window.location.search.match(/nohelp/)){
-        toggle_faqs();
-    }
+    set_faqs(window.localStorage.getItem('dashboard-faq-hidden') || window.location.search.match(/nohelp/));
 
     $('div.chart-title').each(function(i, e){ e.innerText = e.innerText.replace(/PERIOD/g, PERIOD); });
     $('div.chart-notes').each(function(i, e){ e.innerText = e.innerText.replace(/PERIOD/g, PERIOD); });
@@ -293,6 +300,11 @@ function draw_custom_charts(){
     query('/sla_hours', function(err, data){
         if (err){
             console.log('sla_hours: ' + err);
+            return;
+        }
+
+        if (data.error){
+            console.log('sla_hours: ' + data.error);
             return;
         }
 
@@ -538,29 +550,43 @@ function draw_custom_charts(){
 } // google charts
 
 var gophers = [
-    'ASHLEY_STEVE.png',
+    '7TH_BIRTHDAY.png',
+    'BATMAN_GOPHER.png',
     'BELGIUM.png',
+    'Biker_Gopher.png',
     'BUFFALO_CASTS.png',
     'CouchPotatoGopher.png',
     'COWBOY_GOPHER.png',
+    'DockerGopher.png',
     'DRAWING_GOPHER.png',
     'GIRL_GOPHER.png',
     'GO_BUFFALO.png',
+    'GO_BUG.png',
     'GO_LEARN.png',
+    'GO_PARIS.png',
+    'GOPHER_ADADEMY.png',
+    'GOPHERCON_ICELAND.png',
     'GOPHERCON.png',
+    'GOPHER_DAD.png',
     'GOPHER_DENVER.png',
     'GOPHER_INCLUSION.png',
     'GOPHER_LAPTOP.png',
     'GOPHER_MIC_DROP_WITH_BACKGROUND.png',
+    'GOPHER_PARAKEET.png',
+    'GOPHER_ROCKS.png',
     'GOPHER_SAFARI.png',
+    'GOPHER_SAILOR_STRIPE.png',
     'GopherSpaceCommunity.png',
     'GopherSpaceMentor.png',
+    'HALLOWEEN_GOPHER.png',
     'LazyGopher.png',
     'LION_GOPHER.png',
+    'MOTORCYCLE_GOPHER.png',
     'MovingGopher.png',
     'NERDY.png',
     'pride_circle.png',
-    'SPACEGIRL_GOPHER.png',
+    'STAR_TREK_GOPHER.png',
+    'STAY_PUFT_GOPHER.png',
     'This_is_Fine_Gopher.png',
     'Unicorn_Gopher.png'
 ];

@@ -2,6 +2,7 @@
 .htpasswd
 ssl/*.pem
 mis.json
+download_mis_report.sh
 api/config/default.json
 frontend/static/admin
 */db.sqlite3

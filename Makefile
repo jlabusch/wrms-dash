@@ -6,8 +6,7 @@ DOCKER=docker
 build:
 	$(COMPOSE) build
 	$(DOCKER) run -it --rm -v $$PWD/frontend/static:/opt/static jlabusch/wrms-dash-frontend ./manage.py collectstatic --noinput
-	# Haaaa this is so shit I'm so sorry :(
-	$(DOCKER) run -it --rm -v $$PWD/frontend/static:/opt/static jlabusch/wrms-dash-frontend chown -R 1000:1000 /opt/static/admin
+	$(DOCKER) run -it --rm -v $$PWD/frontend/static:/opt/static jlabusch/wrms-dash-frontend chown -R $$(id -u):$$(id -g) /opt/static/admin
 
 frontend/db.sqlite3:
 	CONTAINER=$$($(DOCKER) run -d -t -e TERM=xterm --rm jlabusch/wrms-dash-frontend top) && \

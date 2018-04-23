@@ -18,6 +18,7 @@ function cache_key(name, context){
 function cache_put(key, val){
     var now = new Date().getTime();
     cache[key] = {ts: now, val: JSON.parse(JSON.stringify(val))};
+    util.log_debug(__filename, 'CACHE PUT [' + key + ']', DEBUG);
 }
 
 function cache_get(key, limit){

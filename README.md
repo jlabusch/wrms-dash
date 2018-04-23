@@ -8,25 +8,31 @@ This dashboard replaces our previous monthly SLA report documents.
 
 Proper readme still #todo.
 
-For now:
+### Run me
+
+ - Prerequisites: `git`, `docker` and `docker-compose`
+ - `git clone git@github.com:jlabusch/wrms-dash.git`
+ - `cd wrms-dash`
+ - Create `./api/config/default.json` either by customizing the example or getting a working copy from another team in Catalyst.
+ - Find the hostname of your WRMS database and set that in the config's `db.host` option.
+ - You probably want to set at least two optional environment variables: `DJANGO_SECRET` and `ICINGA_BASIC_AUTH`
+ - To turn on debug mode, export `DJANGO_DEBUG=Y` and/or `API_DEBUG=Y`
+ - By default the HTTP server will run with no SSL on TCP/80. Either free up that port or tie this into your network in a more intelligent way. If you want to run this for development in Cat EU, remember that it'll clash with the default Easydev setup.
+ - `make run` to start it, `docker-compose down` to stop it
+ - Browse to http://localhost to test
+ - If you're within Catalyst, ask me about integrating the finance system's MIS reports to see revenue on the Omnitool.
+
+### Dev notes
 
  - Each widget's back end code is at `./api/lib/get_XXX.js`
- - Back end configuration is at `./api/config/default.json` (see also `default.json.example`)
- - There are no public instances of the WRMS database (`db.host`) - get in touch if you need more info
- - To point a widget at a different data source at the front end (i.e. bypassing the Node back end), set `override_uri` in the call to `html/dash.js:query()`
- - check out https://github.com/keen/keen-dataviz.js/blob/master/docs/README.md#chart-types for front-end options, or just use your favourite charting library.
+ - To point a front end widget at a different data source at the front end (i.e. bypassing the Node back end), set `override_uri` in the call to `html/dash.js:query()`
+ - check out https://github.com/keen/keen-dataviz.js/blob/master/docs/README.md#chart-types for front-end options, or just use your favourite charting library. Google charts also play nicely with this dash.
 
 ![Architecture](https://github.com/jlabusch/wrms-dash/raw/master/overview.png)
 
-(Note: we don't really use the SSL bits quite as described above, so you'll see SSL turned off in `docker-compose.yml`, `nginx-default.conf` and `Makefile`.)
+(Note: we don't really use the SSL bits, so you'll see SSL turned off in `docker-compose.yml`, `nginx-default.conf` and `Makefile`.)
 
 ### Administration
-
- - Prerequisites: `docker` and `docker-compose`
- - You probably want to set at least two environment variables: `DJANGO_SECRET` and `ICINGA_BASIC_AUTH`
- - To turn on debug mode, export `DJANGO_DEBUG=Y` and/or `API_DEBUG=Y`
- - Run the system with `docker-compose up`, stop it with `docker-compose down`
-
 
 If you're starting from a blank database, after starting the system you need to:
 
@@ -40,7 +46,9 @@ To change a user's password, run `docker exec -it wrmsdash_frontend_1 ./manage.p
 
 ### WRMS metadata
 
-You can mostly ignore this, but it's possible to move quotes to the SLA budgets of different months using the `invoice_to` field.
+WRs tagged with "Warranty" or "Maintenance" won't have their timesheet hours counted.
+
+And you can mostly ignore this next bit, but know that it's possible to move quotes to the SLA budgets of different months using the `invoice_to` field.
 
 Quote ID 1234 can be allocated to the March 2016 SLA budget by saying:
 
