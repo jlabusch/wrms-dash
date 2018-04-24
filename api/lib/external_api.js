@@ -18,7 +18,7 @@ module.exports = function(args){
         }
 
         let hosts = args.get_hostnames(org),
-            results = {};
+            results = [];
 
         hosts.forEach((h) => {
             const options = setOptions(args, h);
@@ -81,7 +81,9 @@ function parseJson(data, key, args, error) {
 }
 
 function addResult(args, h, json, results) {
-    results[h.hostname + '@' + h.token] = args.get_result(json);
+    let result = args.get_result(h, json);
+
+    results.push(result);
 
     return results;
 }

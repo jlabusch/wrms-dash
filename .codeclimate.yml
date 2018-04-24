@@ -9,6 +9,8 @@ exclude_paths:
 - "frontend/static/bootstrap.min.js"
 - "frontend/static/holder.js"
 - "frontend/static/jquery.min.js"
+- "frontend/static/jquery.js"
+- "frontend/static/jquery.min.map"
 ratings:
   paths:
   - "api/**/*"

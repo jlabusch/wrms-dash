@@ -25,10 +25,10 @@ module.exports = query.prepare({
 
             return template.replace('USER_TOKEN', h.token);
         },
-        get_result: function(json){
-            return {
-                result: json.filessize + json.dbsize
-            };
+        get_result: function(h, json){
+            return [
+                h.hostname, json.filessize + json.dbsize
+            ];
         }
     }),
     cache_timelimit_override: 60*60*1000 // cache TTL 1 hour

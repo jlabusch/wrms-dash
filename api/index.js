@@ -136,8 +136,6 @@ setup('get', '/users', require('./lib/get_users'));
 
 setup('get', '/diskusage_moodle', require('./lib/get_diskusage_moodle'));
 
-setup('get', '/storage', require('./lib/get_storage'));
-
 setup('get', '/availability', require('./lib/get_availability'));
 
 setup('get', '/severity', require('./lib/get_severity'));
