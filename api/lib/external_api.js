@@ -23,11 +23,11 @@ module.exports = function(args){
         hosts.forEach((h) => {
             const options = setOptions(args, h);
             let req = https.request(options, (res) => {
-                checkStatusCode(res);
+                checkStatusCode(res, args, options, error);
                 let data = '';
                 res.on('data', chunk => { data += chunk; });
                 res.on('end', () => {
-                    json = parseJson(data, key, args);
+                    json = parseJson(data, key, args, error);
                     results = addResult(args, h, json, results);
                     if (Object.keys(results).length === hosts.length){
                         next(results);
@@ -50,7 +50,7 @@ function setOptions(args, h) {
     return options;
 }
 
-function checkStatusCode(res) {
+function checkStatusCode(res, args, options, error) {
     // This should only have a non-200 OK in pretty exceptional circumstances.
     if (res.statusCode !== 200) {
         let e = args.label + ': ' + options.hostname + ' => ' + res.statusCode;
@@ -59,7 +59,7 @@ function checkStatusCode(res) {
     }
 }
 
-function parseJson(data, key, args) {
+function parseJson(data, key, args, error) {
     let json = {};
     try {
         json = JSON.parse(data);
