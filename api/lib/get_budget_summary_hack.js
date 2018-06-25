@@ -22,7 +22,11 @@ module.exports = function(req, res, next, ctx){
                 util.log_debug(__filename, 'Skipping ' + key);
                 return;
             }
-            result[org_data.get_org(ctx.org).name] = data;
+            let name = org_data.get_org(ctx.org).name;
+            if (name === '__vendor'){
+                util.log_debug(__filename, 'Skipping ' + key);
+            }
+            result[name] = data;
         }
     });
     res.charSet('utf-8');
