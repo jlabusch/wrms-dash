@@ -104,70 +104,11 @@ var chart07 = new Keen.Dataviz()
 
 var chart09 = new Keen.Dataviz()
     .el('#chart-09')
+    .title('used')
     .height(250)
+    .chartOptions({suffix: 'MB'})
+    .type('metric')
     .prepare();
-
-var GB = 1000,
-    TB = 1000*GB;
-
-function format_disk_size(v){
-    if (v < GB){
-        return [v, 'MB'];
-    }else if (v < TB){
-        v = Math.round(v/GB*10)/10;
-        return [v, 'GB'];
-    }else{
-        v = Math.round(v/TB*10)/10;
-        return [v, 'TB'];
-    }
-}
-
-// TODO: for clients with storage limits defined by contract, make this a guage chart instead.
-query('/storage', render(chart09, function(chart, data){
-    if (data.error || !data.result || data.result.length < 1){
-        data.result = 0;
-        console.log('storage: ' + data.error);
-        chart09
-            .type('message')
-            .message('No data');
-        data.__skip_render = true;
-        return;
-    }
-    if (data.host && data.service){
-        $('#storage-notes').text(format_icinga_note(data));
-    }
-    if (data.result.length > 1){
-        var opt = JSON.parse(JSON.stringify(donut_options));
-        opt.pie = {
-            expand: true,
-            label: {
-                format: function(v, r, i){
-                    return v + ' GB';
-                }
-            }
-        };
-        var total = 0;
-        data.result.forEach(function (v){
-            total += v[0].result;
-            v[0].result = Math.round(v[0].result/GB*10)/10;
-        });
-        var sz = format_disk_size(total);
-        $('#storage-notes').text($('#storage-notes').text() + ' (' + sz[0] + ' ' + sz[1] + ' total)');
-        chart09
-            .colors(default_colors)
-            .type('pie')
-            .chartOptions(opt);
-    }else{
-        chart09
-            .colors([default_colors[5]])
-            .title('disk used')
-            .type('metric');
-
-        var sz = format_disk_size(data.result[0][0].result);
-        data.result = sz[0];
-        chart.chartOptions({suffix: sz[1]})
-    }
-}));
 
 var chart10 = new Keen.Dataviz()
     .el('#chart-10')
@@ -547,7 +488,44 @@ function draw_custom_charts(){
         }
     }));
 
-} // google charts
+    query('/diskusage_moodle', render(chart09, function(c, d){
+
+        var metric_chart = false;
+
+        let length = Object.keys(d.result).length;
+
+        if (d.error || !length){
+            d.result = 0;
+            console.log('diskusage_moodle: ' + c + d.result);
+            metric_chart = true;
+            setTimeout(function(){ $('#chart-09 .keen-dataviz-metric-value').text('N/A'); }, 10);
+            return;
+        }
+
+        d.__skip_render = true; // Rendered here.
+
+        d.result.forEach(row => {
+            var k = default_colors[7];
+
+            // TODO: Based on max disk size colour the chart.
+
+            row.push(k);
+        });
+
+        d.result.unshift(['Service', 'Diskusage in MB', {role: 'style'}]);
+
+        $('#chart-09').empty();
+
+        var o = JSON.parse(JSON.stringify(std_gchart_options));
+
+        o.vAxis.minValue = 99; // If you have values less than 99, the chart automatically
+                               // extends the minimum so everything gets shown.
+
+        (new google.visualization.BarChart(document.getElementById('chart-09')))
+            .draw(google.visualization.arrayToDataTable(d.result), o);
+    }));
+
+} // Google charts.
 
 var gophers = [
     '7TH_BIRTHDAY.png',

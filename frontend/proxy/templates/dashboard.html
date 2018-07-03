@@ -260,9 +260,9 @@
     </div>
 
     <div class="row">
-      <div class="col-sm-6">
+      <div class="col-sm-4">
           <div class="faq">
-            <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About the "Availability" and "Storage" blocks:</span>
+            <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About the "Availability" block:</span>
             <ul>
               <li>These statistics come from our Icinga monitoring system</li>
               <li>Some sites have not yet had their stats integrated to this dashboard</li>
@@ -271,7 +271,18 @@
           </div>
       </div>
 
-      <div class="col-sm-6">
+      <div class="col-sm-4">
+          <div class="faq">
+            <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About the "Disk usage" block:</span>
+            <ul>
+              <li>These statistics come from tool_diskusage plugins for Totara/Moodle/Mahara</li>
+              <li>Some sites have not yet had their stats integrated to this dashboard</li>
+              <li>Any incident reports will provide additional detail beyond the estimates shown here</li>
+            </ul>
+          </div>
+      </div>
+
+      <div class="col-sm-4">
           <div class="faq">
             <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">About the "Users" block:</span>
             <ul>
@@ -292,9 +303,9 @@
           </div>
           <div class="col-sm-3">
             <div class="chart-wrapper">
-              <div class="chart-title">Storage used (present day)</div>
+              <div class="chart-title">Disk usage in MB (present day)</div>
               <div class="chart-stage"><div id="chart-09"></div></div>
-              <div class="chart-notes" id="storage-notes">Production environment</div>
+              <div class="chart-notes" id="diskusage-notes">Production environment</div>
             </div>
           </div>
           <div class="col-sm-3">

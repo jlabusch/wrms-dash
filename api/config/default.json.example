@@ -26,9 +26,15 @@
             "id": 1,
             "tz": "Europe/London",
             "budget_hours": 20,
+            "diskusage_moodle": [
+                { "hostname": "1_moodle.example.com",
+                    "token": "1234567890abcdef1234567890abcdef" },
+                { "hostname": "2_moodle.example.com",
+                    "token": "1234567890abcdef1234567890abcdef" },
+                { "hostname": "3_moodle.example.com",
+                    "token": "1234567890abcdef1234567890abcdef" }
+            ],
             "availability": "host=elb-1&service=backend-count",
-            "storage": "host=fs1&service=Check+disk+space",
-            "storage_pattern": "sitedata",
             "default_system": "1000",
             "users": {
                 "hostname": "moodle.example.com",

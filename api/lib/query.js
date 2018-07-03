@@ -6,8 +6,9 @@ function db_error_handler(res, next){
     return function(err){
         util.log(__filename, 'ERROR: ' + err);
         res.json({error: err.message});
-        next && next(false);
-    }
+        next(true);
+        next(false);
+    };
 }
 
 exports.error = db_error_handler;
@@ -23,7 +24,7 @@ function prepare_query(args){
             cache_timelimit_override: arguments[5],
             cache_key_override:     arguments[6],
             use_last_known_good:    arguments[7]
-        }
+        };
     }
     if (!args.cache_key_base){
         args.cache_key_base = args.label;
@@ -38,9 +39,10 @@ function prepare_query(args){
             args.process_data(data, ctx, (result) => {
                 res.charSet('utf-8');
                 res.json(result);
-                next && next(false);
+                next(true);
+                next(false);
             });
-        }
+        };
 
         var c = cache.get(ck, args.cache_timelimit_override);
         if (c){
@@ -81,9 +83,7 @@ function prepare_query(args){
                     );
             }
         }
-    }
+    };
 }
 
 exports.prepare = prepare_query;
-
-
