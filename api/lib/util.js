@@ -97,7 +97,7 @@ exports.calculate_timesheet_hours = function(hours, invoice_to, context){
 
 exports.parse_period = function(str){
     let r = null,
-        m = str.match(/^(\d\d\d\d)-0?(\d\d?)$/);
+        m = str.match(/^(\d\d\d\d)-0?(\d\d?)/);
     if (m){
         r = {
             period: str.replace(/-0/, '-'),
@@ -110,15 +110,30 @@ exports.parse_period = function(str){
     return r;
 }
 
+function date_fmt(d){
+    return d ? d.getFullYear() + '-' + (d.getMonth()+1) : '';
+}
+
+exports.date_fmt = date_fmt;
+
 exports.current_period = function(){
     let now = new Date(),
         year = now.getFullYear(),
-        month = (now.getMonth()+1)%12;
+        month = now.getMonth()+1;
     return {
         year: year,
         month: month,
-        period: year + '-' + month
+        period: date_fmt(now)
     };
+}
+
+// Crunch /\s+/g into ' '
+exports.trim = function(str){
+    let subs = Array.prototype.slice.call(arguments, 1);
+
+    let r = str.map(s => s + (subs.shift() || '')).join('').replace(/\s+/g, ' ');
+    console.log(r);
+    return r;
 }
 
 exports.wr_list_sql = function(context, this_period_only, exclude_statuses){
@@ -215,4 +230,54 @@ function next_period(context){
 }
 
 exports.next_period = next_period;
+
+// Like Promise.all(), but guarantees promises executed sequentially.
+//
+//  - This function has the same fail-fast behaviour as Promise.all() unless on_error_continue
+//    is set, in which case failures just add a null value to the result array.
+//  - Inputs are processed starting at index i.
+//
+// Of course, the big problem with this idea is RAII, and we don't want the later promises
+// to start executing until we're ready... so instead of a list of promises, we take in a
+// list of inputs and a promise generator function:
+//
+//      generator(inputs[i]) => Promise
+//
+// Final resolve() contains a list of all values returned by the sequence's resolution.
+function promise_sequence(inputs, generator, i = 0, on_error_continue = false){
+    return new Promise((resolve, reject) => {
+        if (!inputs){
+            log_debug(__filename, `promise_sequence() no inputs`);
+            return resolve([]);
+        }
+        promise_sequence_impl(resolve, on_error_continue ? null : reject, [], inputs, generator, i);
+    });
+}
+
+exports.promise_sequence = promise_sequence;
+
+exports.ON_ERROR_CONTINUE = true;
+
+function promise_sequence_impl(resolve, reject, values, inputs, generator, i){
+    if (i >= inputs.length){
+        resolve(values);
+        return;
+    }
+    function next(val){
+        values.push(val);
+        promise_sequence_impl(resolve, reject, values, inputs, generator, i+1);
+    }
+    generator(inputs[i]).then(
+        next,
+        err => {
+            if (reject){
+                log_debug(__filename, `promise_sequence(${i}) rejecting on error ${err.message || err}`);
+                reject(err);
+            }else{
+                log_debug(__filename, `promise_sequence(${i}) not rejecting on error ${err.message || err}`);
+                next(null);
+            }
+        }
+    );
+}
 

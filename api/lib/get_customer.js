@@ -1,24 +1,38 @@
-var query = require('./query'),
+var store = require('./data_store'),
     util = require('./util');
 
-module.exports = query.prepare(
-    'customer',
-    'cust', 
-    function(ctx){
-        return `SELECT org_code,org_name,system_id,system_desc
-                FROM organisation,work_system
-                WHERE org_code=${ctx.org} AND system_id IN (${ctx.sys.join(',')})`;
-    },
-    function(data, ctx, next){
-        let r = {
-            result: 0,
-            org: { id: ctx.org },
-            system: { id: ctx.sys }
-        };
-        if (data && data.rows && data.rows.length > 0){
-            r.org.name = data.rows[0].org_name;
-            r.system.name = data.rows.map(row => { return row.system_desc }).join(', ');
+// returns {
+//   result: 0,
+//   org: {id, name},
+//   system: {id, name}
+// }
+module.exports = function(req, res, next, ctx){
+    store.query(
+        util.trim  `SELECT DISTINCT c.id,c.org_name
+                    FROM    contracts c
+                    JOIN    contract_system_link cs ON c.id=cs.contract_id
+                    WHERE   c.org_id=?
+                    AND     cs.system_id IN (${ctx.sys.join(',')})`,
+        ctx.org,
+        (err, data) => {
+            if (err){
+                util.log(__filename, 'ERROR: ' + (err.message || err));
+                res.json({error: err.message});
+                next && next(false);
+                return;
+            }
+            if (!Array.isArray(data) || data.length < 1){
+                util.log(__filename, 'ERROR: no name for org ' + ctx.org);
+                data = [{id: ctx.org, org_name: ctx.org}];
+            }
+            res.charSet('utf-8');
+            res.json({
+                result: 0,
+                org: {id: ctx.org, name: data[0].org_name},
+                system: {id: ctx.sys, name: data[0].id}
+            });
+            next && next(false);
         }
-        next(r);
-    }
-)
+    );
+}
+

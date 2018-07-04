@@ -45,7 +45,7 @@ DB.prototype.query = function(){
         args = Array.prototype.slice.call(arguments, 0),
         query_name = args.shift(),
         ctx = args.pop(),
-        label = `${ctx.org}/${ctx.sys}/${ctx.period}/${query_name}`;
+        label = ctx ? `${ctx.org}/${ctx.sys}/${ctx.period}/${query_name}` : query_name;
 
     // Note: we usually want debug on a per-query basis, so using the
     // API_DEBUG env isn't good enough. To turn on debugging, throw
