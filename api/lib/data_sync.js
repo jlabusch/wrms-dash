@@ -181,6 +181,7 @@ function sync_contract(c){
                             wr.system_id,
                             util.date_fmt(new Date(wr.request_on)),
                             wr.brief,
+                            wr.detailed,
                             wr.status,
                             wr.urgency,
                             wr.importance,

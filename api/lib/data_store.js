@@ -49,6 +49,7 @@ let sql = {
             system_id REFERENCES systems(id) ON DELETE CASCADE,
             created_on TEXT NOT NULL,
             brief TEXT NOT NULL,
+            detailed TEXT NOT NULL,
             status TEXT NOT NULL,
             urgency TEXT NOT NULL,
             importance TEXT NOT NULL,
@@ -91,13 +92,14 @@ let sql = {
     add_contract_budget_link: 'INSERT OR REPLACE INTO contract_budget_link(contract_id, budget_id) values (?, ?)',
     delete_contract_budgets: 'DELETE FROM budgets WHERE id IN (SELECT budget_id FROM contract_budget_link WHERE contract_id=?)',
     delete_contract_budget_links: 'DELETE FROM contract_budget_link WHERE contract_id=?',
-    add_wr: 'INSERT OR REPLACE INTO wrs (id, system_id, created_on, brief, status, urgency, importance, hours, tag_unchargeable, tag_additional, tags, invoice_to) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    add_wr: 'INSERT OR REPLACE INTO wrs (id, system_id, created_on, brief, detailed, status, urgency, importance, hours, tag_unchargeable, tag_additional, tags, invoice_to) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     add_quote: 'INSERT OR REPLACE INTO quotes (id, budget_id, wr_id, hours, additional, valid, approved) values (?, ?, ?, ?, ?, ?, ?)',
     wrms: {
         // Must have same request_id order as quotes_for_system()
         wrs_for_system: (sys_arr) => {
             return `SELECT  r.request_id,
                             r.brief,
+                            r.detailed,
                             r.request_on,
                             r.system_id,
                             stat.lookup_desc as status,
