@@ -66,45 +66,11 @@ server.post('/dec', function(req, res, next){
     next && next(false);
 });
 
-var get_pending_quotes = require('./lib/get_pending_quotes');
-
-setup(
-    'get',
-    '/pending_quotes',
-    get_pending_quotes(
-        function(context){
-            return function(row){
-                return true;
-            }
-        }
-    )
-);
-
 var get_quotes = require('./lib/get_quotes');
 
-setup(
-    'get',
-    '/sla_quotes',
-    get_quotes(
-        function(context){
-            return function(row){
-                return qf.is_sla_quote_for_this_period(row, context);
-            }
-        }
-    )
-);
-
-setup(
-    'get',
-    '/additional_quotes',
-    get_quotes(
-        function(context){
-            return function(row){
-                return qf.is_additional_quote_for_this_period(row, context);
-            }
-        }
-    )
-);
+setup('get', '/pending_quotes',     get_quotes({sla:undefined,  approved:false, limit_period:false}));
+setup('get', '/sla_quotes',         get_quotes({sla:true,       approved:true,  limit_period:true }));
+setup('get', '/additional_quotes',  get_quotes({sla:false,      approved:true,  limit_period:true }));
 
 setup('get', '/mis_report', require('./lib/get_mis_report'));
 
@@ -136,8 +102,6 @@ setup('get', '/storage', require('./lib/get_storage'));
 
 setup('get', '/availability', require('./lib/get_availability'));
 
-setup('get', '/severity', require('./lib/get_severity'));
-
 setup(
     'get',
     '/response_times_PLACEHOLDER',
@@ -153,11 +117,59 @@ setup(
 
 setup('get', '/response_times', require('./lib/get_response_times'));
 
-setup('get', '/statuses', require('./lib/get_statuses'));
-
 setup('get', '/sla_hours', require('./lib/get_sla_hours'));
 
-setup('get', '/wr_list', require('./lib/get_wr_list'));
+var wr_list_query = require('./lib/get_wr_list');
+
+setup(
+    'get',
+    '/wr_list',
+    wr_list_query({
+        exclude_statuses: [],
+        limit_period: true
+    })
+);
+
+setup(
+    'get',
+    '/statuses',
+    wr_list_query({
+        limit_period: false,
+        processor: (rows) => {
+            let o = {};
+
+            rows.forEach(r => {
+                let x = o[r.status] || 0;
+                ++x;
+                o[r.status] = x;
+            });
+
+            let r = [];
+            Object.keys(o).sort().forEach(status => { r.push([status, o[status]]) });
+            return r;
+        }
+    })
+);
+
+setup(
+    'get',
+    '/severity',
+    wr_list_query({
+        limit_period: false,
+        processor: (rows) => {
+            let r = [
+                [ 'Low', 0 ],
+                [ 'Medium', 0 ],
+                [ 'High', 0 ],
+                [ 'Critical', 0 ]
+            ];
+            rows.forEach(row => {
+                r[util.map_severity(row.urgency, row.importance).number][1]++;
+            });
+            return r;
+        }
+    })
+);
 
 function main(port){
     server.listen(port, function(err){
@@ -166,6 +178,7 @@ function main(port){
         }
         util.log(__filename, `${server.name} listening at ${server.url}`);
     });
+    require('./lib/data_sync').unpause();
 }
 
 if (require.main === module){

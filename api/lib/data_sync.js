@@ -156,6 +156,7 @@ function sync_contract(c){
 
             let prev_wr = {request_id: undefined, additional: 0, unchargeable: 0};
 
+            let iq = 0;
             for (let iw = 0; iw < wr_rows.length; ++iw){
                 let wr = wr_rows[iw];
 
@@ -185,7 +186,7 @@ function sync_contract(c){
                             wr.status,
                             wr.urgency,
                             wr.importance,
-                            wr.timesheet_hours|0,
+                            0, // only fill in timesheet hours if there are no quotes
                             wr.unchargeable|0,
                             wr.additional|0,
                             wr.tags,
@@ -205,32 +206,40 @@ function sync_contract(c){
 
                     let has_quotes = false;
 
+                    // Find quotes for this WR
+                    util.log_debug(__filename, 'Finding quotes for WR ' + wr.request_id, DEBUG);
+                    while (iq < quotes.rows.length && quotes.rows[iq].request_id < wr.request_id){
+                        util.log_debug(__filename, `iq=${iq}, quotes.request_id=${quotes.rows[iq].request_id}`, DEBUG);
+                        ++iq;
+                    }
                     // If anything goes wrong, don't skip ahead to next WR like we do above, keep processing
                     // quotes in sequence.
-                    for (let iq = 0; iq < quotes.rows.length && quotes.rows[iq].request_id === wr.request_id; ++iq){
+                    for (; iq < quotes.rows.length && quotes.rows[iq].request_id === wr.request_id; ++iq){
                         let q = quotes.rows[iq];
                         util.log_debug(__filename, `contract ${contract.name} quote ${q.quote_id}`, DEBUG);
 
-                        if (q.quote_cancelled_by || !q.approved_by_id || q.quote_units !== 'hours'){
+                        if (q.quote_units !== 'hours'){
                             continue;
                         }
 
-                        // If there are live quotes, find the appropriate contract budget
+                        // If there are (potentially) live quotes, find the appropriate contract budget
                         // (remembering the different ways of allocating quotes to months)
                         let budget = undefined;
 
                         // Don't modify the budget for real until we see sql.add_quote succeed.
                         await sqlite_promise(store.dbs.syncing, 'BEGIN TRANSACTION');
 
-                        util.log_debug(__filename, `contract ${contract.name} quote ${q.quote_id} is approved`, DEBUG);
+                        util.log_debug(__filename, `contract ${contract.name} quote ${JSON.stringify(q)} is approved`, DEBUG);
 
                         let qdesc = qf.describe_quote({
                             approved_on: q.approved_on,
+                            quoted_on: q.quoted_on,
                             tags: wr.tags,
                             invoice_to: wr.invoice_to,
                             request_id: wr.request_id,
                             quote_id: q.quote_id
                         });
+                        util.log_debug(__filename, `contract ${contract.name} quote ${q.quote_id} description: ${JSON.stringify(qdesc)}`, DEBUG);
 
                         try{
                             budget = await select_monthly_budget(contract, qdesc.period);
@@ -241,12 +250,15 @@ function sync_contract(c){
                             continue;
                         }
 
-                        try{
-                            await modify_budget_for_quote(budget, q, qdesc);
-                        }catch(err){
-                            util.log(__filename, `ERROR modifying budget for ${contract.name} period ${qdesc.period}: ${err}`);
-                            await sqlite_promise(store.dbs.syncing, 'ROLLBACK').catch(err => {});
-                            continue;
+                        // If the quote is approved, modify the budget in light of this quote
+                        if (q.approved_by_id){
+                            try{
+                                await modify_budget_for_quote(budget, q, qdesc);
+                            }catch(err){
+                                util.log(__filename, `ERROR modifying budget for ${contract.name} period ${qdesc.period}: ${err}`);
+                                await sqlite_promise(store.dbs.syncing, 'ROLLBACK').catch(err => {});
+                                continue;
+                            }
                         }
 
                         try{
@@ -259,7 +271,10 @@ function sync_contract(c){
                         await sqlite_promise(store.dbs.syncing, 'COMMIT').catch(err => {
                             util.log(__filename, `ERROR committing quote ${q.quote_id}: ${err}`);
                         });
-                        has_quotes = true;
+
+                        if (quote_is_valid(q)){
+                            has_quotes = true;
+                        }
                     }
 
                     util.log_debug(__filename, 'Done processing quotes for WR ' + wr.request_id);
@@ -275,27 +290,89 @@ function sync_contract(c){
                     util.log_debug(__filename, 'No timesheets for WR ' + wr.request_id);
                     continue;
                 }
-                util.log_debug(__filename, 'Processing timesheets for WR ' + wr.request_id);
+                util.log_debug(__filename, 'Processing timesheets for WR ' + wr.request_id, DEBUG);
+
+                let total_timesheets = 0,
+                    timesheet_buckets = {},
+                    timesheet_budgets = {};
 
                 // We only reach this point if there are no live quotes.
-                // Find this month's budget and add timesheet hours to base_hours_spent.
-                try{
-                    budget = await select_monthly_budget(contract, wr.timesheet_date);
-                }catch(err){
-                    util.log(__filename, `ERROR finding timesheet budget for ${contract.name} period ${wr.timesheet_date}: ${err}`, DEBUG);
-                    continue;
-                }
+                for (; iw < wr_rows.length && wr_rows[iw].request_id === wr.request_id; ++iw){
 
-                try{
-                    await sqlite_promise(
-                        store.dbs.syncing,
-                        'UPDATE budgets SET base_hours_spent=? WHERE id=?',
-                        budget.base_hours_spent + wr.timesheet_hours,
-                        budget.id
-                    );
-                }catch(err){
-                    util.log(__filename, `ERROR modifying budget for ${contract.name} timesheet period ${wr.timesheet_date}: ${err}`, DEBUG);
-                    continue;
+                    let iw_hours = wr_rows[iw].timesheet_hours,
+                        iw_date = wr_rows[iw].timesheet_date;
+
+                    total_timesheets += iw_hours;
+
+                    util.log_debug(__filename, 'WR ' + wr.request_id + ' iw=' + iw + ' hours=' + total_timesheets + ' (+' + iw_hours + ')', DEBUG);
+
+                    // Find this period's budget and add timesheet hours to base_hours_spent.
+                    let iw_budget = undefined;
+                    try{
+                        iw_budget = await select_monthly_budget(contract, iw_date);
+                    }catch(err){
+                        util.log(__filename, `ERROR finding timesheet budget for ${contract.name} period ${iw_date}: ${err}`, DEBUG);
+                        continue;
+                    }
+
+                    timesheet_budgets[iw_budget.id] = iw_budget;
+
+                    let t = timesheet_buckets[iw_date] || {request_id: wr.request_id, hours: 0, budget: iw_budget.id, date: iw_date};
+                    t.hours += iw_hours;
+                    timesheet_buckets[iw_date] = t;
+                }
+                if (total_timesheets){ // then we incremented iw until the while() condition failed
+                    // Take it back a step so the outer loop works as expected.
+                    --iw;
+
+                    let buckets = Object.values(timesheet_buckets);
+
+                    // recalculate total_timesheets based on sum of rounded buckets so all our numbers are consistent
+                    total_timesheets = 0;
+
+                    for (let ib = 0; ib < buckets.length; ++ib){
+
+                        let n = util.round_to_half_hour(buckets[ib].hours),
+                            b = timesheet_budgets[buckets[ib].budget];
+
+                        total_timesheets += n;
+
+                        try{
+                            await sqlite_promise(
+                                store.dbs.syncing,
+                                sql.add_timesheet,
+                                buckets[ib].request_id,
+                                b.id,
+                                n
+                            );
+                        }catch(err){
+                            util.log(__filename, `ERROR adding timesheet for ${contract.name} timesheet period ${buckets[ib].date}: ${err.message || err}`, DEBUG);
+                            continue;
+                        }
+
+                        try{
+                            await sqlite_promise(
+                                store.dbs.syncing,
+                                'UPDATE budgets SET base_hours_spent=? WHERE id=?',
+                                b.base_hours_spent + n,
+                                b.id
+                            );
+                        }catch(err){
+                            util.log(__filename, `ERROR modifying budget for ${contract.name} timesheet period ${buckets[ib].date}: ${err.message || err}`, DEBUG);
+                            continue;
+                        }
+                    }
+
+                    try{
+                        await sqlite_promise(
+                            store.dbs.syncing,
+                            'UPDATE wrs SET hours=? WHERE id=?',
+                            total_timesheets,
+                            wr_rows[iw].request_id
+                        );
+                    }catch(err){
+                        util.log(__filename, `ERROR modifying budget for ${contract.name} timesheet period ${wr.timesheet_date}: ${err.message || err}`, DEBUG);
+                    }
                 }
             }
             util.log_debug(__filename, 'Done processing WRs for contract ' + contract.name, DEBUG);
@@ -425,7 +502,7 @@ function select_monthly_budget(contract, period){
     return new Promise((resolve, reject) => {
         let budget_name = create_budget_name(contract, 'month', period);
         store.dbs.syncing.all(
-            'SELECT id,base_hours,base_hours_spent,additional_hours FROM budgets WHERE id=?',
+            'SELECT id,base_hours,base_hours_spent,sla_quote_hours,additional_hours FROM budgets WHERE id=?',
             budget_name,
             (err, budget) => {
                 if (err){
@@ -439,7 +516,7 @@ function select_monthly_budget(contract, period){
                         success => {
                             sqlite_promise(store.dbs.syncing, sql.add_contract_budget_link, contract.name, budget_name).then(
                                 success => {
-                                    resolve({id: budget_name, base_hours: 0, additional_hours: 0, base_hours_spent: 0});
+                                    resolve({id: budget_name, base_hours: 0, sla_quote_hours: 0, additional_hours: 0, base_hours_spent: 0});
                                 },
                                 reject
                             );
@@ -467,11 +544,16 @@ function modify_budget_for_quote(budget, quote, quote_description){
         // SLA quote hours are subtracted from base_hours as base_hours_spent
         return sqlite_promise(
             store.dbs.syncing,
-            'UPDATE budgets SET base_hours_spent=? WHERE id=?',
+            'UPDATE budgets SET base_hours_spent=?, sla_quote_hours=? WHERE id=?',
             budget.base_hours_spent + quote.quote_amount,
+            budget.sla_quote_hours + quote.quote_amount,
             budget.id
         );
     }
+}
+
+function quote_is_valid(quote){
+    return !!quote.approved_by_id || !quote.expired;
 }
 
 function add_quote(quote, budget, wr){
@@ -485,8 +567,8 @@ function add_quote(quote, budget, wr){
         quote.request_id,
         quote.quote_amount,
         wr.additional|0,
-        1, // valid
-        quote.approved_by_id ? 1 : 0 // approved
+        quote_is_valid(quote)|0,
+        !!quote.approved_by_id|0
     );
 }
 

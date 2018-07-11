@@ -8,7 +8,7 @@ var store = require('./data_store'),
 // }
 module.exports = function(req, res, next, ctx){
     store.query(
-        util.trim  `SELECT DISTINCT c.id,c.org_name
+        util.trim  `SELECT  c.id,c.org_name
                     FROM    contracts c
                     JOIN    contract_system_link cs ON c.id=cs.contract_id
                     WHERE   c.org_id=?

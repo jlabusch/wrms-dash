@@ -38,6 +38,7 @@ let sql = {
             id TEXT PRIMARY KEY,
             base_hours REAL NOT NULL,
             base_hours_spent REAL NOT NULL,
+            sla_quote_hours REAL NOT NULL,
             additional_hours REAL NOT NULL
         )`,
         `CREATE TABLE contract_budget_link (
@@ -59,6 +60,12 @@ let sql = {
             tags TEXT,
             invoice_to TEXT
         )`,
+        `CREATE TABLE timesheets (
+            id INTEGER PRIMARY KEY,
+            wr_id REFERENCES wrs(id) ON DELETE CASCADE,
+            budget_id REFERENCES budgets(id) ON DELETE CASCADE,
+            hours REAL NOT NULL
+        )`,
         `CREATE TABLE quotes (
             id INTEGER PRIMARY KEY,
             budget_id REFERENCES budgets(id) ON DELETE CASCADE,
@@ -70,29 +77,38 @@ let sql = {
         )`
     ],
     dump: {
-        contracts: `SELECT  c.id as contract_id,c.org_id,c.start_date,c.end_date,
+        contracts:  util.trim `
+                    SELECT  c.id as contract_id,c.org_id,c.start_date,c.end_date,
                             cs.system_id,
-                            b.id as budget_id,b.base_hours,b.base_hours_spent,b.additional_hours
+                            b.id as budget_id,b.base_hours,b.base_hours_spent,b.sla_quote_hours,b.additional_hours
                     FROM contracts c
                     LEFT JOIN contract_system_link cs ON cs.contract_id=c.id
                     LEFT JOIN contract_budget_link cb ON cb.contract_id=c.id
                     LEFT JOIN budgets b ON b.id=cb.budget_id
-                    `.replace(/\s+/g, ' '),
-        wrs:        `SELECT w.id as wr_id,w.created_on,w.status,w.hours as wr_hours,w.tags,
-                            q.id as quote_id,q.hours as quote_hours,q.additional as quote_additional,q.approved as quote_approved,
+                    `,
+        wrs:        util.trim `
+                    SELECT w.id as wr_id,w.created_on,w.status,w.hours as wr_hours,w.tags,
+                            q.id as quote_id,q.hours as quote_hours,q.additional as quote_additional,q.approved as quote_approved, q.valid as quote_valid,
                             q.budget_id
                     FROM wrs w
                     LEFT JOIN quotes q ON q.wr_id=w.id
-                    `.replace(/\s+/g, ' '),
+                    `,
+        timesheets: util.trim `
+                    SELECT t.wr_id, w.brief, t.budget_id, t.hours
+                    FROM timesheets t
+                    JOIN wrs w ON w.id=t.wr_id
+                    ORDER BY t.wr_id
+                    `
     },
     add_contract: 'INSERT OR REPLACE INTO contracts (id, org_id, org_name, start_date, end_date) values (?, ?, ?, ?, ?)',
     add_system: 'INSERT OR REPLACE INTO systems(id) values (?)',
     add_contract_system_link: 'INSERT OR REPLACE INTO contract_system_link (contract_id, system_id) values (?, ?)',
-    add_budget: 'INSERT OR REPLACE INTO budgets (id, base_hours, base_hours_spent, additional_hours) values (?, ?, 0, 0)',
+    add_budget: 'INSERT OR REPLACE INTO budgets (id, base_hours, base_hours_spent, sla_quote_hours, additional_hours) values (?, ?, 0, 0, 0)',
     add_contract_budget_link: 'INSERT OR REPLACE INTO contract_budget_link(contract_id, budget_id) values (?, ?)',
     delete_contract_budgets: 'DELETE FROM budgets WHERE id IN (SELECT budget_id FROM contract_budget_link WHERE contract_id=?)',
     delete_contract_budget_links: 'DELETE FROM contract_budget_link WHERE contract_id=?',
     add_wr: 'INSERT OR REPLACE INTO wrs (id, system_id, created_on, brief, detailed, status, urgency, importance, hours, tag_unchargeable, tag_additional, tags, invoice_to) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    add_timesheet: 'INSERT OR REPLACE INTO timesheets(wr_id, budget_id, hours) values (?, ?, ?)',
     add_quote: 'INSERT OR REPLACE INTO quotes (id, budget_id, wr_id, hours, additional, valid, approved) values (?, ?, ?, ?, ?, ?, ?)',
     wrms: {
         // Must have same request_id order as quotes_for_system()
@@ -137,15 +153,16 @@ let sql = {
                                  ELSE q.quote_amount
                             END AS quote_amount,
                             q.approved_by_id,
-                            q.quote_cancelled_by,
                             q.quoted_on,
                             q.approved_on,
+                            (q.quoted_on < current_date - interval '1 month') AS expired,
                             CASE WHEN q.quote_units = 'days' THEN 'hours'
                                  ELSE q.quote_units
                             END AS quote_units
                     FROM request r
                     JOIN request_quote q ON q.request_id=r.request_id
                     WHERE r.system_id in (${sys_arr.join(',')})
+                    AND q.quote_cancelled_by IS NULL
                     ORDER BY r.request_id,q.quote_id`
                     .replace(/\s+/g, ' ');
         }

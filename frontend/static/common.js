@@ -51,8 +51,11 @@ function query(path, next, override_uri, refresh_interval_secs, override_uri_ext
     xhr.send();
 }
 
-function render(chart, pre){
+function render(chart, pre, label){
     return function(err, data){
+        if (label){
+            console.log('render() ' + label + ': ' + JSON.stringify(data, null, 2));
+        }
         if (err){
             chart.message(err.message);
         }else{
@@ -63,7 +66,6 @@ function render(chart, pre){
                     f(chart, data);
                 });
             }
-            //console.log('render() ' + JSON.stringify(data, null, 2));
             if (!data.__skip_render){
                 chart.data(data).render();
             }

@@ -12,10 +12,11 @@ function describe_quote(row){
         period: undefined
     };
 
-    if (row.approved_on){
-        let approval_match = row.approved_on.match(/^(\d\d\d\d)-.0?(\d+)/);
-        if (approval_match){
-            r.period = approval_match[1] + '-' + approval_match[2];
+    let date = row.approved_on || row.quoted_on;
+    if (date){
+        let date_match = date.match(/^(\d\d\d\d)-.0?(\d+)/);
+        if (date_match){
+            r.period = date_match[1] + '-' + date_match[2];
             // TODO: timezones... but with month granularity, not a killer.
         }
     }

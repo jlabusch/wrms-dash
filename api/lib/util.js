@@ -38,63 +38,6 @@ exports.decrypt = decrypt;
 
 exports.get_org = require('./org_data').get_org;
 
-function parse_timesheet_adjustment(invoice_to, ctx){
-    let r = (h) => { return h };
-
-    if (!invoice_to){
-        return r;
-    }
-
-    let adj = invoice_to.match(/Adjust:\s*([a-f0-9]+)/i);
-
-    if (!adj){
-        return r;
-    }
-
-    let cmd = decrypt(adj[1]),
-        // Examples: 2017-07 timesheets -7 hours
-        //           2017-6  timesheets *0.5 hours
-        //           2017-4  timesheets +1.5 hours
-        // We only match one adjustment.
-        parts = cmd.match(new RegExp(ctx.year + '-0?' + ctx.month + '\\s+time[0-9a-z]*\\s*([+*-]?)\\s*([0-9.]+)\\s*hours', 'i'));
-
-    if (!parts){
-        log_debug(__filename, "Timesheet adjustment invalid or not for this month: " + cmd);
-        return r;
-    }
-
-    let op = parts[1],
-        n  = parseFloat(parts[2]);
-
-    if (isNaN(n)){
-        log(__filename, "Couldn't parse timesheet adjustment value '" + parts[2] + "' in " + cmd);
-        return r;
-    }
-
-    log(__filename, 'Manual timesheet adjustment: ' + cmd + ' -> ' + op + r);
-
-    switch(op){
-        case '-':
-            r = (h) => { return h-n };
-            break;
-        case '*':
-            r = (h) => { return h*n };
-            break;
-        default:
-            // '' or '+'
-            r = (h) => { return h+n };
-    }
-
-    return r;
-}
-
-exports.parse_timesheet_adjustment = parse_timesheet_adjustment;
-
-exports.calculate_timesheet_hours = function(hours, invoice_to, context){
-    let adj = parse_timesheet_adjustment(invoice_to, context);
-    return round_hrs(adj(hours));
-}
-
 exports.parse_period = function(str){
     let r = null,
         m = str.match(/^(\d\d\d\d)-0?(\d\d?)/);
@@ -131,9 +74,7 @@ exports.current_period = function(){
 exports.trim = function(str){
     let subs = Array.prototype.slice.call(arguments, 1);
 
-    let r = str.map(s => s + (subs.shift() || '')).join('').replace(/\s+/g, ' ');
-    console.log(r);
-    return r;
+    return str.map(s => s + (subs.shift() || '')).join('').replace(/\s+/g, ' ');
 }
 
 exports.wr_list_sql = function(context, this_period_only, exclude_statuses){
@@ -166,16 +107,20 @@ exports.wr_list_sql = function(context, this_period_only, exclude_statuses){
             ORDER BY r.urgency,r.last_status ASC`.replace(/\s+/g, ' ');
 }
 
+// Input:  3.0  3.24  3.25  3.5  3.74  3.75   4.0
+// Output: 3.0  3.0   3.5   3.5  3.5   4.0    4.0
+//
+// But the minimum amount is 0.5.
 function round_hrs(h){
     let i = h|0;
     h-=i;
-    if (h > 0.5) h = 1;
-    else if (h > 0) h = 0.5;
+    if (h >= 0.75) h = 1;
+    else if (h >= 0.25) h = 0.5;
     else h = 0;
-    return i+h;
+    return Math.max(0.5, i+h);
 }
 
-exports.round_hrs = round_hrs;
+exports.round_to_half_hour = round_hrs;
 
 exports.map_severity = function(urg, imp){
     const urgs = {

@@ -1,25 +1,28 @@
-var query = require('./query'),
-    util = require('./util');
+var store = require('./data_store'),
+    util  = require('./util');
 
-module.exports = query.prepare(
-    'wrs_created_count',
-    'wcc',
-    function(ctx){
-        return `SELECT COUNT(*)
-                FROM request r
-                JOIN usr u ON u.user_no=r.requester_id
-                WHERE u.org_code=${ctx.org}
-                    AND r.system_id IN (${ctx.sys.join(',')})
-                    AND r.request_on >= '${ctx.period + '-01'}'
-                    AND r.request_on < '${util.next_period(ctx) + '-01'}'`;
-    },
-    function(data, ctx, next){
-        let r = {
-            result: 0
+module.exports = function(req, res, next, ctx){
+    store.query(
+        util.trim  `SELECT  COUNT(*) AS result
+                    FROM    wrs w
+                    JOIN    contract_system_link cs ON cs.system_id=w.system_id
+                    JOIN    contracts c ON c.id=cs.contract_id
+                    WHERE   w.created_on=?
+                    AND     w.system_id IN (${ctx.sys.join(',')})
+                    AND     c.org_id=?`,
+        ctx.period,
+        ctx.org,
+        (err, data) => {
+            if (err){
+                util.log(__filename, 'ERROR: ' + (err.message || err));
+                res.json({error: err.message});
+                next && next(false);
+                return;
+            }
+            res.charSet('utf-8');
+            res.json(data[0]);
+            next && next(false);
         }
-        if (data && data.rows && data.rows.length > 0){
-            r.result = parseInt(data.rows[0].count);
-        }
-        next(r);
-    }
-)
+    );
+}
+
