@@ -25,7 +25,7 @@ module.exports = function(req, res, next, ctx){
             }
 
             if (!Array.isArray(data) || data.length < 1){
-                const msg = "couldn't determine SLA hours" ;
+                const msg = "couldn't determine SLA hours for " + JSON.stringify(ctx) ;
                 util.log(__filename, 'ERROR: ' + msg);
                 res.json({error: msg});
                 next && next(false);

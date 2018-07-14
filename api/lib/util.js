@@ -1,5 +1,5 @@
-var config = require('config'),
-    crypto = require('crypto'),
+var config  = require('config'),
+    crypto  = require('crypto'),
     basename = require('path').basename;
 
 function log(sourcefile, msg){
@@ -35,8 +35,6 @@ function decrypt(text){
 }
 
 exports.decrypt = decrypt;
-
-exports.get_org = require('./org_data').get_org;
 
 exports.parse_period = function(str){
     let r = null,

@@ -1,20 +1,36 @@
-var query = require('./query'),
-    config = require('config');
+var store = require('./data_store'),
+    util = require('./util');
 
-module.exports = query.prepare(
-    'customer_list',
-    'cust_list', 
-    null,
-    function(data, ctx, next){
-        let r = {};
-        Object.keys(data).forEach(k => {
-            r[k] = data[k].id;
-        });
-        next(r);
-    },
-    function(ck, ctx, good, bad){
-        process.nextTick(() => { good(config.get('orgs')) });
-    },
-    10*1000,
-    () => { return 'cust_list' }
-)
+module.exports = function(req, res, next, ctx){
+    store.query(
+        util.trim  `SELECT  c.id,
+                            c.org_name,
+                            c.org_id
+                    FROM    contracts c
+                    ORDER BY c.org_name,c.id`,
+        (err, data) => {
+            if (err){
+                util.log(__filename, 'ERROR: ' + (err.message || err));
+                res.json({error: err.message});
+                next && next(false);
+                return;
+            }
+
+            if (!Array.isArray(data)){
+                data = [];
+            }
+
+            let r = {};
+
+            data.forEach(row => {
+                r[row.id] = row.org_id;
+            })
+
+            res.charSet('utf-8');
+            res.json(r);
+
+            next && next(false);
+        }
+    );
+}
+

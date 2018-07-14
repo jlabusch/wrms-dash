@@ -1,26 +1,21 @@
-var util = require('./util');
+var util = require('./util'),
+    odata = require('./org_data');
 
 module.exports = function(req){
     let context = {};
 
-    if (util.get_org(req.params.org)){
-        context.org = util.get_org(req.params.org).id;
-    }else{
-        context.org = parseInt(req.params.org);
-    }
-    if (isNaN(context.org)){
-        context.org = undefined;
+    const org = odata.get_org(req.params.org);
+
+    if (!org){
         context.error = "Couldn't parse org=" + req.params.org;
         return context;
     }
 
+    context.org = org.org_id;
+    context.org_name = org.org_name;
+
     if (req.params.sys === 'default'){
-        if (util.get_org(context) && util.get_org(context).default_system){
-            context.sys = util.get_org(context).default_system.split(/,/);
-        }else{
-            context.error = "No default system for org=" + req.params.org;
-            return context;
-        }
+        context.sys = org.systems;
     }else if (req.params.sys.match(/^[0-9,]+$/)){
         context.sys = req.params.sys.split(/,/);
     }else{
@@ -28,7 +23,7 @@ module.exports = function(req){
         return context;
     }
 
-    context.tz = util.get_org(context).tz || 'Europe/London';
+    context.tz = org.tz || 'Europe/London';
 
     let p = util.parse_period(req.params.period);
     if (p){

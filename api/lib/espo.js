@@ -183,7 +183,7 @@ function merge_espo_data(context){
     util.log_debug(__filename, '==================== Raw contracts: ', DEBUG);
     context.contracts.list.forEach(c => {
         util.log_debug(__filename, JSON.stringify(c), DEBUG);
-        if (c.status === 'Active' && c.type === 'Service Level Agreement' && c.accountName.includes('Human')){
+        if (c.status === 'Active' && c.type === 'Service Level Agreement'){
             active[c.accountId] = {
                 name: c.name,
                 org_name: c.accountName,

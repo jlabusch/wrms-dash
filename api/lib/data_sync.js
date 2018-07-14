@@ -1,8 +1,9 @@
 var config  = require('config'),
+    org_data= require('./org_data'),
     util    = require('./util'),
+    fs      = require('fs'),
     store   = require('./data_store'),
     espo    = require('./espo'),
-    fs      = require('fs'),
     qf      = require('./quote_funcs'),
     wrms    = require('./db').get();
 
@@ -33,11 +34,12 @@ async function run(){
         }catch(err){
             util.log(__filename, 'sync error, keeping current DB active');
             util.log(__filename, 'ERROR: ' + err.message);
+            util.log(__filename, 'ERROR: ' + err.stack);
         }
     }
 
     const delay = config.get('sync.poll_interval_secs');
-    util.log_debug(__filename, 'next sync attempt in ' + delay + ' sec', DEBUG);
+    util.log(__filename, 'Sync complete, next attempt in ' + delay + ' sec');
     setTimeout(run, delay*1000);
 }
 
@@ -99,6 +101,12 @@ function sync_contract(c){
     function fetch_wrs_from_wrms(resolve, reject, contract){
         return function(){
             util.log_debug(__filename, `contract ${contract.name} created`, DEBUG);
+
+            if (contract.org_name === '__vendor'){
+                util.log(__filename, 'skipping detail of __vendor contract');
+                resolve(true)
+                return;
+            }
 
             if (!contract.systems || contract.systems.length < 1){
                 reject(new Error("No WRMS systems in contract " + contract.name));
@@ -239,6 +247,7 @@ function sync_contract(c){
                             request_id: wr.request_id,
                             quote_id: q.quote_id
                         });
+
                         util.log_debug(__filename, `contract ${contract.name} quote ${q.quote_id} description: ${JSON.stringify(qdesc)}`, DEBUG);
 
                         try{
@@ -262,7 +271,7 @@ function sync_contract(c){
                         }
 
                         try{
-                            await add_quote(q, budget, wr);
+                            await add_quote(q, qdesc, budget, wr);
                         }catch(err){
                             util.log(__filename, `ERROR adding synced quote ${q.quote_id}: ${err}`);
                             await sqlite_promise(store.dbs.syncing, 'ROLLBACK');
@@ -389,9 +398,11 @@ function sync_contract(c){
     }
 }
 
-// Reads either from Espo CRM (config.espo.enabled) or directly from the static config
-// file (config.contracts) [but WILL pick up runtime contract changes, it doesn't use require('config').]
-// resolves with
+// Loads contracts from the static config (config.contracts) and then optionally also
+// from Espo CRM (config.espo.enabled) file (config.contracts). It but WILL pick up runtime
+// contract changes, it doesn't use require('config').
+//
+// Resolves with
 // [
 //   {
 //     "org_id": 1234,
@@ -406,32 +417,39 @@ function sync_contract(c){
 // ]
 function get_contracts(){
     util.log_debug(__filename, 'get_contracts()', DEBUG);
-    if (config.get('espo.enabled')){
-        util.log_debug(__filename, 'using CRM contract source', DEBUG);
-        return espo.fetch_contracts();
-    }else{
-        return new Promise((resolve, reject) => {
-            let f = './config/default.json';
-            try{
-                f = config.util.getConfigSources()[0].name;
-            }catch(ex){
-                util.log(__filename, 'ERROR determining config sources: ' + ex + ' - using default');
+
+    return load_static_contracts().then(cfg_data => {
+        if (config.get('espo.enabled')){
+            return espo.fetch_contracts().then(espo_data => {
+                return cfg_data.concat(espo_data);
+            });;
+        }
+        return cfg_data;
+    });
+}
+
+function load_static_contracts(){
+    return new Promise((resolve, reject) => {
+        let f = './config/default.json';
+        try{
+            f = config.util.getConfigSources()[0].name;
+        }catch(ex){
+            log(__filename, 'ERROR determining config sources: ' + ex + ' - using default');
+        }
+        util.log_debug(__filename, 'reading contracts from ' + f);
+        fs.readFile(f, (err, data) => {
+            if (err){
+                reject(err);
             }
-            util.log_debug(__filename, 'reading contracts from ' + f, DEBUG);
-            fs.readFile(f, (err, data) => {
-                if (err){
-                    reject(err);
-                }
-                try{
-                    let json = JSON.parse(data);
-                    util.log_debug(__filename, JSON.stringify(json.contracts, null, 2), DEBUG);
-                    resolve(json.contracts);
-                }catch(ex){
-                    reject(ex);
-                }
-            });
+            try{
+                let json = JSON.parse(data);
+                util.log_debug(__filename, JSON.stringify(json.contracts, null, 2));
+                resolve(json.contracts);
+            }catch(ex){
+                reject(ex);
+            }
         });
-    }
+    });
 }
 
 // Create the inferred/non-quote budgets.
@@ -454,9 +472,11 @@ function create_contract(db, c){
 
         try{
             if (c.type === 'monthly'){
+                org_data.add_org(c);
                 await sqlite_promise(db, sql.add_contract, c.name, c.org_id, c.org_name, c.start_date, c.end_date);
 
                 for (let i = 0; i < c.systems.length; ++i){
+                    org_data.add_system(c, c.systems[i]);
                     await sqlite_promise(db, sql.add_system, c.systems[i]);
                     await sqlite_promise(db, sql.add_contract_system_link, c.name, c.systems[i]);
                 }
@@ -556,7 +576,7 @@ function quote_is_valid(quote){
     return !!quote.approved_by_id || !quote.expired;
 }
 
-function add_quote(quote, budget, wr){
+function add_quote(quote, desc, budget, wr){
     util.log_debug(__filename, `add_quote(${JSON.stringify(quote)})`, DEBUG);
 
     return sqlite_promise(
@@ -566,7 +586,7 @@ function add_quote(quote, budget, wr){
         budget.id,
         quote.request_id,
         quote.quote_amount,
-        wr.additional|0,
+        desc.additional|0,
         quote_is_valid(quote)|0,
         !!quote.approved_by_id|0
     );

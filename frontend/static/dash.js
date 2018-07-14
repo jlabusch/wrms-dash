@@ -85,11 +85,7 @@ var chart15 = new Keen.Dataviz()
     .prepare();
 
 function format_icinga_note(obj){
-    if (obj.service.indexOf(obj.host) > -1){
-        return obj.service;
-    }else{
-        return obj.host + '/' + obj.service;
-    }
+    return 'PLACEHOLDER';
 }
 
 var chart07 = new Keen.Dataviz()
@@ -122,21 +118,43 @@ function format_disk_size(v){
     }
 }
 
-// TODO: for clients with storage limits defined by contract, make this a guage chart instead.
 query('/storage', render(chart09, function(chart, data){
-    if (data.error || !data.result || data.result.length < 1){
-        data.result = 0;
-        console.log('storage: ' + data.error);
+    // Final data format needs to be
+    // {
+    //   result: [[{result: number, disk: string}], ...]
+    // or
+    //   result: number
+    // }
+
+    if (!Array.isArray(data) || data.length < 1){
         chart09
             .type('message')
             .message('No data');
         data.__skip_render = true;
         return;
     }
-    if (data.host && data.service){
-        $('#storage-notes').text(format_icinga_note(data));
-    }
-    if (data.result.length > 1){
+
+    if (data.length < 2){
+        chart09
+            .colors([default_colors[5]])
+            .title('disk used')
+            .type('metric');
+
+        var sz = format_disk_size(data[0].result[0].result);
+        data.result = sz[0];
+        chart.chartOptions({suffix: sz[1]})
+    }else{
+        data.result = [];
+
+        data.filter(d => { return !d.error })
+            .forEach(d => {
+                d.result.forEach(dr => {
+                    dr.disk = d.host + ' ' + d.service;
+                    dr.result = Math.round(dr.result/GB*10)/10;
+                    data.result.push([dr]);
+                });
+            });
+
         var opt = JSON.parse(JSON.stringify(donut_options));
         opt.pie = {
             expand: true,
@@ -146,27 +164,13 @@ query('/storage', render(chart09, function(chart, data){
                 }
             }
         };
-        var total = 0;
-        data.result.forEach(function (v){
-            total += v[0].result;
-            v[0].result = Math.round(v[0].result/GB*10)/10;
-        });
-        var sz = format_disk_size(total);
-        $('#storage-notes').text($('#storage-notes').text() + ' (' + sz[0] + ' ' + sz[1] + ' total)');
+
         chart09
             .colors(default_colors)
             .type('pie')
             .chartOptions(opt);
-    }else{
-        chart09
-            .colors([default_colors[5]])
-            .title('disk used')
-            .type('metric');
-
-        var sz = format_disk_size(data.result[0][0].result);
-        data.result = sz[0];
-        chart.chartOptions({suffix: sz[1]})
     }
+    $('#storage-notes').text(format_icinga_note(data));
 }));
 
 var chart10 = new Keen.Dataviz()

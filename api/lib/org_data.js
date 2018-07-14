@@ -1,3 +1,68 @@
+var util = require('./util');
+
+var orgs = {};
+
+exports.__raw = function(){ return orgs }
+
+exports.add_org = function(contract){
+    util.log_debug(__filename, `add_org(${JSON.stringify(contract)})`);
+
+    orgs[contract.name] = JSON.parse(JSON.stringify(contract));
+}
+
+exports.add_system = function(contract, system){
+    util.log_debug(__filename, `add_system(${JSON.stringify(contract)}, ${system})`);
+
+    let o = orgs[contract.name];
+
+    if (o){
+        let s = o.systems || [];
+        s.push(system);
+        orgs[contract.name].systems = s;
+    }else{
+        throw new Error(`add_system(${system}) called before add_org(${contract.name})`);
+    }
+}
+
+function get_org_by_key(field, val){
+    let o = null;
+
+    Object.values(orgs).forEach(org => {
+        if (org[field] === val){
+            o = org;
+        }
+    });
+
+    return o;
+}
+
+// Input is either a context object or a bare value, where the values are one of
+//  - contracts.org_id
+//  - contracts.name
+// and it may be either a bare value or part of a context object (i.e. id vs. id.org)
+//
+// Returns contracts.* or null
+exports.get_org = function(id){
+    util.log_debug(__filename, 'get_org(' + JSON.stringify({id:id}) + ')');
+
+    if (id === undefined){
+        throw new Error('get_org() with no ID specified');
+    }
+
+    let o = null,
+        n = parseInt(id); // in case it's a bare number
+
+    if (id.org || !isNaN(n)){
+        o = get_org_by_key('org_id', id.org || n);
+    }else{
+        o = get_org_by_key('name', id);
+    }
+
+    return o;
+}
+
+
+/*
 var config = require('config'),
     fs     = require('fs');
 
@@ -37,4 +102,4 @@ exports.get_all_systems = function(){
     });
     return arr;
 }
-
+*/
