@@ -2,6 +2,8 @@ var store = require('./data_store'),
     util  = require('./util');
 
 module.exports = function(req, res, next, ctx){
+    let handler = store.make_query_handler(req, res, next, ctx, __filename);
+
     store.query(
         // hours on WRs that don't have quotes
         // and aren't tagged additional or unchargeable
@@ -22,14 +24,7 @@ module.exports = function(req, res, next, ctx){
                     GROUP BY w.id,w.brief
                     ORDER BY w.id`,
         ctx.org,
-        (err, data) => {
-            if (err){
-                util.log(__filename, 'ERROR: ' + (err.message || err));
-                res.json({error: err.message});
-                next && next(false);
-                return;
-            }
-
+        handler(data => {
             let r = {result: [{wr: "None", result: 0}]};
 
             if (Array.isArray(data) && data.length > 0){
@@ -40,10 +35,8 @@ module.exports = function(req, res, next, ctx){
                     };
                 });
             }
-            res.charSet('utf-8');
-            res.json(r);
 
-            next && next(false);
-        }
+            return r;
+        })
     );
 }

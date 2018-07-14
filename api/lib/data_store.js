@@ -249,6 +249,43 @@ function create_schema(db){
     return util.promise_sequence(sql.create_schema, generate_sqlite_promise(db));
 }
 
+function make_handler(req, res, next, ctx, label = __filename){
+    return function(transform){
+        return handler(req, res, next, ctx, transform, label);
+    }
+}
+
+function handler_send_data(res, next, data, label){
+    res.charSet('utf-8');
+    res.json(data);
+    next && next(false);
+}
+
+function handler_send_error(res, next, err, label){
+    let e = err.message || err;
+    util.log(label, 'ERROR: ' + e);
+    handler_send_data(res, next, {error: e}, label);
+}
+
+function handler(req, res, next, ctx, transform, label = __filename){
+    return function(err, data){
+        if (err){
+            handler_send_error(res, next, err, label);
+            return;
+        }
+
+        let r = undefined;
+        try{
+            r = transform(data);
+        }catch(ex){
+            handler_send_error(res, next, ex, label);
+            return;
+        }
+
+        handler_send_data(res, next, r, label);
+    }
+}
+
 module.exports = {
     init: init,
     dbs: dbs,
@@ -258,6 +295,10 @@ module.exports = {
     generate_sqlite_promise: generate_sqlite_promise,
     query: function(/*stmt, arg, ..., next(err,rows)*/){
         dbs.active.all.apply(dbs.active, arguments);
-    }
+    },
+    query_handler: handler,
+    make_query_handler: make_handler,
+    query_send_error: handler_send_error,
+    query_send_data: handler_send_data
 }
 

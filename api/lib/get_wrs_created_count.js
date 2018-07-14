@@ -2,6 +2,8 @@ var store = require('./data_store'),
     util  = require('./util');
 
 module.exports = function(req, res, next, ctx){
+    let handler = store.make_query_handler(req, res, next, ctx, __filename);
+
     store.query(
         util.trim  `SELECT  COUNT(*) AS result
                     FROM    wrs w
@@ -12,17 +14,9 @@ module.exports = function(req, res, next, ctx){
                     AND     c.org_id=?`,
         ctx.period,
         ctx.org,
-        (err, data) => {
-            if (err){
-                util.log(__filename, 'ERROR: ' + (err.message || err));
-                res.json({error: err.message});
-                next && next(false);
-                return;
-            }
-            res.charSet('utf-8');
-            res.json(data[0]);
-            next && next(false);
-        }
+        handler(data => {
+            return data[0];
+        })
     );
 }
 

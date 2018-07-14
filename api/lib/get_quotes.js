@@ -6,6 +6,8 @@ var store = require('./data_store'),
 // args.limit_period -> true, false
 module.exports = function(args){
     return function(req, res, next, ctx){
+        let handler = store.make_query_handler(req, res, next, ctx, __filename);
+
         store.query(
             util.trim  `SELECT  w.id AS request_id,
                                 w.brief,
@@ -29,20 +31,12 @@ module.exports = function(args){
                         `,
             ctx.org,
             args.approved|0,
-            (err, data) => {
-                if (err){
-                    util.log(__filename, 'ERROR: ' + (err.message || err));
-                    res.json({error: err.message});
-                    next && next(false);
-                    return;
-                }
-
+            handler(data => {
                 if (!Array.isArray(data)){
                     data = [];
                 }
 
-                res.charSet('utf-8');
-                res.json({
+                return {
                     result: data.map(d => {
                         const wr = d.request_id + ': ' + d.brief,
                             sum  = Math.round(d.quote_sum*10)/10;
@@ -55,10 +49,8 @@ module.exports = function(args){
                             return d;
                         }
                     })
-                });
-
-                next && next(false);
-            }
+                };
+            })
         );
     }
 }

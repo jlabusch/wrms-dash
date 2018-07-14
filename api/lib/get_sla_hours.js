@@ -2,6 +2,8 @@ var store = require('./data_store'),
     util  = require('./util');
 
 module.exports = function(req, res, next, ctx){
+    let handler = store.make_query_handler(req, res, next, ctx, __filename);
+
     store.query(
         util.trim  `SELECT  b.id,
                             b.base_hours,
@@ -16,38 +18,24 @@ module.exports = function(req, res, next, ctx){
                     AND     cs.system_id IN (${ctx.sys.join(',')})
                     AND     b.id LIKE '%${ctx.period}'`,
         ctx.org,
-        (err, data) => {
-            if (err){
-                util.log(__filename, 'ERROR: ' + (err.message || err));
-                res.json({error: err.message});
-                next && next(false);
-                return;
-            }
-
+        handler(data => {
             if (!Array.isArray(data) || data.length < 1){
-                const msg = "couldn't determine SLA hours for " + JSON.stringify(ctx) ;
-                util.log(__filename, 'ERROR: ' + msg);
-                res.json({error: msg});
-                next && next(false);
-                return;
+                throw new Error("couldn't determine SLA hours for " + JSON.stringify(ctx));
             }
 
             let b = data[0];
 
             util.log_debug(__filename, 'raw data: ' + JSON.stringify(data, null, 2));
 
-            res.charSet('utf-8');
-            res.json({
+            return {
                 budget: b.base_hours,
                 result: [
                     ['SLA quotes', b.sla_quote_hours],
                     ['SLA unquoted', b.base_hours_spent - b.sla_quote_hours],
                     ['Additional quotes', b.additional_hours]
                 ]
-            });
-
-            next && next(false);
-        }
+            };
+        })
     );
 }
 

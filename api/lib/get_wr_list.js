@@ -36,14 +36,10 @@ module.exports = function(args){
             query_args.push(ctx.period);
         }
 
+        let handler = store.make_query_handler(req, res, next, ctx, __filename);
+
         query_args.push(
-            (err, data) => {
-                if (err){
-                    util.log(__filename, 'ERROR: ' + (err.message || err));
-                    res.json({error: err.message});
-                    next && next(false);
-                    return;
-                }
+            handler(data => {
                 if (!Array.isArray(data)){
                     data = [];
                 }
@@ -55,10 +51,8 @@ module.exports = function(args){
                         util.log_debug(__filename, [d.request_id,d.brief,d.status].join(','), DEBUG);
                     });
                 }
-                res.charSet('utf-8');
-                res.json(data);
-                next && next(false);
-            }
+                return data;
+            })
         );
 
         store.query.apply(null, query_args);

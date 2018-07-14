@@ -2,6 +2,8 @@ var store = require('./data_store'),
     util = require('./util');
 
 module.exports = function(req, res, next, ctx){
+    let handler = store.make_query_handler(req, res, next, ctx, __filename);
+
     store.query(
         util.trim  `SELECT  w.id AS request_id,
                             w.brief,
@@ -15,14 +17,7 @@ module.exports = function(req, res, next, ctx){
                     AND     w.brief like '%eployment%'
                     ORDER BY w.id`,
         ctx.org,
-        (err, data) => {
-            if (err){
-                util.log(__filename, 'ERROR: ' + (err.message || err));
-                res.json({error: err.message});
-                next && next(false);
-                return;
-            }
-
+        handler(data => {
             if (!Array.isArray(data)){
                 data = [];
             }
@@ -30,11 +25,8 @@ module.exports = function(req, res, next, ctx){
             let re_str = 'deployment.*' + ctx.year + '[-/]?0?' + ctx.month + '[-/]?\\d\\d',
                 re = new RegExp(re_str, 'i');
 
-            res.charSet('utf-8');
-            res.json(data.filter(row => { return !!row.brief.match(re) }));
-
-            next && next(false);
-        }
+            return data.filter(row => { return !!row.brief.match(re) });
+        })
     );
 }
 
