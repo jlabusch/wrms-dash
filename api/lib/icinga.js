@@ -82,8 +82,9 @@ exports.process_next_key = function(poller, formatter){
 exports.poller = function(get_options){
     return function(stat_key, ctx){
         return new Promise((resolve, reject) => {
+            const options = get_options(stat_key, ctx);
 
-            let req = https.request(get_options(stat_key, ctx), (res) => {
+            let req = https.request(options, (res) => {
                 if (res.statusCode !== 200){
                     let e = 'ERROR: poll_icinga(' + options.path + ') => ' + res.statusCode;
                     util.log(__filename, e);
