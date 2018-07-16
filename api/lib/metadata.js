@@ -1,11 +1,22 @@
 var request = require('request'),
     util    = require('./util'),
+    cache   = require('./cache'),
     config = require('config');
+
+'use strict';
 
 module.exports = function(org_id){
     return new Promise((resolve, reject) => {
+        let key = `/metadata/${org_id}.json`,
+            json = cache.get(key, 15*60*1000);
+
+        if (json){
+            resolve(json);
+            return;
+        }
+
         const opt = {
-            url: config.get('metadata.host') + `/metadata/${org_id}.json`,
+            url: config.get('metadata.host') + key,
             strictSSL: false
         }
 
@@ -18,9 +29,9 @@ module.exports = function(org_id){
                 reject(new Error(`Metadata fetch failed (${res.statusCode} for org ${org_id})`));
             }
             if (res.statusCode == 200){
-                let json = null;
                 try{
                     json = JSON.parse(body);
+                    cache.put(key, json);
                 }catch(ex){
                     reject(ex);
                 }

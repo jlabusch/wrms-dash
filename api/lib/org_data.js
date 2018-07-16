@@ -1,5 +1,7 @@
 var util = require('./util');
 
+'use strict';
+
 var orgs = {};
 
 exports.__raw = function(){ return orgs }

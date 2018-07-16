@@ -4,7 +4,7 @@ var config  = require('config'),
 
 const DEBUG = false;
 
-let poller = icinga.poller((avail_key, ctx) => {
+let poller = icinga.make_poller((avail_key, ctx) => {
     let now = new Date(),
         start = new Date(ctx.period + '-1'),
         end = new Date(start.getTime());
@@ -27,7 +27,6 @@ let poller = icinga.poller((avail_key, ctx) => {
     return {
         auth: process.env['ICINGA_BASIC_AUTH'],
         protocol: 'https:',
-        hostname: config.get('icinga_uri'),
         path: icinga_path_template
                 .replace('SERVICE', avail_key)
                 .replace('START_TS', Math.round(start.getTime()/1000))

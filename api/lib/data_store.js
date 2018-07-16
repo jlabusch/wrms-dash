@@ -3,6 +3,8 @@ var util    = require('./util'),
 
 const DEBUG = true;
 
+'use strict';
+
 // Like double-buffering... but with databases.
 // Consistency and completeness are critical.
 let dbs = {
@@ -64,12 +66,14 @@ let sql = {
             id INTEGER PRIMARY KEY,
             wr_id REFERENCES wrs(id) ON DELETE CASCADE,
             budget_id REFERENCES budgets(id) ON DELETE CASCADE,
+            worked_on TEXT NOT NULL,
             hours REAL NOT NULL
         )`,
         `CREATE TABLE quotes (
             id INTEGER PRIMARY KEY,
             budget_id REFERENCES budgets(id) ON DELETE CASCADE,
             wr_id REFERENCES wrs(id) ON DELETE CASCADE,
+            approved_on TEXT NOT NULL,
             hours REAL NOT NULL,
             additional INTEGER NOT NULL,
             valid INTEGER NOT NULL,
@@ -89,7 +93,7 @@ let sql = {
         wrs:        util.trim `
                     SELECT w.id as wr_id,w.created_on,w.status,w.hours as wr_hours,w.tags,
                             q.id as quote_id,q.hours as quote_hours,q.additional as quote_additional,q.approved as quote_approved, q.valid as quote_valid,
-                            q.budget_id
+                            q.budget_id, q.approved_on AS quote_approved_on
                     FROM wrs w
                     LEFT JOIN quotes q ON q.wr_id=w.id
                     `,
@@ -108,8 +112,8 @@ let sql = {
     delete_contract_budgets: 'DELETE FROM budgets WHERE id IN (SELECT budget_id FROM contract_budget_link WHERE contract_id=?)',
     delete_contract_budget_links: 'DELETE FROM contract_budget_link WHERE contract_id=?',
     add_wr: 'INSERT OR REPLACE INTO wrs (id, system_id, created_on, brief, detailed, status, urgency, importance, hours, tag_unchargeable, tag_additional, tags, invoice_to) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    add_timesheet: 'INSERT OR REPLACE INTO timesheets(wr_id, budget_id, hours) values (?, ?, ?)',
-    add_quote: 'INSERT OR REPLACE INTO quotes (id, budget_id, wr_id, hours, additional, valid, approved) values (?, ?, ?, ?, ?, ?, ?)',
+    add_timesheet: 'INSERT OR REPLACE INTO timesheets(wr_id, budget_id, worked_on, hours) values (?, ?, ?, ?)',
+    add_quote: 'INSERT OR REPLACE INTO quotes (id, budget_id, wr_id, approved_on, hours, additional, valid, approved) values (?, ?, ?, ?, ?, ?, ?, ?)',
     wrms: {
         // Must have same request_id order as quotes_for_system()
         wrs_for_system: (sys_arr) => {
@@ -294,6 +298,7 @@ module.exports = {
     sqlite_promise: sqlite_promise,
     generate_sqlite_promise: generate_sqlite_promise,
     query: function(/*stmt, arg, ..., next(err,rows)*/){
+        util.log_debug(__filename, JSON.stringify(Array.prototype.slice.call(arguments, 0), null, 2));
         dbs.active.all.apply(dbs.active, arguments);
     },
     query_handler: handler,

@@ -1,5 +1,7 @@
 var util = require('./util');
 
+'use strict';
+
 exports.exclude_additional_quote_statuses = ['F', 'H', 'M'];
 
 function describe_quote(row){

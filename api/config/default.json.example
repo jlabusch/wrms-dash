@@ -26,7 +26,10 @@
             "exclude_orgs": "37,1098"
         }
     },
-    "icinga_uri": "icinga.example.com",
+    "icinga": {
+        "enabled": true,
+        "hostname": "icinga.example.com"
+    },
     "contracts": [
         {
             "org_id": 1137,

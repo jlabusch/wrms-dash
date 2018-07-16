@@ -7,6 +7,8 @@ var config  = require('config'),
     qf      = require('./quote_funcs'),
     wrms    = require('./db').get();
 
+'use strict';
+
 let sync_active = true,
     first_run = true,
     sqlite_promise = store.sqlite_promise,
@@ -17,6 +19,25 @@ const DEBUG = true;
 // select_best_budget() relies on this key composition.
 function create_budget_name(contract, type, period){
     return contract.name + ' ' + type + ' ' + period;
+}
+
+function match_non_monthly_budget_name(id, ctx){
+    // Matches both annaul and biannual
+    let m = id.match(/annual (\d\d\d\d-\d?\d) to (\d\d\d\d-\d?\d)/);
+
+    if (m){
+        let from = new Date(m[1]),
+            to = new Date(m[2]);
+
+        // force "to" to be the end of the month
+        to.setMonth(to.getMonth()+1);
+        to.setDate(-1);
+
+        let pdate = new Date(ctx.period);
+
+        return pdate > from && pdate < to;
+    }
+    return false;
 }
 
 async function run(){
@@ -245,7 +266,7 @@ function sync_contract(c){
                         // Don't modify the budget for real until we see sql.add_quote succeed.
                         await sqlite_promise(store.dbs.syncing, 'BEGIN TRANSACTION');
 
-                        util.log_debug(__filename, `contract ${contract.name} quote ${JSON.stringify(q)} is approved`, DEBUG);
+                        util.log_debug(__filename, `contract ${contract.name} quote ${JSON.stringify(q)} will be added`, DEBUG);
 
                         let qdesc = qf.describe_quote({
                             approved_on: q.approved_on,
@@ -360,6 +381,7 @@ function sync_contract(c){
                                 sql.add_timesheet,
                                 buckets[ib].request_id,
                                 b.id,
+                                buckets[ib].date,
                                 n
                             );
                         }catch(err){
@@ -497,27 +519,34 @@ function create_contract(db, c){
             // And disambiguate contracts that end on the last day of the month
             end.setDate(end.getDate()+1);
 
-            if (c.type === 'monthly'){
-                while (current < end){
-                    let this_month = util.date_fmt(current);
-                    current.setMonth(current.getMonth()+1);
-                    //let next_month = util.date_fmt(current);
-                    let key = create_budget_name(c, 'month', this_month);
+            while (current < end){
+                let this_month = util.date_fmt(current),
+                    key = null;
 
-                    await sqlite_promise(db, sql.add_budget, key, c.hours);
-                    await sqlite_promise(db, sql.add_contract_budget_link, c.name, key);
+                switch(c.type){
+                    case 'monthly':
+                        current.setMonth(current.getMonth()+1);
+                        key = create_budget_name(c, 'month', this_month);
+                        break;
+                    case '6 monthly':
+                        current.setMonth(current.getMonth()+6);
+                        key = create_budget_name(c, 'biannual', this_month + ' to ' + util.date_fmt(current));
+                        break;
+                    case 'annually':
+                        current.setMonth(current.getMonth()+12);
+                        key = create_budget_name(c, 'annual', this_month + ' to ' + util.date_fmt(current));
+                        break;
+                    default:
+                        current = end;
+                        reject(new Error('Unsupported contract type "' + c.type + '"'));
+                        continue;
                 }
-                resolve(true);
-            }else if (c.type === 'annually'){
-                let key = create_budget_name(c, 'annual', util.date_fmt(current) + ' to ' + util.date_fmt(end));
 
                 await sqlite_promise(db, sql.add_budget, key, c.hours);
                 await sqlite_promise(db, sql.add_contract_budget_link, c.name, key);
-
-                resolve(true);
-            }else{
-                reject(new Error('Unsupported contract type "' + c.type + '"'));
             }
+
+            resolve(true);
         }catch(err){
             reject(err);
         } 
@@ -535,12 +564,14 @@ function find_last_row_for_this_wr(arr, i){
 
 // Order of preference:
 //  - monthly budgets with hours available,
-//  - then annual budgets, even if they have no hours available,
+//  - then annual/biannual budgets, even if they have no hours available,
 //  - then monthly budgets with no hours available,
 //  - finally an ad-hoc 0-value monthly budget, created on the fly
 function select_best_budget(contract, period){
     return new Promise((resolve, reject) => {
         store.dbs.syncing.all(
+            // TODO FIXME: figure out the syntax of prepared statement with placeholder
+            // containing % and using ESCAPE clause. Right now this is an easy sqli vector.
             `SELECT id,base_hours,base_hours_spent,sla_quote_hours,additional_hours FROM budgets WHERE id LIKE '${contract.name} %'`,
             (err, budgets) => {
                 if (err){
@@ -558,24 +589,8 @@ function select_best_budget(contract, period){
                     budgets.forEach(budget => {
                         if (budget.id == monthly_name){
                             month_match = budget;
-                            return;
-                        }
-
-                        let m = budget.id.match(/annual ([-0-9]+) to ([-0-9]+)/);
-                        if (m){
-                            // If the period is within range, select this budget for the annual option.
-                            let from = new Date(m[1]),
-                                to = new Date(m[2]);
-
-                            // force "to" to be the end of the month
-                            to.setMonth(to.getMonth()+1);
-                            to.setDate(-1);
-
-                            let pdate = new Date(period);
-
-                            if (pdate > from && pdate < to){
-                                annual_match = budget;
-                            }
+                        }else if (match_non_monthly_budget_name(budget.id, {period:period})){
+                            annual_match = budget;
                         }
                     });
 
@@ -688,6 +703,7 @@ function add_quote(quote, desc, budget, wr){
         quote.quote_id,
         budget.id,
         quote.request_id,
+        util.date_fmt(new Date(desc.period)), // take wrs.invoice_to and quotes.approved_on into account
         quote.quote_amount,
         desc.additional|0,
         quote_is_valid(quote)|0,
@@ -699,6 +715,7 @@ setTimeout(run, config.get('sync.startup_delay_secs')*1000);
 
 module.exports = {
     create_budget_name: create_budget_name,
+    match_non_monthly_budget_name: match_non_monthly_budget_name,
     pause: () => { sync_active = false },
     unpause: () => { sync_active = true }
 }

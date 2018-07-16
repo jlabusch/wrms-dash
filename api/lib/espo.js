@@ -2,6 +2,8 @@ var request = require('request'),
     config = require('config'),
     util = require('./util');
 
+'use strict';
+
 var auth_username = undefined,
     auth_token = undefined;
 

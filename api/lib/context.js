@@ -1,6 +1,8 @@
 var util = require('./util'),
     odata = require('./org_data');
 
+'use strict';
+
 module.exports = function(req){
     let context = {};
 

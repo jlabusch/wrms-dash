@@ -1,6 +1,8 @@
 var util  = require('./util'),
     cache = require('./cache');
 
+'use strict';
+
 let empty_fn = function(){};
 
 const DEBUG = false;

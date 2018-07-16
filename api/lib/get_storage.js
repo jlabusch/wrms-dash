@@ -4,13 +4,12 @@ var config  = require('config'),
 
 const DEBUG = false;
 
-let poller = icinga.poller((storage_key, ctx) => {
+let poller = icinga.make_poller((storage_key, ctx) => {
     const icinga_path_template = '/cgi-bin/icinga/extinfo.cgi?type=2&HOST_AND_SERVICE&jsonoutput';
 
     return {
         auth: process.env['ICINGA_BASIC_AUTH'], // export ICINGA_BASIC_AUTH=user:pass
         protocol: 'https:',
-        hostname: config.get('icinga_uri'),
         path: icinga_path_template.replace('HOST_AND_SERVICE', storage_key)
     }
 });

@@ -5,11 +5,22 @@ var util    = require('./util'),
     config  = require('config'),
     store   = require('./data_store');
 
+'use strict';
+
 const DEBUG = true;
 
 exports.main = function(cache_label, file_label, get_config, process_next_key){
     return function(req, res, next, ctx){
-        function finish(result_list){
+        if (!config.get('icinga.enabled')){
+            store.query_send_error(res, next, new Error('Icinga disabled in config'), file_label);
+            return;
+        }
+
+        function finish(err, result_list){
+            if (err){
+                store.query_send_error(res, next, err, file_label);
+                return;
+            }
             cache.put(cache.key(cache_label, ctx), result_list);
             store.query_send_data(res, next, result_list, file_label);
         }
@@ -17,7 +28,7 @@ exports.main = function(cache_label, file_label, get_config, process_next_key){
         let c = cache.get(cache.key(cache_label, ctx), 60*60*1000 /* 1 hour */);
 
         if (c){
-            finish(c);
+            finish(null, c);
             return;
         }
 
@@ -25,14 +36,12 @@ exports.main = function(cache_label, file_label, get_config, process_next_key){
             let list = get_config(metadata);
 
             if (list.length < 1){
-                finish([]);
+                finish(null, []);
                 return;
             }
 
             process_next_key(list, ctx, finish);
-        }).catch(err => {
-            store.query_send_error(res, next, err, file_label);
-        });
+        }).catch(finish);
     }
 }
 
@@ -70,19 +79,23 @@ exports.process_next_key = function(poller, formatter){
                     result_list.push(s);
                 }
                 process(key_list, ctx, next, result_list);
-            });
+            }).catch(next);
         }else{
-            next && next(result_list);
+            next(null, result_list);
         }
     }
 
     return process;
 }
 
-exports.poller = function(get_options){
+exports.make_poller = function(get_options){
     return function(stat_key, ctx){
         return new Promise((resolve, reject) => {
-            const options = get_options(stat_key, ctx);
+            let options = get_options(stat_key, ctx);
+
+            if (!options.hostname){
+                options.hostname = config.get('icinga.hostname');
+            }
 
             let req = https.request(options, (res) => {
                 if (res.statusCode !== 200){
@@ -103,6 +116,7 @@ exports.poller = function(get_options){
                         util.log_debug(__filename, '' + options.hostname + options.path + ' => ' + data.length + ' bytes', DEBUG);
                     }catch(ex){
                         util.log(__filename, 'ERROR: poll_icinga(' + options.path + '): ' + (ex.message || ex));
+                        util.log_debug(__filename, 'ERROR: poll_icinga(' + options.path + '): full respose - ' + data);
                         reject(ex);
                         return;
                     }

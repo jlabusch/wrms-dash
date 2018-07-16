@@ -1,5 +1,7 @@
 var util = require('./util');
 
+'use strict';
+
 // This grows indefinitely. If we had significant uptime, that could be a problem.
 var cache = {};
 
