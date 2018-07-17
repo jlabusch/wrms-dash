@@ -26,12 +26,12 @@ module.exports = function(args){
                           '' /* undefined => don't care */}
                         AND     q.approved=?
                         AND     q.valid=1
-                        ORDER BY w.id,q.id
+                        ORDER BY w.id,q.id DESC
                         `,
             ctx.org,
             args.approved|0,
             handler(data => {
-                util.log_debug(__filename, 'get_quotes(' + JSON.stringify(args) + ') query returned ' + JSON.stringify(data, null, 2), true);
+                util.log_debug(__filename, 'get_quotes(' + JSON.stringify(args) + ') query returned ' + JSON.stringify(data, null, 2));
                 if (!Array.isArray(data)){
                     data = [];
                 }

@@ -21,6 +21,29 @@ exports.fetch_contracts = function(){
     });
 }
 
+function make_handler(resolve, reject, label, process){
+    return function(err, res, body){
+        if (err){
+            reject(err);
+            return;
+        }
+        if (res.statusCode >= 400){
+            let reason = res.headers['x-status-reason'] || 'unknown';
+            reject(new Error(`CRM ${label} query (${res.statusCode} reason ${reason})`));
+            return;
+        }
+        if (res.statusCode == 200){
+            try{
+                resolve(process(JSON.parse(body)));
+            }catch(ex){
+                reject(ex);
+            }
+            return;
+        }
+        reject(new Error(`CRM ${label} query got unhandled HTTP status code ${res.statusCode}`));
+    }
+}
+
 // returns {"user":{"id":"5900af1c7206dafeb","userName":"jacques","isActive":true,"token":"0d5bceacb976ec7d6c89d4e7f8ce4100",...
 function log_in(){
     return new Promise((resolve, reject) => {
@@ -40,27 +63,11 @@ function log_in(){
 
         request(
             options,
-            (err, res, body) => {
-                if (err){
-                    reject(err);
-                    return;
-                }
-                if (res.statusCode >= 400){
-                    let reason = res.headers['x-status-reason'] || 'unknown';
-                    reject(new Error(`CRM login (${res.statusCode} reason ${reason})`));
-                }
-                if (res.statusCode == 200){
-                    let json = null;
-                    try{
-                        json = JSON.parse(body);
-                    }catch(ex){
-                        reject(ex);
-                    }
-                    auth_username = json.user.userName;
-                    auth_token = json.user.token;
-                    resolve({username: json.user.userName, token: json.user.token});
-                }
-            }
+            make_handler(resolve, reject, 'login', json => {
+                auth_username = json.user.userName;
+                auth_token = json.user.token;
+                return {username: json.user.userName, token: json.user.token};
+            })
         );
     });
 }
@@ -103,24 +110,10 @@ function query_espo_contracts(context){
 
         request(
             options,
-            (err, res, body) => {
-                if (err){
-                    reject(err);
-                    return;
-                }
-                if (res.statusCode >= 400){
-                    let reason = res.headers['x-status-reason'] || 'unknown';
-                    reject(new Error(`CRM contract query (${res.statusCode} reason ${reason})`));
-                }
-                if (res.statusCode == 200){
-                    try{
-                        context.contracts = JSON.parse(body);
-                    }catch(ex){
-                        reject(ex);
-                    }
-                    resolve(context);
-                }
-            }
+            make_handler(resolve, reject, 'login', json => {
+                context.contracts = json;
+                return context;
+            })
         );
     });
 }
@@ -155,24 +148,10 @@ function query_espo_accounts(context){
 
         request(
             options,
-            (err, res, body) => {
-                if (err){
-                    reject(err);
-                    return;
-                }
-                if (res.statusCode >= 400){
-                    let reason = res.headers['x-status-reason'] || 'unknown';
-                    reject(new Error(`CRM account query (${res.statusCode} reason ${reason})`));
-                }
-                if (res.statusCode == 200){
-                    try{
-                        context.accounts = JSON.parse(body);
-                    }catch(ex){
-                        reject(ex);
-                    }
-                    resolve(context);
-                }
-            }
+            make_handler(resolve, reject, 'account', json => {
+                context.accounts = json;
+                return context;
+            })
         );
     });
 }

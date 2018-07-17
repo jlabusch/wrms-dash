@@ -28,7 +28,7 @@ module.exports = function(args){
             ${args.limit_period ? 'AND w.created_on=?' : ''}
             ${args.exclude_statuses.length ? 'AND w.status NOT IN (' + args.exclude_statuses.join(',') + ')' : ''}
             AND     w.system_id IN (${ctx.sys.join(',')})
-            ORDER   BY w.urgency,w.status ASC`;
+            ORDER   BY w.id DESC`;
 
         let query_args = [sql, ctx.org];
 
