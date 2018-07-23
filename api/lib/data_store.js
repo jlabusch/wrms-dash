@@ -1,7 +1,7 @@
 var util    = require('./util'),
     sqlite3 = require('sqlite3').verbose();
 
-const DEBUG = true;
+const DEBUG = false;
 
 'use strict';
 
@@ -83,10 +83,14 @@ let sql = {
     dump: {
         contracts:  util.trim `
                     SELECT  c.id as contract_id,c.org_id,c.start_date,c.end_date,
-                            cs.system_id,
-                            b.id as budget_id,b.base_hours,b.base_hours_spent,b.sla_quote_hours,b.additional_hours
+                            cs.system_id
                     FROM contracts c
                     LEFT JOIN contract_system_link cs ON cs.contract_id=c.id
+                    `,
+        budgets:  util.trim `
+                    SELECT  c.id as contract_id,
+                            b.id as budget_id,b.base_hours,b.base_hours_spent,b.sla_quote_hours,b.additional_hours
+                    FROM contracts c
                     LEFT JOIN contract_budget_link cb ON cb.contract_id=c.id
                     LEFT JOIN budgets b ON b.id=cb.budget_id
                     `,

@@ -277,7 +277,7 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
                 timesheet_buckets = {},
                 timesheet_budgets = {};
 
-            // We only reach this point if there are no live quotes.
+            // We only reach this point if there are no live quotes; add up the timesheets.
             for (; iw < wr_rows.length && wr_rows[iw].request_id === wr.request_id; ++iw){
 
                 let iw_hours = wr_rows[iw].timesheet_hours,
@@ -335,8 +335,8 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
                     try{
                         await sqlite_promise(
                             store.dbs.syncing,
-                            'UPDATE budgets SET base_hours_spent=? WHERE id=?',
-                            b.base_hours_spent + n,
+                            'UPDATE budgets SET base_hours_spent=base_hours_spent + ? WHERE id=?',
+                            n,
                             b.id
                         );
                     }catch(err){
@@ -451,7 +451,7 @@ function select_best_budget(contract, period){
         store.dbs.syncing.all(
             // TODO FIXME: figure out the syntax of prepared statement with placeholder
             // containing % and using ESCAPE clause. Right now this is an easy sqli vector.
-            `SELECT id,base_hours,base_hours_spent,sla_quote_hours,additional_hours FROM budgets WHERE id LIKE '${contract.name} %'`,
+            `SELECT id,base_hours,base_hours_spent,sla_quote_hours,additional_hours FROM budgets WHERE id LIKE '${contract.name.replace(/'/, '')} %'`,
             (err, budgets) => {
                 if (err){
                     reject(err);

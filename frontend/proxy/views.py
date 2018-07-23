@@ -124,8 +124,7 @@ class Api(generic.TemplateView):
 
         if not request.user.is_superuser:
             # If not admin, cannot view any months earlier than July 2017.
-            # TODO: fix this properly with a database for the client SLA
-            # dates instead of hard coding
+            # TODO: respect the SLA dates in the CRM instead.
             if month_dt < min_dt:
                 month = min_dt.strftime("%Y-%m")
 

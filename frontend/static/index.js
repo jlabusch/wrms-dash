@@ -2,6 +2,13 @@ URI_EXT = '__vendor/default/2017-7';
 
 var tile_exists = {};
 
+function mkuri(org){
+    // TODO: if we need to support multiple active contracts per client, then
+    // after making the django proxy changes, insert org.systems.join(',')
+    // instead of "default" here:
+    return org.org_id + "/default/" + PERIOD;
+}
+
 query('/customer_list', function(err, data){
     if (err){
         console.log('customer_list: ' + err);
@@ -15,7 +22,7 @@ query('/customer_list', function(err, data){
             }
         }
 
-        const org = {name: name, org_id: data[name]};
+        const org = {name: name, org_id: data[name].org_id, systems: data[name].systems};
 
         if (!tile_exists[name]){
             draw_tile(org, i, 'blue');
@@ -26,7 +33,7 @@ query('/customer_list', function(err, data){
             handle_hours(org, i, after_fetches),
             undefined,
             0,
-            org.org_id + "/default/" + PERIOD
+            mkuri(org)
         );
     });
 });
@@ -64,7 +71,7 @@ function handle_hours(org, i, next){
             handle_count(org, i, color, next),
             undefined,
             0,
-            org.org_id + "/default/" + PERIOD
+            mkuri(org)
         );
     };
 }
@@ -93,7 +100,7 @@ function draw_tile(org, i, color, count){
         '<a href="/dashboard/' + org.org_id + '/">' +
             '<div class="index-tile ' + color + '">' +
                 '<span class="tile-count">' + count + '</span>' +
-                '<span class="tile-name">' + org.name + '</span>' +
+                '<span class="tile-name">' + org.name.replace(/ SLA /, ' ').replace(/\d\d\d\d\s?-\s?/, '') + '</span>' +
             '</div>' +
         '</a>'
     );

@@ -161,11 +161,15 @@ function query_espo_accounts(context){
 //      type: "Service Level Agreement"
 function merge_espo_data(context){
     let active = {};
+
     util.log_debug(__filename, '==================== Raw contracts: ', DEBUG);
     context.contracts.list.forEach(c => {
         util.log_debug(__filename, JSON.stringify(c), DEBUG);
         if (c.status === 'Active' && c.type === 'Service Level Agreement'){
-            active[c.accountId] = {
+            if (!active[c.accountId]){
+                active[c.accountId] = [];
+            }
+            active[c.accountId].push({
                 name: c.name,
                 org_name: c.accountName,
                 type: (c.sLAFrequency || 'unknown').toLowerCase().trim(),
@@ -173,16 +177,22 @@ function merge_espo_data(context){
                 start_date: util.date_fmt(new Date(c.startDate)),
                 end_date: util.date_fmt(new Date(c.endrenewalDate)),
                 systems: (c.systemID ? c.systemID.split(/,\s*/).map(n => parseInt(n)).filter(n => n !== null && !isNaN(n)) : [])
-            };
+            });
         }
     });
+
+    let result = [];
+
     util.log_debug(__filename, '==================== Raw accounts: ', DEBUG);
-    context.accounts.list.forEach(a => {
-        util.log_debug(__filename, JSON.stringify(a), DEBUG);
-        if (active[a.id]){
-            active[a.id].org_id = a.orgID;
+    context.accounts.list.forEach(arr => {
+        util.log_debug(__filename, JSON.stringify(arr), DEBUG);
+        if (active[arr.id]){
+            active[arr.id].forEach(a => {
+                a.org_id = arr.orgID;
+                result.push(a);
+            });
         }
     });
-    return Object.values(active);
+    return Object.values(result);
 }
 

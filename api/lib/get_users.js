@@ -14,7 +14,9 @@ module.exports = query.prepare(
         next(r);
     },
     (key, ctx, next, error) => {
-        if (!util.get_org(ctx) ||
+        // TODO: decide where to fetch tokens from now that the config no longer exists.
+        if (true ||
+            !util.get_org(ctx) ||
             !util.get_org(ctx).users ||
             !util.get_org(ctx).users.hostname ||
             !util.get_org(ctx).users.token)

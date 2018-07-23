@@ -19,7 +19,8 @@ module.exports = function(req, res, next, ctx){
                     JOIN    contracts c ON c.id=cb.contract_id
                     JOIN    contract_system_link cs ON cs.contract_id=c.id
                     WHERE   c.org_id=?
-                    AND     cs.system_id IN (${ctx.sys.join(',')})`,
+                    AND     cs.system_id IN (${ctx.sys.join(',')})
+                    GROUP BY b.id`,
         ctx.org,
         handler(data => {
             if (!Array.isArray(data) || data.length < 1){

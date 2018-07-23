@@ -2,6 +2,8 @@ from django.conf.urls import url, include
 
 from . import views
 
+# TODO: to support multiple active contracts per client, the "dashboard" and "api" URLs need
+# to match (?P<systems>[0-9,]+) between <client> and <month>.
 urlpatterns = [
     url(r'^$',                                                                              views.IndexView.as_view(),      name='index'),
     url(r'^dashboard/(?P<client>[_a-z0-9A-Z ]+)/$',                                         views.DashboardView.as_view(),  name='dashboard'),

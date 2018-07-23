@@ -26,6 +26,8 @@ module.exports = function(req, res, next, ctx){
         handler(data => {
             let r = {result: [{wr: "None", result: 0}]};
 
+            util.log_debug(__filename, 'raw data: ' + JSON.stringify(data, null, 2));
+
             if (Array.isArray(data) && data.length > 0){
                 // Compress the list to one element per WR
                 let wrs = {};

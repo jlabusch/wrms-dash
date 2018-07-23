@@ -29,13 +29,10 @@ function match_non_monthly_budget_name(id, ctx){
         let from = new Date(m[1]),
             to = new Date(m[2]);
 
-        // force "to" to be the end of the month
-        to.setMonth(to.getMonth()+1);
-        to.setDate(-1);
-
         let pdate = new Date(ctx.period);
 
-        return pdate > from && pdate < to;
+        // Budget names are [start,end)
+        return pdate >= from && pdate < to;
     }
     return false;
 }
