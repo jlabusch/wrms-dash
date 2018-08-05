@@ -47,7 +47,15 @@ If you're starting from a blank database, after starting the system you need to 
 
 > Also remember that the actual container name, e.g. `wrmsdash_frontend_1`, depends on your environment. Use `docker-compose ps` to see what the real name is.
 
+##### User accounts
+
 To change a user's password, run `docker exec -it wrmsdash_frontend_1 ./manage.py changepassword <username>`
+
+Current (pre-WRMS IdP) user model is:
+
+- Each organisation has a group whose name is the WRMS org ID
+- Client users belong to their organisation's group and no permissions
+- Staff users have the "staff status" and "superuser status" options checked and no groups or additional permissions
 
 ### WRMS metadata
 
