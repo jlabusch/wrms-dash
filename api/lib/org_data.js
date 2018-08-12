@@ -77,4 +77,7 @@ exports.get_org = function(id){
     return o;
 }
 
+exports.get_all_orgs = function(){
+    return Object.values(orgs).map(o => { return o.org_id });
+}
 
