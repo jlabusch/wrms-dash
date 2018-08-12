@@ -156,43 +156,6 @@ function draw_custom_charts(){
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     }, undefined, 0);
 
-    query('/budget_summary', function(err, budgets){
-        if (err){
-            console.log('budget_summary: ' + err);
-            return;
-        }
-        console.log(JSON.stringify(budgets, null, 2));
-        var o = JSON.parse(JSON.stringify(std_gchart_options));
-        o.chartArea.height = 150;
-
-        var data = Object.keys(budgets).map(function(name){
-            var used_sla_hours = budgets[name].result.reduce(sum_sla_hours, 0),
-                color = default_colors[1];
-
-            if (used_sla_hours < budgets[name].budget * 0.75) {
-                color = default_colors[7];
-            } else if (used_sla_hours < budgets[name].budget) {
-                color = default_colors[2];
-            }
-
-            return [name, budgets[name].budget - used_sla_hours, color];
-        });
-
-        if (data.length < 1){
-            (new Keen.Dataviz())
-                .el('#chart-04')
-                .type('message')
-                .message('No data');
-            return;
-        }
-
-        data.unshift(['Client', 'Hours left', {role: 'style'}]);
-
-        var chart04 = new google.visualization.BarChart(document.getElementById('chart-04'));
-
-        chart04.draw(google.visualization.arrayToDataTable(data), o);
-    }, undefined, 0);
-
     query('/mis_report', function(err, mis){
         if (err){
             console.log('mis_report: ' + err);
