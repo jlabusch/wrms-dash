@@ -9,9 +9,50 @@ var default_colors = [
     URI_BASE_DEFAULT = '/api',
     SECS = 1000;
 
+var sev_colors = [
+    default_colors[7],
+    default_colors[0],
+    default_colors[2],
+    default_colors[10]
+];
+
 var ORG = $("body").data("client"),
     PERIOD = $('body').data('month'),
     URI_EXT = ORG + '/default/' + PERIOD;
+
+var std_gchart_options = {
+    titlePosition: 'none',
+    legend: {position: 'none'},
+    chartArea: {height: 200, left: '10%', width: '90%' },
+    height: 250,
+    orientation: 'horizontal',
+    annotations: {
+        alwaysOutside: true,
+        textStyle: {
+            fontSize: 12,
+            auraColor: 'none',
+            color: '#555'
+        },
+        boxStyle: {
+            stroke: '#ccc',
+            strokeWidth: 1,
+            gradient: {
+                color1: '#f3e5f5',
+                color2: '#f3e5f5',
+                x1: '0%', y1: '0%',
+                x2: '100%', y2: '100%'
+            }
+        }
+    },
+    hAxis: {
+        title: 'Category'
+    },
+    vAxis: {
+        title: 'Number of WRs',
+        minValue: 0
+    },
+    axisTitlesPosition: 'none'
+};
 
 function sum_sla_hours(sum, x){
     if (x[0].match(/SLA/)){
@@ -72,3 +113,14 @@ function render(chart, pre, label){
         }
     }
 }
+
+function handle_empty_data(chart, data){
+    if (data.result.length < 1 ||
+        data.result.length === 1 && data.result[0].wr === 'None')
+    {
+        chart.type('message')
+            .message('No data');
+        data.__skip_render = true;
+    }
+}
+

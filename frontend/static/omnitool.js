@@ -1,58 +1,4 @@
-var sev_colors = [
-    default_colors[7],
-    default_colors[0],
-    default_colors[2],
-    default_colors[10]
-];
-
-function handle_empty_data(chart, data){
-    if (data.result.length < 1 ||
-        data.result.length === 1 && data.result[0].wr === 'None')
-    {
-        chart.type('message')
-            .message('No data');
-        data.__skip_render = true;
-    }
-}
-
-var std_gchart_options = {
-    titlePosition: 'none',
-    legend: {position: 'none'},
-    chartArea: {height: 200, left: '10%', width: '90%' },
-    height: 250,
-    orientation: 'horizontal',
-    annotations: {
-        alwaysOutside: true,
-        textStyle: {
-            fontSize: 12,
-            auraColor: 'none',
-            color: '#555'
-        },
-        boxStyle: {
-            stroke: '#ccc',
-            strokeWidth: 1,
-            gradient: {
-                color1: '#f3e5f5',
-                color2: '#f3e5f5',
-                x1: '0%', y1: '0%',
-                x2: '100%', y2: '100%'
-            }
-        }
-    },
-    hAxis: {
-        title: 'Category'
-    },
-    vAxis: {
-        title: 'Number of WRs',
-        minValue: 0
-    },
-    axisTitlesPosition: 'none'
-};
-
-google.charts.load('current', {packages: ['corechart', 'bar', 'table', 'line']});
-google.charts.setOnLoadCallback(draw_custom_charts);
-
-function draw_custom_charts(){
+function get_wrs_to_invoice(){
     query('/wrs_to_invoice', function(err, data){
         if (err){
             console.log('wrs_to_invoice: ' + err);
@@ -89,7 +35,9 @@ function draw_custom_charts(){
         var viz = new google.visualization.Table(document.getElementById('chart-01'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     }, undefined, 0);
+}
 
+function get_additional_wrs_unquoted(){
     query('/additional_wrs_unquoted', function(err, data){
         if (err){
             console.log('additional_wrs_unquoted: ' + err);
@@ -122,7 +70,9 @@ function draw_custom_charts(){
         var viz = new google.visualization.Table(document.getElementById('chart-03'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     }, undefined, 0);
+}
 
+function get_new_sysadmin_wrs(){
     query('/new_sysadmin_wrs', function(err, data){
         if (err){
             console.log('new_sysadmin_wrs: ' + err);
@@ -155,7 +105,9 @@ function draw_custom_charts(){
         var viz = new google.visualization.Table(document.getElementById('chart-02'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     }, undefined, 0);
+}
 
+function get_mis_report(){
     query('/mis_report', function(err, mis){
         if (err){
             console.log('mis_report: ' + err);
@@ -186,5 +138,15 @@ function draw_custom_charts(){
 
         chart05.draw(google.visualization.arrayToDataTable(mis.result), opt);
     }, undefined, 0);
-} // google charts
+}
+
+function draw_custom_charts(){
+    get_wrs_to_invoice();
+    get_additional_wrs_unquoted();
+    get_new_sysadmin_wrs();
+    get_mis_report();
+}
+
+google.charts.load('current', {packages: ['corechart', 'bar', 'table', 'line']});
+google.charts.setOnLoadCallback(draw_custom_charts);
 

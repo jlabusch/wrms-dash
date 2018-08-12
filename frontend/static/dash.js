@@ -1,44 +1,3 @@
-var sev_colors = [
-    default_colors[7],
-    default_colors[0],
-    default_colors[2],
-    default_colors[10]
-];
-
-var std_gchart_options = {
-    titlePosition: 'none',
-    legend: {position: 'none'},
-    chartArea: {height: 200, left: '10%', width: '90%' },
-    height: 250,
-    orientation: 'horizontal',
-    annotations: {
-        alwaysOutside: true,
-        textStyle: {
-            fontSize: 12,
-            auraColor: 'none',
-            color: '#555'
-        },
-        boxStyle: {
-            stroke: '#ccc',
-            strokeWidth: 1,
-            gradient: {
-                color1: '#f3e5f5',
-                color2: '#f3e5f5',
-                x1: '0%', y1: '0%',
-                x2: '100%', y2: '100%'
-            }
-        }
-    },
-    hAxis: {
-        title: 'Category'
-    },
-    vAxis: {
-        title: 'Number of WRs',
-        minValue: 0
-    },
-    axisTitlesPosition: 'none'
-};
-
 function toggle_faqs(){
     set_faqs(!window.localStorage.getItem('dashboard-faq-hidden'));
 }
@@ -218,16 +177,6 @@ var donut_options = {
     }
 }
 
-function handle_empty_data(chart, data){
-    if (data.result.length < 1 ||
-        data.result.length === 1 && data.result[0].wr === 'None')
-    {
-        chart.type('message')
-            .message('No data');
-        data.__skip_render = true;
-    }
-}
-
 function set_total(selector){
     return function(chart, data){
         if (data){
@@ -279,7 +228,7 @@ query('/additional_quotes', render(chart03, [set_total('#chart-03-notes'), handl
 google.charts.load('current', {packages: ['corechart', 'bar', 'table', 'line']});
 google.charts.setOnLoadCallback(draw_custom_charts);
 
-function draw_custom_charts(){
+function get_wrs_over_time(){
     query('/wrs_over_time', function(err, data){
         if (err){
             console.log('wrs_over_time: ' + err);
@@ -300,7 +249,9 @@ function draw_custom_charts(){
 
         chart11.draw(google.visualization.arrayToDataTable(data), o);
     });
+}
 
+function get_sla_hours(){
     query('/sla_hours', function(err, data){
         if (err){
             console.log('sla_hours: ' + err);
@@ -338,7 +289,9 @@ function draw_custom_charts(){
         }
         render(chart15)(null, {result: data.budget - used_sla_hours});
     });
+}
 
+function get_severity(){
     query('/severity', function(err, data){
         if (err){
             console.log('severity: ' + err);
@@ -351,7 +304,9 @@ function draw_custom_charts(){
 
         chart04.draw(google.visualization.arrayToDataTable(data), std_gchart_options);
     });
+}
 
+function get_response_times(){
     query('/response_times', function(err, data){
         if (err){
             console.log('response_times: ' + err);
@@ -371,7 +326,9 @@ function draw_custom_charts(){
 
         chart08.draw(google.visualization.arrayToDataTable(data.result), std_gchart_options);
     });
+}
 
+function get_statuses(){
     query('/statuses', function(err, data){
         if (err){
             console.log('statuses: ' + err);
@@ -391,7 +348,9 @@ function draw_custom_charts(){
 
         chart05.draw(google.visualization.arrayToDataTable(data), o);
     });
+}
 
+function get_wr_list(){
     query('/wr_list', function(err, data){
         if (err){
             console.log('wr_list: ' + err);
@@ -422,7 +381,9 @@ function draw_custom_charts(){
         var viz = new google.visualization.Table(document.getElementById('chart-13'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     });
+}
 
+function get_pending_quotes(){
     query('/pending_quotes', function(err, data){
         if (err){
             console.log('pending_quotes: ' + err);
@@ -454,8 +415,9 @@ function draw_custom_charts(){
         var viz = new google.visualization.Table(document.getElementById('chart-01'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     });
+}
 
-
+function get_deployments(){
     query('/deployments', function(err, data){
         if (err){
             console.log('deployments: ' + err);
@@ -493,7 +455,9 @@ function draw_custom_charts(){
         var viz = new google.visualization.Table(document.getElementById('chart-12'));
         viz.draw(table, {allowHtml: true, showRowNumber: false, width: '100%', height: '250'});
     });
+}
 
+function get_availability(){
     query('/availability', render(chart07, function(c, d){
 
         var metric_chart = false;
@@ -550,8 +514,19 @@ function draw_custom_charts(){
                 .draw(google.visualization.arrayToDataTable(d), o);
         }
     }));
+}
 
-} // google charts
+function draw_custom_charts(){
+    get_wrs_over_time();
+    get_sla_hours();
+    get_severity();
+    get_response_times();
+    get_statuses();
+    get_wr_list();
+    get_pending_quotes();
+    get_deployments();
+    get_availability();
+}
 
 var gophers = [
     '7TH_BIRTHDAY.png',
