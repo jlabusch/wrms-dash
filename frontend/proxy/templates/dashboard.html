@@ -47,12 +47,12 @@
       <div class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-left">
           {% if not min_reached %}
-          <li><a href="{% url 'proxy:dashboard' client=client month=prev_month %}" id="period-prev">
+          <li><a href="{% url 'proxy:dashboard' client=client systems=systems month=prev_month %}" id="period-prev">
             <span class="glyphicon glyphicon-backward"></span>
           </a></li>
           {% endif %}
-          <li><a href="{% url 'proxy:dashboard' client=client month=month %}" id="period-current" style="font-weight:bold;">Current month</a></li>
-          <li><a href="{% url 'proxy:dashboard' client=client month=next_month %}" id="period-next">
+          <li><a href="{% url 'proxy:dashboard' client=client systems=systems month=month %}" id="period-current" style="font-weight:bold;">Current month</a></li>
+          <li><a href="{% url 'proxy:dashboard' client=client systems=systems month=next_month %}" id="period-next">
             <span class="glyphicon glyphicon-forward"></span>
           </a></li>
           <li><a id="cust-system" href="#" target="_blank">Kanban board</a></li>

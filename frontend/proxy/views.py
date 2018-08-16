@@ -21,6 +21,7 @@ class IndexView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["month"] = datetime.datetime.now().strftime("%Y-%m")
+        context["systems"] = "default"
         context["client"] = "__vendor"
         if self.request.user.is_superuser:
             context["groups"] = Group.objects.exclude(id__in=self.request.user.groups.all().values_list('id', flat=True))
@@ -44,6 +45,7 @@ class OmnitoolView(generic.TemplateView):
         context = super().get_context_data(**kwargs)
         context["month"] = datetime.datetime.now().strftime("%Y-%m")
         context["client"] = "__vendor"
+        context["systems"] = "default"
         return context
 
     def dispatch(self, request):
@@ -60,6 +62,7 @@ class CarouselView(generic.TemplateView):
         context = super().get_context_data(**kwargs)
         context["month"] = datetime.datetime.now().strftime("%Y-%m")
         context["client"] = "__vendor"
+        context["systems"] = "default"
         return context
 
     def dispatch(self, request):
@@ -72,11 +75,14 @@ class CarouselView(generic.TemplateView):
 class DashboardView(generic.TemplateView):
     template_name = 'dashboard.html'
 
-    def dispatch(self, request, client, month=None):
+    def dispatch(self, request, client, systems=None, month=None):
         if not is_member(request.user, client) and not request.user.is_superuser:
             raise PermissionDenied()
 
-        if month is None:
+        if systems is None:
+            systems = "default"
+
+        if month is '' or month is None:
             month = datetime.datetime.now().strftime("%Y-%m")
 
         month_dt = datetime.datetime.strptime(month, "%Y-%m")
@@ -89,12 +95,13 @@ class DashboardView(generic.TemplateView):
             # TODO: fix this properly with a database for the client SLA
             # dates instead of hard coding
             if month_dt < min_dt:
-                return redirect('proxy:dashboard', client=client)
+                return redirect('proxy:dashboard', client=client, systems=systems)
             if month == "2017-7": #TODO: remove hard coding
                 self.min_reached = True
             else:
                 self.min_reached = False
 
+        self.systems = systems
         self.month = month
         self.client = client
 
@@ -104,6 +111,7 @@ class DashboardView(generic.TemplateView):
         context = super().get_context_data(**kwargs)
         context["client"] = self.client
         context["month"] = self.month
+        context["systems"] = self.systems
         context["prev_month"] = get_prev_month(self.month)
         context["next_month"] = get_next_month(self.month)
         context["min_reached"] = self.min_reached
@@ -112,9 +120,12 @@ class DashboardView(generic.TemplateView):
 
 @method_decorator(login_required, name='dispatch')
 class Api(generic.TemplateView):
-    def get(self, request, item, client, month):
+    def get(self, request, item, client, systems, month):
         if not is_member(request.user, client) and not request.user.is_superuser:
             raise PermissionDenied()
+
+        if systems is None:
+            systems = "default"
 
         if month is None:
             month = datetime.datetime.now().strftime("%Y-%m")
@@ -128,7 +139,7 @@ class Api(generic.TemplateView):
             if month_dt < min_dt:
                 month = min_dt.strftime("%Y-%m")
 
-        url = "{}/api/{}/{}/default/{}".format(API_SERVER, item, client, month)
+        url = "{}/api/{}/{}/{}/{}".format(API_SERVER, item, client, systems, month)
         jsondata = requests.get(url).text
         return HttpResponse(jsondata, content_type='application/json')
 

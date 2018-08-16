@@ -6,7 +6,9 @@ var util = require('./util'),
 module.exports = function(req){
     let context = {};
 
-    const org = odata.get_org(req.params.org);
+    let sys_arg = req.params.sys.match(/^[0-9,]+$/) ? req.params.sys.split(',') : 'default';
+
+    const org = odata.get_org(req.params.org, sys_arg);
 
     if (!org){
         context.error = "Couldn't parse org=" + req.params.org;
@@ -15,16 +17,7 @@ module.exports = function(req){
 
     context.org = org.org_id;
     context.org_name = org.org_name;
-
-    if (req.params.sys === 'default'){
-        context.sys = org.systems;
-    }else if (req.params.sys.match(/^[0-9,]+$/)){
-        context.sys = req.params.sys.split(/,/);
-    }else{
-        context.error = "Couldn't parse sys=" + req.params.sys;
-        return context;
-    }
-
+    context.sys = org.systems;
     context.tz = org.tz || 'Europe/London';
 
     let p = util.parse_period(req.params.period);

@@ -3,10 +3,7 @@ URI_EXT = '__vendor/default/2017-7';
 var tile_exists = {};
 
 function mkuri(org){
-    // TODO: if we need to support multiple active contracts per client, then
-    // after making the django proxy changes, insert org.systems.join(',')
-    // instead of "default" here:
-    return org.org_id + "/default/" + PERIOD;
+    return org.org_id + "/" + org.systems.join(',') + "/" + PERIOD;
 }
 
 query('/customer_list', function(err, data){
@@ -97,7 +94,7 @@ function draw_tile(org, i, color, count){
         count = '';
     }
     $('.chart-wrapper:eq(' + i + ')').html(
-        '<a href="/dashboard/' + org.org_id + '/">' +
+        '<a href="/dashboard/' + org.org_id + '/' + org.systems + '/">' +
             '<div class="index-tile ' + color + '">' +
                 '<span class="tile-count">' + count + '</span>' +
                 '<span class="tile-name">' + org.name.replace(/ SLA /, ' ').replace(/\d\d\d\d\s?-\s?/, '') + '</span>' +

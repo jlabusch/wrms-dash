@@ -17,8 +17,9 @@ var sev_colors = [
 ];
 
 var ORG = $("body").data("client"),
+    SYSTEMS= $("body").data("systems"),
     PERIOD = $('body').data('month'),
-    URI_EXT = ORG + '/default/' + PERIOD;
+    URI_EXT = ORG + '/' + SYSTEMS + '/' + PERIOD;
 
 var std_gchart_options = {
     titlePosition: 'none',

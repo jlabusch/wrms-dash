@@ -54,8 +54,10 @@ function get_org_by_key(field, val, systems){
 //  - contracts.name
 // and it may be either a bare value or part of a context object (i.e. id vs. id.org)
 //
+// Systems may be provided to disambiguate orgs with multiple contracts
+//
 // Returns contracts.* or null
-exports.get_org = function(id){
+exports.get_org = function(id, systems){
     if (id === undefined){
         throw new Error('get_org() with no ID specified');
     }
@@ -65,7 +67,11 @@ exports.get_org = function(id){
 
     if (id.org || !isNaN(n)){
         // Numeric lookups may need to be disambiguated by system
-        o = get_org_by_key('org_id', id.org || n, id.systems);
+        if (id.org){
+            o = get_org_by_key('org_id', id.org, id.systems);
+        }else{
+            o = get_org_by_key('org_id', n, systems);
+        }
     }else{
         // Name lookups are already unique... Unless someone has messed up in the CRM,
         // in which case we'll just return the first match
