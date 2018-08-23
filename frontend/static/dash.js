@@ -272,7 +272,12 @@ function get_sla_hours(){
 
         var used_sla_hours = data.result.reduce(sum_sla_hours, 0);
 
-        document.getElementById('chart-15-notes').innerText = 'Used ' + used_sla_hours + ' of ' + data.budget + ' hours';
+        var note = 'Used ' + used_sla_hours + ' of ' + data.budget;
+        if (data.types && data.types.length){
+            note += ' ' + data.types.join('+').replace('month', 'monthly');
+        }
+        note += ' hours';
+        document.getElementById('chart-15-notes').innerText = note;
 
         // Target format is
         //  ['Category', 'Hours', {role: 'style'}],

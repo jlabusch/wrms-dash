@@ -33,6 +33,7 @@ module.exports = function(req, res, next, ctx){
 
             let r = {
                 budget: 0,
+                types: [],
                 result: [
                     ['SLA quotes', 0],
                     ['SLA unquoted', 0],
@@ -49,6 +50,12 @@ module.exports = function(req, res, next, ctx){
 
                 if (relevant){
                     r.budget += d.base_hours;
+                    let type_match = d.id.match(/(month|annual|biannual)\s+\d\d\d\d.\d?\d/);
+                    if (Array.isArray(type_match) && type_match.length > 1 && !r.types.includes(type_match[1])){
+                        r.types.push(type_match[1]);
+                    }else{
+                        util.log(__filename, `WARNING: didn't understand budget type "${d.id}", expected to see month/annual/biannual types`);
+                    }
                     r.result[0][1] += d.sla_quote_hours;
                     r.result[1][1] += d.base_hours_spent - d.sla_quote_hours;
                     r.result[2][1] += d.additional_hours;
