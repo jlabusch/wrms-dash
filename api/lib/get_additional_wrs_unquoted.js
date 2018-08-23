@@ -1,56 +1,50 @@
-var query = require('./query'),
-    org_data = require('./org_data'),
-    util = require('./util');
+var store = require('./data_store'),
+    sync  = require('./data_sync'),
+    odata = require('./org_data'),
+    util  = require('./util');
 
-module.exports = query.prepare(
-    'additional_wrs_unquoted',
-    'additional_wrs_unquoted',
-    function(ctx){
-        return `SELECT r.request_id,
-                       r.brief,
-                       o.org_name AS org,
-                       o.org_code AS org_id,
-                       c.lookup_desc AS status,
-                       SUM(t.work_quantity) as worked,
-                       CASE WHEN q.quote_units = 'days' THEN q.quote_amount*8
-                            ELSE q.quote_amount
-                       END AS quote_amount
-                FROM request r
-                LEFT JOIN request_quote q on q.request_id=r.request_id
-                JOIN usr u ON
-                    u.user_no=r.requester_id
-                JOIN organisation o ON
-                    o.org_code=u.org_code
-                LEFT JOIN lookup_code c ON
-                    c.source_table='request' AND
-                    c.source_field='status_code' AND
-                    c.lookup_code=r.last_status
-                LEFT JOIN request_timesheet t ON
-                    t.request_id=r.request_id AND
-                    t.work_units='hours'
-                WHERE
-                    r.last_status NOT IN ('C') AND
-                    r.request_id IN (
-                        SELECT request_id
-                        FROM request_tag
-                        WHERE
-                            tag_id IN (
-                                SELECT tag_id
-                                FROM organisation_tag
-                                WHERE tag_description='Additional'
-                            )
-                    )
-                GROUP BY r.request_id,r.brief,o.org_name,o.org_code,c.lookup_desc,q.quote_units,quote_amount`.replace(/\s+/, ' ');
-    },
-    function(data, ctx, next){
-        let r = [],
-            all_orgs = org_data.get_all_orgs();
-        if (data && data.rows && data.rows.length > 0){
-            r = data.rows.filter(row => {
-                // Include orgs we're interested in, but only when there's no quote
-                return all_orgs.indexOf(row.org_id) > -1 && !row.quote_amount;
+module.exports = function(req, res, next, ctx){
+    let handler = store.make_query_handler(req, res, next, ctx, __filename);
+
+    let org = odata.get_org(ctx);
+
+    store.query(
+        util.trim  `SELECT  w.id AS request_id,
+                            w.brief,
+                            c.org_name AS org,
+                            c.org_id,
+                            w.status,
+                            w.hours as worked,
+                            w.tag_additional,
+                            q.valid,
+                            q.id as quote_id
+                    FROM wrs w
+                    JOIN contract_system_link cs ON cs.system_id=w.system_id
+                    JOIN contracts c ON c.id=cs.contract_id
+                    LEFT JOIN quotes q ON q.wr_id=w.id
+                    WHERE w.tag_additional = 1 AND w.status != 'Cancelled'
+                    ORDER BY w.id`,
+        handler(data => {
+            if (!Array.isArray(data) || data.length < 1){
+                throw new Error("couldn't determine unquoted Additional WRs");
+            }
+
+            util.log_debug(__filename, 'raw data: ' + JSON.stringify(data, null, 2));
+
+            let r = {};
+
+            data.forEach(d => {
+                let v = r[d.request_id] || d;
+                v.valid = v.valid || d.valid;
+                r[d.request_id] = v;
             });
-        }
-        next(r);
-    }
-)
+
+            // Return only entries with hours worked but no valid quotes
+            // Note that if something has both the Additional tag and a Maintenance/Warranty
+            // tag then it won't be included because we won't know about hours worked.
+            return Object.values(r).filter(v => { return !v.valid && v.worked > 0 });
+        })
+    );
+}
+
+
