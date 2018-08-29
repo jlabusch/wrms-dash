@@ -164,7 +164,7 @@ function merge_espo_data(context){
 
     util.log_debug(__filename, '==================== Raw contracts: ', DEBUG);
     context.contracts.list.forEach(c => {
-        util.log_debug(__filename, JSON.stringify(c), DEBUG);
+        util.log_debug(__filename, c.name + ', ' + c.type + ', ' + c.status, DEBUG);
         if (c.status === 'Active' && c.type === 'Service Level Agreement'){
             if (!active[c.accountId]){
                 active[c.accountId] = [];
@@ -184,11 +184,11 @@ function merge_espo_data(context){
     let result = [];
 
     util.log_debug(__filename, '==================== Raw accounts: ', DEBUG);
-    context.accounts.list.forEach(arr => {
-        util.log_debug(__filename, JSON.stringify(arr), DEBUG);
-        if (active[arr.id]){
-            active[arr.id].forEach(a => {
-                a.org_id = arr.orgID;
+    context.accounts.list.forEach(acc => {
+        util.log_debug(__filename, acc.id + ': ' + acc.name + ' (' + acc.orgID + ')', DEBUG);
+        if (active[acc.id]){
+            active[acc.id].forEach(a => {
+                a.org_id = acc.orgID;
                 result.push(a);
             });
         }

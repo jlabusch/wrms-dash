@@ -1,23 +1,28 @@
-var util = require('./util');
+var util = require('./util'),
+    Swapper = require('./swapper');
 
 'use strict';
 
-var orgs = {};
-
 const DEBUG = false;
 
-exports.__raw = function(){ return orgs }
-
-exports.add_org = function(contract){
-    util.log_debug(__filename, `add_org(${JSON.stringify(contract)})`, DEBUG);
-
-    orgs[contract.name] = JSON.parse(JSON.stringify(contract));
+function OrgData(){
+    this.data = {};
 }
 
-exports.add_system = function(contract, system){
+OrgData.prototype.wipe = function(){
+    this.data = {};
+}
+
+OrgData.prototype.add_org = function(contract){
+    util.log_debug(__filename, `add_org(${JSON.stringify(contract)})`, DEBUG);
+
+    this.data[contract.name] = JSON.parse(JSON.stringify(contract));
+}
+
+OrgData.prototype.add_system = function(contract, system){
     util.log_debug(__filename, `add_system(${JSON.stringify(contract)}, ${system})`, DEBUG);
 
-    let o = orgs[contract.name];
+    let o = this.data[contract.name];
 
     if (o){
         let s = o.systems || [];
@@ -37,10 +42,10 @@ function systems_match(a, b){
            a.sort().join(',') === b.sort().join(',');
 }
 
-function get_org_by_key(field, val, systems){
+OrgData.prototype.get_org_by_key = function(field, val, systems){
     let o = null;
 
-    Object.values(orgs).forEach(org => {
+    Object.values(this.data).forEach(org => {
         if (org[field] === val && systems_match(systems, org.systems)){
             o = org;
         }
@@ -57,7 +62,7 @@ function get_org_by_key(field, val, systems){
 // Systems may be provided to disambiguate orgs with multiple contracts
 //
 // Returns contracts.* or null
-exports.get_org = function(id, systems){
+OrgData.prototype.get_org = function(id, systems){
     if (id === undefined){
         throw new Error('get_org() with no ID specified');
     }
@@ -68,14 +73,14 @@ exports.get_org = function(id, systems){
     if (id.org || !isNaN(n)){
         // Numeric lookups may need to be disambiguated by system
         if (id.org){
-            o = get_org_by_key('org_id', id.org, id.systems);
+            o = this.get_org_by_key('org_id', id.org, id.systems);
         }else{
-            o = get_org_by_key('org_id', n, systems);
+            o = this.get_org_by_key('org_id', n, systems);
         }
     }else{
         // Name lookups are already unique... Unless someone has messed up in the CRM,
         // in which case we'll just return the first match
-        o = get_org_by_key('name', id);
+        o = this.get_org_by_key('name', id);
     }
 
     util.log_debug(__filename, 'get_org(' + JSON.stringify({id:id}) + ') => ' + JSON.stringify(o), DEBUG);
@@ -83,7 +88,9 @@ exports.get_org = function(id, systems){
     return o;
 }
 
-exports.get_all_orgs = function(){
-    return Object.values(orgs).map(o => { return o.org_id });
+OrgData.prototype.get_all_orgs = function(){
+    return Object.values(this.data).map(o => { return o.org_id });
 }
+
+module.exports = new Swapper(new OrgData(), new OrgData());
 

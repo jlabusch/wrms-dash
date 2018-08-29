@@ -1,25 +1,25 @@
 var util    = require('./util'),
+    Swapper = require('./swapper'),
     sqlite3 = require('sqlite3').verbose();
 
 const DEBUG = false;
 
 'use strict';
 
-// Like double-buffering... but with databases.
-// Consistency and completeness are critical.
-let dbs = {
-    active: new sqlite3.Database(':memory:', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, db_startup_handler('active')),
-    syncing: new sqlite3.Database(':memory:', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, db_startup_handler('syncing')),
-};
-
-function swap_dbs(){
-    let t = dbs.active;
-    dbs.active = dbs.syncing;
-    dbs.syncing = t;
-    return dbs.active;
-}
+let dbs = new Swapper(
+    new sqlite3.Database(':memory:', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, db_startup_handler('active')),
+    new sqlite3.Database(':memory:', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, db_startup_handler('syncing'))
+);
 
 let sql = {
+    delete_all: [
+        'DELETE FROM contracts',
+        'DELETE FROM systems',
+        'DELETE FROM budgets',
+        'DELETE FROM wrs',
+        'DELETE FROM timesheets',
+        'DELETE FROM quotes'
+    ],
     create_schema: [
         `CREATE TABLE contracts (
             id TEXT PRIMARY KEY,
@@ -206,6 +206,7 @@ function sqlite_promise(/* ... */){
         args.push(callback);
         try{
             db.run.apply(db, args);
+            util.log_debug(__filename, 'db_' + dbs.identify(db) + ': ' + JSON.stringify(args));
         }catch(ex){
             util.log_debug(__filename, 'ERROR in sqlite_promise(): ' + ex, DEBUG);
             reject(ex);
@@ -237,12 +238,12 @@ function db_startup_handler(name){
 function init(){
     util.log_debug(__filename, 'init()', DEBUG);
     return Promise.all([
-        create_schema(dbs.active).catch(err => {
+        create_schema(dbs.active()).catch(err => {
             util.log(__filename, 'FATAL ERROR creating active DB: ' + err);
             util.log(__filename, err.stack);
             process.exit(1);
         }),
-        create_schema(dbs.syncing).catch(err => {
+        create_schema(dbs.syncing()).catch(err => {
             util.log(__filename, 'FATAL ERROR creating syncing DB: ' + err);
             util.log(__filename, err.stack);
             process.exit(1);
@@ -297,13 +298,13 @@ function handler(req, res, next, ctx, transform, label = __filename){
 module.exports = {
     init: init,
     dbs: dbs,
-    swap: swap_dbs,
     sql: sql,
     sqlite_promise: sqlite_promise,
     generate_sqlite_promise: generate_sqlite_promise,
     query: function(/*stmt, arg, ..., next(err,rows)*/){
-        util.log_debug(__filename, JSON.stringify(Array.prototype.slice.call(arguments, 0), null, 2));
-        dbs.active.all.apply(dbs.active, arguments);
+        let a = dbs.active();
+        util.log_debug(__filename, 'db_' + dbs.identify(a) + ': ' + JSON.stringify(Array.prototype.slice.call(arguments, 0)));
+        a.all.apply(a, arguments);
     },
     query_handler: handler,
     make_query_handler: make_handler,

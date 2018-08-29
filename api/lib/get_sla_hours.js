@@ -6,7 +6,7 @@ var store = require('./data_store'),
 module.exports = function(req, res, next, ctx){
     let handler = store.make_query_handler(req, res, next, ctx, __filename);
 
-    let org = odata.get_org(ctx);
+    let org = odata.active().get_org(ctx);
 
     store.query(
         util.trim  `SELECT  b.id,

@@ -8,7 +8,7 @@ module.exports = function(req){
 
     let sys_arg = req.params.sys.match(/^[0-9,]+$/) ? req.params.sys.split(',') : 'default';
 
-    const org = odata.get_org(req.params.org, sys_arg);
+    const org = odata.active().get_org(req.params.org, sys_arg);
 
     if (!org){
         context.error = "Couldn't parse org=" + req.params.org;

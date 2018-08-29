@@ -23,7 +23,7 @@ exports.create_budget_name = create_budget_name;
 
 function match_non_monthly_budget_name(id, ctx){
     // Matches both annaul and biannual
-    let m = id.match(/annual (\d\d\d\d-\d?\d) to (\d\d\d\d-\d?\d)/);
+    let m = id.match(/annual (\d\d\d\d-\d?\d) to (\d\d\d\d-\d?\d)$/);
 
     if (m){
         let from = new Date(m[1]),
@@ -93,26 +93,14 @@ function soft_failure(resolve , msg){
 
 exports.soft_failure = soft_failure;
 
-function remove_previous_contract_budgets(db, contract){
-    let stmts = [
-        sql.delete_contract_budgets,
-        sql.delete_contract_budget_links
-    ];
-    return util.promise_sequence(stmts, s => {
-        return sqlite_promise(db, s, contract.name);
-    });
-}
-
-exports.remove_previous_contract_budgets = remove_previous_contract_budgets;
-
 function add_new_contract_and_systems(db, contract){
     let stmt_fns = [];
 
-    org_data.add_org(contract);
+    org_data.syncing().add_org(contract);
     stmt_fns.push(store.generate_sqlite_promise(db, sql.add_contract, contract.name, contract.org_id, contract.org_name, contract.start_date, contract.end_date));
 
     for (let i = 0; i < contract.systems.length; ++i){
-        org_data.add_system(contract, contract.systems[i]);
+        org_data.syncing().add_system(contract, contract.systems[i]);
         stmt_fns.push(store.generate_sqlite_promise(db, sql.add_system, contract.systems[i]));
         stmt_fns.push(store.generate_sqlite_promise(db, sql.add_contract_system_link, contract.name, contract.systems[i]));
     }
@@ -190,7 +178,7 @@ function modify_budget_for_quote(budget, quote, quote_description){
     if (quote_description.additional){
         // Additional quote hours are recorded as a separate tally on additional_hours
         return sqlite_promise(
-            store.dbs.syncing,
+            store.dbs.syncing(),
             'UPDATE budgets SET additional_hours=? WHERE id=?',
             budget.additional_hours + quote.quote_amount,
             budget.id
@@ -198,7 +186,7 @@ function modify_budget_for_quote(budget, quote, quote_description){
     }else{
         // SLA quote hours are subtracted from base_hours as base_hours_spent
         return sqlite_promise(
-            store.dbs.syncing,
+            store.dbs.syncing(),
             'UPDATE budgets SET base_hours_spent=?, sla_quote_hours=? WHERE id=?',
             budget.base_hours_spent + quote.quote_amount,
             budget.sla_quote_hours + quote.quote_amount,
@@ -219,7 +207,7 @@ function add_quote(quote, desc, budget, wr){
     util.log_debug(__filename, `add_quote(${JSON.stringify(quote)})`, DEBUG);
 
     return sqlite_promise(
-        store.dbs.syncing,
+        store.dbs.syncing(),
         sql.add_quote,
         quote.quote_id,
         budget.id,

@@ -41,7 +41,7 @@ module.exports = query.prepare(
                     q.quote_cancelled_by IS NULL AND
                     q.approved_by_id IS NOT NULL AND
                     q.invoice_no IS NULL AND
-                    o.org_code IN ( ${org_data.get_all_orgs().join(',')})`.replace(/\s+/, ' ');
+                    o.org_code IN ( ${org_data.active().get_all_orgs().join(',')})`.replace(/\s+/, ' ');
     },
     function(data, ctx, next){
         let r = [];
