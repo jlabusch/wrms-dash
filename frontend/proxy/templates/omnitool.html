@@ -56,11 +56,59 @@
   <div class="container-fluid">
     <div class="row">
 
-      <div class="col-sm-12">
+      <div class="col-sm-9">
         <div class="chart-wrapper">
-          <div class="chart-title">Additional quotes not yet invoiced</div>
-          <div class="chart-stage"><div id="chart-01"></div></div>
-          <div id="chart-01-notes" class="chart-notes">Includes all WR statuses.</div>
+          <div class="chart-title">Hours per month of visible SLA time</div>
+          <div class="chart-stage"><div id="chart-06"></div></div>
+          <div id="chart-06-notes" class="chart-notes">Everything that shows as "SLA" time on the client dashboard</div>
+        </div>
+      </div>
+
+      <div class="col-sm-3">
+        <div class="chart-wrapper">
+          <div class="chart-title">People doing client-visible SLA work</div>
+          <div class="chart-stage"><div id="chart-08"></div></div>
+          <div id="chart-08-notes" class="chart-notes">1 FTE = 8 hours/day for 21.16 days/month (169 hours)</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="col-sm-9">
+        <div class="chart-wrapper">
+          <div class="chart-title">Combined visible plus internal SLA time each month</div>
+          <div class="chart-stage"><div id="chart-11"></div></div>
+          <div id="chart-11-notes" class="chart-notes">All non-Additional SLA time (SLA + Warranty + Maintenance) vs. contract value (CRM contract fee divided by hourly rate), ignoring AWS/Azure costs</div>
+        </div>
+      </div>
+
+      <div class="col-sm-3">
+        <div class="chart-wrapper">
+          <div class="chart-title">SLA FTE including non-chargeable work</div>
+          <div class="chart-stage"><div id="chart-10"></div></div>
+          <div id="chart-10-notes" class="chart-notes">1 FTE = 8 hours/day for 21.16 days/month (169 hours)</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="col-sm-9">
+        <div class="chart-wrapper">
+          <div class="chart-title">Additional hours vs. quotes each month</div>
+          <div class="chart-stage"><div id="chart-07"></div></div>
+          <div id="chart-07-notes" class="chart-notes">Additional quotes as per dashboard vs. timesheeted hours on those WRs</div>
+        </div>
+      </div>
+
+      <div class="col-sm-3">
+        <div class="chart-wrapper">
+          <div class="chart-title">People doing Additional work</div>
+          <div class="chart-stage"><div id="chart-09"></div></div>
+          <div id="chart-09-notes" class="chart-notes">1 FTE = 8 hours/day for 21.16 days/month (169 hours)</div>
         </div>
       </div>
 
@@ -70,9 +118,21 @@
 
       <div class="col-sm-12">
         <div class="chart-wrapper">
-          <div class="chart-title">Invoicing history</div>
-          <div class="chart-stage"><div id="chart-05"></div></div>
-          <div id="chart-05-notes" class="chart-notes">Current financial year.</div>
+          <div class="chart-title">All client timesheets vs. invoicing</div>
+          <div class="chart-stage"><div id="chart-12"></div></div>
+          <div id="chart-12-notes" class="chart-notes">SLA contract fees (as hours using contract rate) vs. Odoo MIS report sales (as hours assuming avg. £85/hour) vs. all client timesheets</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="col-sm-12">
+        <div class="chart-wrapper">
+          <div class="chart-title">Additional quotes not yet invoiced</div>
+          <div class="chart-stage"><div id="chart-01"></div></div>
+          <div id="chart-01-notes" class="chart-notes">Includes all WR statuses.</div>
         </div>
       </div>
 

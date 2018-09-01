@@ -1,12 +1,12 @@
-.PHONY: run
+.PHONY: run build restart clean
 
 COMPOSE=docker-compose
 DOCKER=docker
 
 build:
 	$(COMPOSE) build
-	$(DOCKER) run -it --rm -v $$PWD/frontend/static:/opt/static jlabusch/wrms-dash-frontend ./manage.py collectstatic --noinput
-	$(DOCKER) run -it --rm -v $$PWD/frontend/static:/opt/static jlabusch/wrms-dash-frontend chown -R $$(id -u):$$(id -g) /opt/static/admin
+	$(DOCKER) run -it --rm -v $$PWD/frontend/static:/opt/static -v $$PWD/frontend/staticserve:/opt/staticserve jlabusch/wrms-dash-frontend ./manage.py collectstatic --noinput
+	$(DOCKER) run -it --rm -v $$PWD/frontend/static:/opt/static -v $$PWD/frontend/staticserve:/opt/staticserve jlabusch/wrms-dash-frontend chown -R $$(id -u):$$(id -g) /opt/static/admin /opt/staticserve
 
 frontend/db.sqlite3:
 	CONTAINER=$$($(DOCKER) run -d -t -e TERM=xterm --rm jlabusch/wrms-dash-frontend top) && \
@@ -21,4 +21,7 @@ run: build frontend/db.sqlite3
 
 restart:
 	$(COMPOSE) down; sleep 3; make run
+
+clean:
+	rm -fr frontend/staticserve
 

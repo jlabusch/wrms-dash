@@ -96,8 +96,22 @@ exports.soft_failure = soft_failure;
 function add_new_contract_and_systems(db, contract){
     let stmt_fns = [];
 
+    util.log_debug(__filename, `Adding ${JSON.stringify(contract)}`, DEBUG);
     org_data.syncing().add_org(contract);
-    stmt_fns.push(store.generate_sqlite_promise(db, sql.add_contract, contract.name, contract.org_id, contract.org_name, contract.start_date, contract.end_date));
+    stmt_fns.push(
+        store.generate_sqlite_promise(
+            db,
+            sql.add_contract,
+            contract.name,
+            contract.org_id,
+            contract.org_name,
+            contract.start_date,
+            contract.end_date,
+            contract.cash_value,
+            contract.cash_rate,
+            contract.cash_currency
+        )
+    );
 
     for (let i = 0; i < contract.systems.length; ++i){
         org_data.syncing().add_system(contract, contract.systems[i]);

@@ -4,21 +4,49 @@ var cache = require('./cache'),
 
 // This requires that some other magic script has created a file called ./api/mis.json
 // in the format of an Odoo MIS report.
+//
+// Result is of the form
+// {
+//   <YYYY-MM>: {
+//     month: <YYYY-MM>,
+//     sales: nnn
+//   },
+//   ...
+// }
 module.exports = function(req, res, next, ctx){
-    let resp = {result: []};
+    let resp = {};
 
     try{
         let raw = fs.readFileSync('./mis.json', {encoding: 'utf8'}),
             json = JSON.parse(raw);
 
-        let months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+        const month_lookup = [null, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        let months = [];
+
         if (json.result.header.length > 0){
-            months = json.result.header[0].cols.map(col => { return col.date.replace(' (EU)', '') }).slice(0, 12).reverse();
+            months = json.result.header[0].cols
+                .map(col => {
+                    // MIS date format is "Jul 2018 (EU)". Turn that into "2018-7"
+                    let parts = col.date.match(/(\w+)\s+(\d\d\d\d)/);
+                    return parts[2] + '-' + month_lookup.indexOf(parts[1]);
+                })
+                .slice(0, 12)
+                .reverse();
         }
 
         json.result.content.forEach(obj => {
             if (obj.kpi_name === 'Sales Revenue'){
-                resp.result = obj.cols.slice(0, 12).reverse().map(col => { return [months.shift(), col.val]; });
+                obj.cols
+                    .slice(0, 12)
+                    .reverse()
+                    .forEach(col => {
+                        let m = months.shift();
+                        resp[m] = {
+                            month: m,
+                            sales: col.val
+                        };
+                    });
             }
         });
     }catch(ex){

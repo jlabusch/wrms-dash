@@ -25,6 +25,9 @@ let sql = {
             id TEXT PRIMARY KEY,
             org_id INTEGER NOT NULL,
             org_name TEXT NOT NULL,
+            cash_value REAL NOT NULL,
+            cash_rate REAL NOT NULL,
+            cash_currency TEXT NOT NULL DEFAULT "GBP",
             start_date TEXT NOT NULL,
             end_date TEXT NOT NULL
         )`,
@@ -83,7 +86,7 @@ let sql = {
     dump: {
         contracts:  util.trim `
                     SELECT  c.id as contract_id,c.org_id,c.start_date,c.end_date,
-                            cs.system_id
+                            cs.system_id,c.cash_value,c.cash_rate,c.cash_currency
                     FROM contracts c
                     LEFT JOIN contract_system_link cs ON cs.contract_id=c.id
                     `,
@@ -108,7 +111,7 @@ let sql = {
                     ORDER BY t.wr_id
                     `
     },
-    add_contract: 'INSERT OR REPLACE INTO contracts (id, org_id, org_name, start_date, end_date) values (?, ?, ?, ?, ?)',
+    add_contract: 'INSERT OR REPLACE INTO contracts (id, org_id, org_name, start_date, end_date, cash_value, cash_rate, cash_currency) values (?, ?, ?, ?, ?, ?, ?, ?)',
     add_system: 'INSERT OR REPLACE INTO systems(id) values (?)',
     add_contract_system_link: 'INSERT OR REPLACE INTO contract_system_link (contract_id, system_id) values (?, ?)',
     add_budget: 'INSERT OR REPLACE INTO budgets (id, base_hours, base_hours_spent, sla_quote_hours, additional_hours) values (?, ?, 0, 0, 0)',
@@ -283,15 +286,16 @@ function handler(req, res, next, ctx, transform, label = __filename){
             return;
         }
 
-        let r = undefined;
-        try{
-            r = transform(data);
-        }catch(ex){
-            handler_send_error(res, next, ex, label);
-            return;
+        if (transform){
+            try{
+                data = transform(data);
+            }catch(ex){
+                handler_send_error(res, next, ex, label);
+                return;
+            }
         }
 
-        handler_send_data(res, next, r, label);
+        handler_send_data(res, next, data, label);
     }
 }
 

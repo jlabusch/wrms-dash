@@ -147,10 +147,15 @@ function fetch_quotes_from_wrms(resolve, reject, contract, wr_rows){
 }
 
 function process_wrms_data(resolve, reject, contract, wr_rows){
+    function time_should_be_seen_by_clients(wr, has_quotes){
+        return !wr.unchargeable && !wr.additional && !has_quotes[wr.request_id]
+    }
     return async function(quotes){
         util.log_debug(__filename, `contract ${contract.name} quotes loaded`, DEBUG);
 
         let prev_wr = {request_id: undefined, additional: 0, unchargeable: 0};
+
+        let has_quotes = {};
 
         let iq = 0;
         for (let iw = 0; iw < wr_rows.length; ++iw){
@@ -188,93 +193,83 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
                     continue;
                 }
 
-                if (wr.unchargeable){
-                    util.log_debug(__filename, `WR ${wr.request_id} not chargeable, skipping quotes and timesheets`, DEBUG);
-                    iw = su.find_last_row_for_this_wr(wr_rows, iw);
-                    continue;
-                }
+                has_quotes[wr.request_id] = false;
 
-                let has_quotes = false;
-
-                // Find quotes for this WR
-                util.log_debug(__filename, 'Finding quotes for WR ' + wr.request_id, DEBUG);
-                while (iq < quotes.rows.length && quotes.rows[iq].request_id < wr.request_id){
-                    util.log_debug(__filename, `iq=${iq}, quotes.request_id=${quotes.rows[iq].request_id}`, DEBUG);
-                    ++iq;
-                }
-                // If anything goes wrong, don't skip ahead to next WR like we do above, keep processing
-                // quotes in sequence.
-                for (; iq < quotes.rows.length && quotes.rows[iq].request_id === wr.request_id; ++iq){
-                    let q = quotes.rows[iq];
-                    util.log_debug(__filename, `contract ${contract.name} quote ${q.quote_id}`, DEBUG);
-
-                    if (q.quote_units !== 'hours'){
-                        continue;
+                if (!wr.unchargeable){
+                    // Find quotes for this WR
+                    util.log_debug(__filename, 'Finding quotes for WR ' + wr.request_id, DEBUG);
+                    while (iq < quotes.rows.length && quotes.rows[iq].request_id < wr.request_id){
+                        util.log_debug(__filename, `iq=${iq}, quotes.request_id=${quotes.rows[iq].request_id}`, DEBUG);
+                        ++iq;
                     }
+                    // If anything goes wrong, don't skip ahead to next WR like we do above, keep processing
+                    // quotes in sequence.
+                    for (; iq < quotes.rows.length && quotes.rows[iq].request_id === wr.request_id; ++iq){
+                        let q = quotes.rows[iq];
+                        util.log_debug(__filename, `contract ${contract.name} quote ${q.quote_id}`, DEBUG);
 
-                    // If there are (potentially) live quotes, find the appropriate contract budget
-                    // (remembering the different ways of allocating quotes to months)
-                    let budget = undefined;
+                        if (q.quote_units !== 'hours'){
+                            continue;
+                        }
 
-                    // Don't modify the budget for real until we see sql.add_quote succeed.
-                    await sqlite_promise(store.dbs.syncing(), 'BEGIN TRANSACTION');
+                        // Don't modify the budget for real until we see sql.add_quote succeed.
+                        await sqlite_promise(store.dbs.syncing(), 'BEGIN TRANSACTION');
 
-                    util.log_debug(__filename, `contract ${contract.name} quote ${JSON.stringify(q)} will be added`, DEBUG);
+                        util.log_debug(__filename, `contract ${contract.name} quote ${JSON.stringify(q)} will be added`, DEBUG);
 
-                    let qdesc = qf.describe_quote({
-                        approved_on: q.approved_on,
-                        quoted_on: q.quoted_on,
-                        tags: wr.tags,
-                        invoice_to: wr.invoice_to,
-                        request_id: wr.request_id,
-                        quote_id: q.quote_id
-                    });
+                        let qdesc = qf.describe_quote({
+                            approved_on: q.approved_on,
+                            quoted_on: q.quoted_on,
+                            tags: wr.tags,
+                            invoice_to: wr.invoice_to,
+                            request_id: wr.request_id,
+                            quote_id: q.quote_id
+                        });
 
-                    util.log_debug(__filename, `contract ${contract.name} quote ${q.quote_id} description: ${JSON.stringify(qdesc)}`, DEBUG);
+                        util.log_debug(__filename, `contract ${contract.name} quote ${q.quote_id} description: ${JSON.stringify(qdesc)}`, DEBUG);
 
-                    try{
-                        budget = await select_best_budget(contract, qdesc.period);
-                        util.log_debug(__filename, `contract ${contract.name} quote ${q.quote_id} linked to budget ${JSON.stringify(budget, null, 2)}`, DEBUG);
-                    }catch(err){
-                        util.log(__filename, `ERROR finding quote budget for ${contract.name} period ${qdesc.period}: ${err}`);
-                        await sqlite_promise(store.dbs.syncing(), 'ROLLBACK').catch(err => {});
-                        continue;
-                    }
+                        // If there are (potentially) live quotes, find the appropriate contract budget
+                        // (remembering the different ways of allocating quotes to months)
+                        let budget = undefined;
 
-                    // If the quote is approved, modify the budget in light of this quote
-                    if (q.approved_by_id){
                         try{
-                            await su.modify_budget_for_quote(budget, q, qdesc);
+                            budget = await select_best_budget(contract, qdesc.period);
+                            util.log_debug(__filename, `contract ${contract.name} quote ${q.quote_id} linked to budget ${JSON.stringify(budget, null, 2)}`, DEBUG);
                         }catch(err){
-                            util.log(__filename, `ERROR modifying budget for ${contract.name} period ${qdesc.period}: ${err}`);
+                            util.log(__filename, `ERROR finding quote budget for ${contract.name} period ${qdesc.period}: ${err}`);
                             await sqlite_promise(store.dbs.syncing(), 'ROLLBACK').catch(err => {});
                             continue;
                         }
-                    }
 
-                    try{
-                        await su.add_quote(q, qdesc, budget, wr);
-                    }catch(err){
-                        util.log(__filename, `ERROR adding synced quote ${q.quote_id}: ${err}`);
-                        await sqlite_promise(store.dbs.syncing(), 'ROLLBACK');
-                        continue;
-                    }
-                    await sqlite_promise(store.dbs.syncing(), 'COMMIT').catch(err => {
-                        util.log(__filename, `ERROR committing quote ${q.quote_id}: ${err}`);
-                    });
+                        // If the quote is approved, modify the budget in light of this quote
+                        if (q.approved_by_id){
+                            try{
+                                await su.modify_budget_for_quote(budget, q, qdesc);
+                            }catch(err){
+                                util.log(__filename, `ERROR modifying budget for ${contract.name} period ${qdesc.period}: ${err}`);
+                                await sqlite_promise(store.dbs.syncing(), 'ROLLBACK').catch(err => {});
+                                continue;
+                            }
+                        }
 
-                    if (su.quote_is_valid(q)){
-                        has_quotes = true;
+                        try{
+                            await su.add_quote(q, qdesc, budget, wr);
+                        }catch(err){
+                            util.log(__filename, `ERROR adding synced quote ${q.quote_id}: ${err}`);
+                            await sqlite_promise(store.dbs.syncing(), 'ROLLBACK');
+                            continue;
+                        }
+                        await sqlite_promise(store.dbs.syncing(), 'COMMIT').catch(err => {
+                            util.log(__filename, `ERROR committing quote ${q.quote_id}: ${err}`);
+                        });
+
+                        if (su.quote_is_valid(q)){
+                            has_quotes[wr.request_id] = true;
+                        }
                     }
                 }
 
                 util.log_debug(__filename, 'Done processing quotes for WR ' + wr.request_id);
-
-                if (has_quotes){
-                    util.log_debug(__filename, `WR ${wr.request_id} has quotes, so skipping timesheets`, DEBUG);
-                    iw = su.find_last_row_for_this_wr(wr_rows, iw);
-                    continue;
-                }
             }
 
             if (!wr.timesheet_hours){
@@ -299,16 +294,21 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
 
                 // Find this period's budget and add timesheet hours to base_hours_spent.
                 let iw_budget = undefined;
-                try{
-                    iw_budget = await select_best_budget(contract, iw_date);
-                }catch(err){
-                    util.log(__filename, `ERROR finding timesheet budget for ${contract.name} period ${iw_date}: ${err}`, DEBUG);
-                    continue;
+                if (time_should_be_seen_by_clients(wr, has_quotes)){
+                    try{
+                        iw_budget = await select_best_budget(contract, iw_date);
+                    }catch(err){
+                        util.log(__filename, `ERROR finding timesheet budget for ${contract.name} period ${iw_date}: ${err}`, DEBUG);
+                        continue;
+                    }
+
+                    timesheet_budgets[iw_budget.id] = iw_budget;
                 }
 
-                timesheet_budgets[iw_budget.id] = iw_budget;
-
-                let t = timesheet_buckets[iw_date] || {request_id: wr.request_id, hours: 0, budget: iw_budget.id, date: iw_date};
+                let t = timesheet_buckets[iw_date] || {request_id: wr.request_id, hours: 0, date: iw_date};
+                if (iw_budget && !t.budget){
+                    t.budget = iw_budget.id;
+                }
                 t.hours += iw_hours;
                 timesheet_buckets[iw_date] = t;
             }
@@ -323,8 +323,12 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
 
                 for (let ib = 0; ib < buckets.length; ++ib){
 
-                    let n = util.round_to_half_hour(buckets[ib].hours),
-                        b = timesheet_budgets[buckets[ib].budget];
+                    let n = buckets[ib].hours,
+                        b = timesheet_budgets[buckets[ib].budget] || {id:null};
+
+                    if (time_should_be_seen_by_clients(wr, has_quotes)){
+                        n = util.round_to_half_hour(n);
+                    }
 
                     total_timesheets += n;
 
@@ -342,16 +346,18 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
                         continue;
                     }
 
-                    try{
-                        await sqlite_promise(
-                            store.dbs.syncing(),
-                            'UPDATE budgets SET base_hours_spent=base_hours_spent + ? WHERE id=?',
-                            n,
-                            b.id
-                        );
-                    }catch(err){
-                        util.log(__filename, `ERROR modifying budget for ${contract.name} timesheet period ${buckets[ib].date}: ${err.message || err}`, DEBUG);
-                        continue;
+                    if (time_should_be_seen_by_clients(wr, has_quotes)){
+                        try{
+                            await sqlite_promise(
+                                store.dbs.syncing(),
+                                'UPDATE budgets SET base_hours_spent=base_hours_spent + ? WHERE id=?',
+                                n,
+                                b.id
+                            );
+                        }catch(err){
+                            util.log(__filename, `ERROR modifying budget for ${contract.name} timesheet period ${buckets[ib].date}: ${err.message || err}`, DEBUG);
+                            continue;
+                        }
                     }
                 }
 

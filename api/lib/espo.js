@@ -86,6 +86,9 @@ function log_in(){
 //       systemID: null,
 //       status: "Active",
 //       type: "Service Level Agreement",
+//       sLASupportFee: 123,
+//       hourlyRate: 456,
+//       sLASupportFeeCurrency: "GBP",
 //       ...
 //     }
 //   ]
@@ -132,7 +135,6 @@ function query_espo_accounts(context){
         let token = new Buffer(auth_username + ':' + auth_token).toString('base64'),
             // TODO: increase offset until list.size is 0
             options = {
-// curl 'https://crm.catalyst-eu.net/espo/api/v1/Account?maxSize=50&offset=0&sortBy=createdAt&asc=false' -H 'Espo-Authorization: amFjcXVlczo0NmVmMTg4ZTk5YmRiMzVmYTYzNjkyZTYxNGQ0MGFjMQ==' -H 'DNT: 1' -H 'Espo-Authorization-By-Token: true' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: en-GB,en-US;q=0.9,en;q=0.8' -H 'Authorization: Basic amFjcXVlczo0NmVmMTg4ZTk5YmRiMzVmYTYzNjkyZTYxNGQ0MGFjMQ==' -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.119 Safari/537.36' -H 'Accept: application/json, text/javascript, */*; q=0.01' -H 'Referer: https://crm.catalyst-eu.net/espo/' -H 'X-Requested-With: XMLHttpRequest' -H 'Cookie: auth-username=jacques; auth-token=46ef188e99bdb35fa63692e614d40ac1' -H 'Connection: keep-alive' --compressed
                 url: config.get('espo.host') + '/espo/api/v1/Account?maxSize=200&offset=0&sortBy=createdAt&asc=false',
                 strictSSL: false,
                 headers: {
@@ -156,6 +158,18 @@ function query_espo_accounts(context){
     });
 }
 
+function normalise_billing(value, frequency){
+    switch(frequency){
+        case 'Annually':    return value/12;
+        case '6 Monthly':   return value/6;
+        case 'Quarterly':   return value/4;
+        case 'Monthly':     return value;
+        default:
+            util.log(__filename, 'WARNING: unsupported invoicing frequency"' + frequency + '", treating as Monthly');
+    }
+    return value;
+}
+
 // Link contracts and accounts based on account ID, and select only contracts with:
 //      status: "Active"
 //      type: "Service Level Agreement"
@@ -164,14 +178,17 @@ function merge_espo_data(context){
 
     util.log_debug(__filename, '==================== Raw contracts: ', DEBUG);
     context.contracts.list.forEach(c => {
-        util.log_debug(__filename, c.name + ', ' + c.type + ', ' + c.status, DEBUG);
         if (c.status === 'Active' && c.type === 'Service Level Agreement'){
+            util.log_debug(__filename, `${c.name} ${c.type} [${c.status}] worth ${c.sLASupportFee} ${c.sLASupportFeeCurrency} (billed ${c.invoicingFrequency})`, DEBUG);
             if (!active[c.accountId]){
                 active[c.accountId] = [];
             }
             active[c.accountId].push({
                 name: c.name,
                 org_name: c.accountName,
+                cash_value: normalise_billing(c.sLASupportFee, c.invoicingFrequency),
+                cash_rate: c.hourlyRate,
+                cash_currency: c.sLASupportFeeCurrency,
                 type: (c.sLAFrequency || 'unknown').toLowerCase().trim(),
                 hours: (c.sLAHours || 0),
                 start_date: util.date_fmt(new Date(c.startDate)),

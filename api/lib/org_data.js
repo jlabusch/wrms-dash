@@ -89,7 +89,7 @@ OrgData.prototype.get_org = function(id, systems){
 }
 
 OrgData.prototype.get_all_orgs = function(){
-    return Object.values(this.data).map(o => { return o.org_id });
+    return Object.values(this.data).filter(o => { return o.org_name !== '__vendor' }).map(o => { return o.org_id });
 }
 
 module.exports = new Swapper(new OrgData(), new OrgData());

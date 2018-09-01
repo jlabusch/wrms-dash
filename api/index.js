@@ -56,6 +56,46 @@ function setup(method, func, handler){
     });
 }
 
+var store = require('./lib/data_store');
+
+const ALLOW_INSECURE_TESTING_FUNCTIONS = false;
+
+server.post('/sql', function(req, res, next){
+    if (ALLOW_INSECURE_TESTING_FUNCTIONS == false){
+        res.send({ error: 'Not allowed.' });
+        next && next(false);
+        return;
+    }
+
+    let json = undefined;
+    try{ json = JSON.parse(req.body); }
+    catch(ex){ util.log(__filename, ex); }
+
+    function dump_rows_as_csv(rows){
+        if (Array.isArray(rows) && rows.length > 0){
+            console.log(Object.keys(rows[0]).join(','));
+            rows.forEach(row => {
+                console.log(Object.values(row).join(','));
+            });
+        }
+    }
+    if (json.sql){
+        store.query(json.sql, (err, rows) => {
+            if (err){
+                util.log(__filename, 'ERROR: ' + (err.message || err));
+                res.send({ error: err });
+            }else{
+                dump_rows_as_csv(rows);
+                res.send({ rows });
+            }
+            next && next(false);
+        });
+    }else{
+        res.send({ error: 'Expected object {sql:""} missing' });
+        next && next(false);
+    }
+});
+
 server.post('/enc', function(req, res, next){
     res.send(util.encrypt(req.body));
     next && next(false);
@@ -99,6 +139,10 @@ setup('get', '/users', require('./lib/get_users'));
 setup('get', '/storage', require('./lib/get_storage'));
 
 setup('get', '/availability', require('./lib/get_availability'));
+
+setup('get', '/fte_budgets', require('./lib/get_fte_budgets'));
+
+setup('get', '/raw_timesheets', require('./lib/get_raw_timesheets'));
 
 setup(
     'get',
