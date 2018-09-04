@@ -16,6 +16,7 @@ module.exports = function(req, res, next, ctx){
                     JOIN    contracts c ON c.id=cs.contract_id
                     JOIN    timesheets t ON t.wr_id=w.id
                     WHERE   w.system_id IN (${ctx.sys.join(',')})
+                    AND     t.budget_id IS NOT NULL
                     AND     t.worked_on=?
                     AND     w.tag_additional=0
                     AND     w.tag_unchargeable=0

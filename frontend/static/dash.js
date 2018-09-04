@@ -177,17 +177,43 @@ var donut_options = {
     }
 }
 
+var rounding_hack_state = {
+    sla_quotes:   undefined,
+    sla_unquoted: undefined
+};
+
+// If people use odd timesheet amounts, there can be a discrepancy
+// between the totals shown in the donuts and the "remaining hours" metric.
+// This can also happen with quotes, which are rounded to a single decimal
+// point, though that issue is much more rare.
+function hack_to_hide_rounding_discrepancies(widget){
+    return function(chart, data){
+        rounding_hack_state[widget] = get_total_from_data(data);
+        if (rounding_hack_state.sla_quotes !== undefined &&
+            rounding_hack_state.sla_unquoted !== undefined)
+        {
+            get_sla_hours(rounding_hack_state.sla_quotes + rounding_hack_state.sla_unquoted);
+            rounding_hack_state.sla_quotes = undefined;
+            rounding_hack_state.sla_unquoted = undefined;
+        }
+    }
+}
+
+function get_total_from_data(data){
+    if (data.result && Array.isArray(data.result)){
+        return data.result.reduce((acc, val) => {
+            return acc + (Array.isArray(val) ? val[0].result : val.result);
+        }, 0);
+    }else{
+        return data.result;
+    }
+    return 0;
+}
+
 function set_total(selector){
     return function(chart, data){
         if (data){
-            let n = 0;
-            if (data.result && Array.isArray(data.result)){
-                n = data.result.reduce((acc, val) => {
-                    return acc + (Array.isArray(val) ? val[0].result : val.result);
-                }, 0);
-            }else{
-                n = data.result;
-            }
+            let n = get_total_from_data(data);
             if (n){
                 $(selector).text('Total: ' + n + ' hours');
             }
@@ -203,8 +229,6 @@ var chart02 = new Keen.Dataviz()
     .chartOptions(donut_options)
     .prepare();
 
-query('/sla_quotes', render(chart02, [set_total('#chart-02-notes'), handle_empty_data]));
-
 var chart14 = new Keen.Dataviz()
     .el('#chart-14')
     .colors(default_colors)
@@ -212,8 +236,6 @@ var chart14 = new Keen.Dataviz()
     .type('donut')
     .chartOptions(donut_options)
     .prepare();
-
-query('/sla_unquoted', render(chart14, [set_total('#chart-14-notes'), handle_empty_data]));
 
 var chart03 = new Keen.Dataviz()
     .el('#chart-03')
@@ -251,7 +273,7 @@ function get_wrs_over_time(){
     });
 }
 
-function get_sla_hours(){
+function get_sla_hours(expected_result){
     query('/sla_hours', function(err, data){
         if (err){
             console.log('sla_hours: ' + err);
@@ -271,6 +293,11 @@ function get_sla_hours(){
         o.vAxis = o.__a;
 
         var used_sla_hours = data.result.reduce(sum_sla_hours, 0);
+
+        if (used_sla_hours !== expected_result){
+            console.log('SLA hours: expected ' + expected_result + ', got ' + used_sla_hours);
+            used_sla_hours = expected_result;
+        }
 
         var note = 'Used ' + used_sla_hours + ' of ' + data.budget;
         if (data.types && data.types.length){
@@ -292,7 +319,7 @@ function get_sla_hours(){
         } else if (used_sla_hours < data.budget) {
             chart15.colors([default_colors[2]]);
         }
-        render(chart15)(null, {result: data.budget - used_sla_hours});
+        render(chart15)(null, {result: Math.round((data.budget - used_sla_hours)*10)/10});
     });
 }
 
@@ -522,8 +549,22 @@ function get_availability(){
 }
 
 function draw_custom_charts(){
+    query('/sla_quotes', render(chart02, [
+        hack_to_hide_rounding_discrepancies('sla_quotes'),
+        set_total('#chart-02-notes'),
+        handle_empty_data
+    ]));
+
+    query('/sla_unquoted', render(chart14, [
+        hack_to_hide_rounding_discrepancies('sla_unquoted'),
+        set_total('#chart-14-notes'),
+        handle_empty_data
+    ]));
+
+    // hack_to_hide_rounding_discrepancies calls get_sla_hours(), which
+    // is a custom chart.
+
     get_wrs_over_time();
-    get_sla_hours();
     get_severity();
     get_response_times();
     get_statuses();
