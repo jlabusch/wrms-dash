@@ -129,7 +129,7 @@ function get_fte_budgets(){
                 }
 
                 var table = [
-                    ['Month', 'Sales', 'SLA fees', 'Client hours']
+                    ['Month', 'Invoices', 'SLA fees', 'Client hours']
                 ];
 
                 var std_GBP_rate = 85;

@@ -42,11 +42,6 @@ function handle_hours(org, i, next){
             next();
             return;
         }
-        if (!data.budget){
-            console.log(org.name + ' has no budget, not applying color');
-            next();
-            return;
-        }
         if (!data.result || data.result.length < 3){
             console.log(org.name + ' has invalid "result" array for client data, not applying color');
             next();
@@ -56,6 +51,12 @@ function handle_hours(org, i, next){
             total = data.result[0][1] /* quoted */ +
                     data.result[1][1] /* unquoted */,
             color = "red";
+
+        if (!budget && !total){
+            console.log(org.name + ' has no budget (and hasn\'t used any hours), not applying color');
+            next();
+            return;
+        }
 
         if (total < budget * 0.75) {
             color = "green";
