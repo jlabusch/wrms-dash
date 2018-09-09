@@ -8,7 +8,7 @@ function period_date_sort(a, b){
     return ami - bmi;
 }
 
-function make_budget_vs_actual_chart(chart, header, data, mapper){
+function make_budget_vs_actual_chart(chart, header, data, mapper, contract){
     var table = data.periods.sort(period_date_sort).map(mapper);
 
     table.unshift(header);
@@ -16,9 +16,12 @@ function make_budget_vs_actual_chart(chart, header, data, mapper){
     var c = new google.visualization.AreaChart(document.getElementById(chart));
 
     var o = JSON.parse(JSON.stringify(std_gchart_options));
-    o.chartArea.width = '80%';
+    o.chartArea.width = '75%';
     o.legend = {position: 'right'};
     o.colors = default_colors;
+
+    var title = document.getElementById(chart + '-title');
+    title.innerText = title.innerText.replace(/\([^)]*\)$/, '(' + contract + ')');
 
     c.draw(google.visualization.arrayToDataTable(table), o);
 }
@@ -26,8 +29,8 @@ function make_budget_vs_actual_chart(chart, header, data, mapper){
 function make_metric(el, title){
     return new Keen.Dataviz()
         .el(el)
-        .title(title)
-        .height(250)
+        //.title(title)
+        .height(150)
         .colors([default_colors[0]])
         .type('metric')
         .prepare();
@@ -36,6 +39,151 @@ function make_metric(el, title){
 var chart08 = make_metric('#chart-08', 'Visible FTE'),
     chart09 = make_metric('#chart-10', 'Additional FTE'),
     chart10 = make_metric('#chart-09', 'Internal FTE');
+
+// Contract defaults to "total", i.e. all of them.
+function filter_by_contract(){
+    console.log('filter_by_contract -> ' + this.value);
+
+    render_fte_budgets(this.value === 'All contracts' ? null : this.value);
+}
+
+var cached_fte_data = undefined;
+
+function render_fte_budgets(contract_to_render){
+    contract_to_render = contract_to_render || 'total';
+
+    make_budget_vs_actual_chart(
+        'chart-06',
+        ['Month', 'Budget', 'Actual', 'Committed'],
+        cached_fte_data,
+        function(p){
+            return [p.month, p.sla_budget[contract_to_render] || 0, p.sla_hours[contract_to_render] || 0, p.sla_hours_committed[contract_to_render] || 0];
+        },
+        contract_to_render
+    );
+    make_budget_vs_actual_chart(
+        'chart-07',
+        ['Month', 'Budget', 'Actual'],
+        cached_fte_data,
+        function(p){
+            return [p.month, p.additional_budget[contract_to_render] || 0, p.additional_hours[contract_to_render] || 0];
+        },
+        contract_to_render
+    );
+    make_budget_vs_actual_chart(
+        'chart-11',
+        ['Month', 'Budget', 'Actual'],
+        cached_fte_data,
+        function(p){
+            return [p.month, p.sla_fee_hours[contract_to_render] || 0, (p.sla_hours[contract_to_render] || 0) + (p.unchargeable_hours[contract_to_render] || 0)];
+        },
+        contract_to_render
+    );
+
+    var metrics = {
+        visible:    { max: 0, total: 0 },
+        additional: { max: 0, total: 0 },
+        internal:   { max: 0, total: 0 }
+    };
+    function count_metric(name, val){
+        metrics[name].max = Math.max(val, metrics[name].max);
+        metrics[name].total += val;
+    }
+    cached_fte_data.periods.forEach(function(p){
+        var sla_hours = p.sla_hours[contract_to_render] || 0,
+            add_hours = p.additional_hours[contract_to_render] || 0,
+            free_hours = p.unchargeable_hours[contract_to_render] || 0;
+        count_metric('visible', sla_hours);
+        count_metric('additional', add_hours);
+        count_metric('internal', free_hours);
+    });
+    function to_fte(n, periods){
+        var avg_business_days = 21.167;
+        var work_per_day = 8;
+        periods = periods || cached_fte_data.periods.length;
+        return n / periods / avg_business_days / work_per_day;
+    }
+    function round(n){
+        return Math.round(n*10)/10;
+    }
+    chart08.title('Max ' + round(to_fte(metrics.visible.max, 1)));
+    render(chart08)(null, {result: to_fte(metrics.visible.total) });
+
+    chart10.title('Max ' + round(to_fte(metrics.additional.max, 1)));
+    render(chart10)(null, {result: to_fte(metrics.additional.total) });
+
+    chart09.title('Max ' + round(to_fte(metrics.internal.max, 1)));
+    render(chart09)(null, {result: to_fte(metrics.internal.total) });
+}
+
+function get_raw_timesheets(){
+    query('/raw_timesheets', function(err, ts_data){
+        if (err){
+            console.log('raw_timesheets: ' + err);
+            return;
+        }
+
+        //console.log('Timesheets:');
+        //console.log(ts_data);
+
+        var now = new Date();
+
+        if (!ts_data || !ts_data[now.getFullYear() + '-1']){
+            (new Keen.Dataviz())
+                .el('#chart-12')
+                .type('message')
+                .message('No data');
+            return;
+        }
+
+        query('/mis_report', function(err, mis_data){
+            if (err){
+                console.log('mis_report: ' + err);
+                return;
+            }
+
+            //console.log('MIS data:');
+            //console.log(mis_data);
+
+            if (!mis_data || !mis_data[now.getFullYear() + '-1']){
+                (new Keen.Dataviz())
+                    .el('#chart-12')
+                    .type('message')
+                    .message('No data');
+                return;
+            }
+
+            var table = [
+                ['Month', 'Invoices', 'Client hours', 'SLA fees']
+            ];
+
+            var std_GBP_rate = 85;
+
+            cached_fte_data.periods.sort(period_date_sort).map(function(fte_row){
+                var ts_row = ts_data[fte_row.month],
+                    mis_row = mis_data[fte_row.month];
+
+                table.push([
+                    fte_row.month,
+                    mis_row ? mis_row.sales/std_GBP_rate : 0,
+                    ts_row ? ts_row.total : 0, // maybe nobody has timesheeted to the current month yet
+                    fte_row.sla_fee_hours.total
+                ]);
+            });
+
+            //console.log(table);
+
+            var chart12 = new google.visualization.AreaChart(document.getElementById('chart-12'));
+
+            var o = JSON.parse(JSON.stringify(std_gchart_options));
+            o.chartArea.width = '80%';
+            o.legend = {position: 'right'};
+            o.colors = default_colors;
+
+            chart12.draw(google.visualization.arrayToDataTable(table), o);
+        }, undefined, 0);
+    }, undefined, 0);
+}
 
 function get_fte_budgets(){
     query('/fte_budgets', function(err, fte_data){
@@ -56,108 +204,19 @@ function get_fte_budgets(){
             return;
         }
 
-        make_budget_vs_actual_chart('chart-06', ['Month', 'Budget', 'Actual'], fte_data, function(p){ return [p.month, p.sla_budget.total, p.sla_hours.total]; });
-        make_budget_vs_actual_chart('chart-07', ['Month', 'Budget', 'Actual'], fte_data, function(p){ return [p.month, p.additional_budget.total, p.additional_hours.total]; });
-        make_budget_vs_actual_chart('chart-11', ['Month', 'Budget', 'Actual'], fte_data, function(p){ return [p.month, p.sla_fee_hours.total, p.sla_hours.total + p.unchargeable_hours.total]; });
-
-        var metrics = {
-            visible:    { max: 0, total: 0 },
-            additional: { max: 0, total: 0 },
-            internal:   { max: 0, total: 0 }
-        };
-        function count_metric(name, val){
-            metrics[name].max = Math.max(val, metrics[name].max);
-            metrics[name].total += val;
+        if (Array.isArray(fte_data.contracts)){
+            var select = document.getElementById('client-select');
+            select.onchange = filter_by_contract;
+            fte_data.contracts.sort().forEach(function(c){
+                select.add(new Option(c));
+            });
         }
-        fte_data.periods.forEach(function(p){
-            count_metric('visible', p.sla_hours.total);
-            count_metric('additional', p.additional_hours.total);
-            count_metric('internal', p.sla_hours.total + p.unchargeable_hours.total);
-        });
-        function to_fte(n, periods){
-            var avg_business_days = 21.167;
-            var work_per_day = 8;
-            periods = periods || fte_data.periods.length;
-            return n / periods / avg_business_days / work_per_day;
-        }
-        function round(n){
-            return Math.round(n*10)/10;
-        }
-        chart08.title('Max ' + round(to_fte(metrics.visible.max, 1)));
-        render(chart08)(null, {result: to_fte(metrics.visible.total) });
 
-        chart10.title('Max ' + round(to_fte(metrics.additional.max, 1)));
-        render(chart10)(null, {result: to_fte(metrics.additional.total) });
+        cached_fte_data = fte_data;
 
-        chart09.title('Max ' + round(to_fte(metrics.internal.max, 1)));
-        render(chart09)(null, {result: to_fte(metrics.internal.total) });
+        render_fte_budgets(null);
 
-        query('/raw_timesheets', function(err, ts_data){
-            if (err){
-                console.log('raw_timesheets: ' + err);
-                return;
-            }
-
-            //console.log('Timesheets:');
-            //console.log(ts_data);
-
-            var now = new Date();
-
-            if (!ts_data || !ts_data[now.getFullYear() + '-1']){
-                (new Keen.Dataviz())
-                    .el('#chart-12')
-                    .type('message')
-                    .message('No data');
-                return;
-            }
-
-            query('/mis_report', function(err, mis_data){
-                if (err){
-                    console.log('mis_report: ' + err);
-                    return;
-                }
-
-                //console.log('MIS data:');
-                //console.log(mis_data);
-
-                if (!mis_data || !mis_data[now.getFullYear() + '-1']){
-                    (new Keen.Dataviz())
-                        .el('#chart-12')
-                        .type('message')
-                        .message('No data');
-                    return;
-                }
-
-                var table = [
-                    ['Month', 'Invoices', 'SLA fees', 'Client hours']
-                ];
-
-                var std_GBP_rate = 85;
-
-                fte_data.periods.sort(period_date_sort).map(function(fte_row){
-                    var ts_row = ts_data[fte_row.month],
-                        mis_row = mis_data[fte_row.month];
-
-                    table.push([
-                        fte_row.month,
-                        mis_row ? mis_row.sales/std_GBP_rate : 0,
-                        fte_row.sla_fee_hours.total,
-                        ts_row ? ts_row.total : 0 // maybe nobody has timesheeted to the current month yet
-                    ]);
-                });
-
-                //console.log(table);
-
-                var chart12 = new google.visualization.AreaChart(document.getElementById('chart-12'));
-
-                var o = JSON.parse(JSON.stringify(std_gchart_options));
-                o.chartArea.width = '80%';
-                o.legend = {position: 'right'};
-                o.colors = default_colors;
-
-                chart12.draw(google.visualization.arrayToDataTable(table), o);
-            }, undefined, 0);
-        }, undefined, 0);
+        get_raw_timesheets();
     }, undefined, 0);
 }
 

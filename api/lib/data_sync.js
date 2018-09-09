@@ -37,6 +37,9 @@ async function run(){
             org_data.swap();
             store.dbs.swap();
 
+            org_data.active().each(v => {
+                util.log_debug(__filename, `${v.org_id}: ${v.name}`, DEBUG);
+            });
             su.dump(store.dbs.active(), 'After swap');
             util.log_debug(__filename, 'sync complete', DEBUG);
         }catch(err){

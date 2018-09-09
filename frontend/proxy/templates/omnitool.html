@@ -44,6 +44,9 @@
         <ul class="nav navbar-nav navbar-left">
           <li><a class="navbar-brand" href="/admin/">Admin</a></li>
         </ul>
+        <select id="client-select">
+          <option selected>All contracts</option>
+        </select>
         <ul class="nav navbar-nav navbar-right">
           <li><a class="navbar-brand" href="/accounts/logout">Logout</a></li>
         </ul>
@@ -56,19 +59,43 @@
   <div class="container-fluid">
     <div class="row">
 
-      <div class="col-sm-9">
+      <div class="col-sm-4"> <!-- inner row container -->
+
+        <div class="row">
+
+          <div class="col-sm-12">
+            <div class="faq">
+              <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">Basic SLA hours comparison:</span>
+              <ul>
+                <li>The hours we said we'd work ("Committed")</li>
+                <li>The hours actually worked on those WRs ("Actual")</li>
+                <li>The hours available in the contract ("Budget")</li>
+              </ul>
+            </div>
+          </div>
+
+        </div> <!-- top inner row -->
+
+        <div class="row">
+
+          <div class="col-sm-12">
+
+            <div class="chart-wrapper">
+              <div class="chart-stage"><div id="chart-08"></div></div>
+              <div id="chart-08-notes" class="chart-notes">1 FTE = 8 hours/day for 21.16 days/month (169 hours)</div>
+            </div>
+
+          </div> <!-- metric -->
+
+        </div> <!-- bottom inner row -->
+
+      </div> <!-- inner row container -->
+
+      <div class="col-sm-8">
         <div class="chart-wrapper">
-          <div class="chart-title">Hours per month of visible SLA time</div>
+          <div id="chart-06-title" class="chart-title">Hours per month of visible SLA time (total)</div>
           <div class="chart-stage"><div id="chart-06"></div></div>
-          <div id="chart-06-notes" class="chart-notes">Everything that shows as "SLA" time on the client dashboard</div>
-        </div>
-      </div>
-
-      <div class="col-sm-3">
-        <div class="chart-wrapper">
-          <div class="chart-title">People doing client-visible SLA work</div>
-          <div class="chart-stage"><div id="chart-08"></div></div>
-          <div id="chart-08-notes" class="chart-notes">1 FTE = 8 hours/day for 21.16 days/month (169 hours)</div>
+          <div id="chart-06-notes" class="chart-notes">&nbsp;</div>
         </div>
       </div>
 
@@ -76,19 +103,41 @@
 
     <div class="row">
 
-      <div class="col-sm-9">
+      <div class="col-sm-4"> <!-- inner row container -->
+
+        <div class="row">
+
+          <div class="col-sm-12">
+            <div class="faq">
+              <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">Full SLA hours comparison:</span>
+              <ul>
+                <li>SLA, Maintenance and Warranty hours ("Actual")</li>
+                <li>Contract value as hours ("Budget", fee/hourly rate)</li>
+              </ul>
+              Ignores infrastructure costs.
+            </div>
+          </div>
+
+        </div> <!-- top inner row -->
+
+        <div class="row">
+
+          <div class="col-sm-12">
+            <div class="chart-wrapper">
+              <div class="chart-stage"><div id="chart-10"></div></div>
+              <div id="chart-10-notes" class="chart-notes">1 FTE = 8 hours/day for 21.16 days/month (169 hours)</div>
+            </div>
+          </div>
+
+        </div> <!-- bottom inner row -->
+
+      </div> <!-- inner row container -->
+
+      <div class="col-sm-8">
         <div class="chart-wrapper">
-          <div class="chart-title">Combined visible plus internal SLA time each month</div>
+          <div id="chart-11-title" class="chart-title">Combined visible plus internal SLA time each month (total)</div>
           <div class="chart-stage"><div id="chart-11"></div></div>
-          <div id="chart-11-notes" class="chart-notes">All non-Additional SLA time (SLA + Warranty + Maintenance) vs. contract value (CRM contract fee divided by hourly rate), ignoring AWS/Azure costs</div>
-        </div>
-      </div>
-
-      <div class="col-sm-3">
-        <div class="chart-wrapper">
-          <div class="chart-title">SLA FTE including non-chargeable work</div>
-          <div class="chart-stage"><div id="chart-10"></div></div>
-          <div id="chart-10-notes" class="chart-notes">1 FTE = 8 hours/day for 21.16 days/month (169 hours)</div>
+          <div id="chart-11-notes" class="chart-notes">&nbsp;</div>
         </div>
       </div>
 
@@ -96,19 +145,41 @@
 
     <div class="row">
 
-      <div class="col-sm-9">
-        <div class="chart-wrapper">
-          <div class="chart-title">Additional hours vs. quotes each month</div>
-          <div class="chart-stage"><div id="chart-07"></div></div>
-          <div id="chart-07-notes" class="chart-notes">Additional quotes as per dashboard vs. timesheeted hours on those WRs</div>
-        </div>
-      </div>
+      <div class="col-sm-4"> <!-- inner row container -->
 
-      <div class="col-sm-3">
+        <div class="row">
+
+          <div class="col-sm-12">
+            <div class="faq">
+              <span class="glyphicon glyphicon-stats ficon"></span> <span class="title">Additional hours comparison:</span>
+              <ul>
+                <li>Additional hours ("Actual")</li>
+                <li>Additional quotes ("Budget")</li>
+              </ul>
+              &nbsp;
+            </div>
+          </div>
+
+        </div> <!-- top inner row -->
+
+        <div class="row">
+
+          <div class="col-sm-12">
+            <div class="chart-wrapper">
+              <div class="chart-stage"><div id="chart-09"></div></div>
+              <div id="chart-09-notes" class="chart-notes">1 FTE = 8 hours/day for 21.16 days/month (169 hours)</div>
+            </div>
+          </div>
+
+        </div> <!-- bottom inner row -->
+
+      </div> <!-- inner row container -->
+
+      <div class="col-sm-8">
         <div class="chart-wrapper">
-          <div class="chart-title">People doing Additional work</div>
-          <div class="chart-stage"><div id="chart-09"></div></div>
-          <div id="chart-09-notes" class="chart-notes">1 FTE = 8 hours/day for 21.16 days/month (169 hours)</div>
+          <div id="chart-07-title" class="chart-title">Additional hours vs. quotes each month (total)</div>
+          <div class="chart-stage"><div id="chart-07"></div></div>
+          <div id="chart-07-notes" class="chart-notes">&nbsp;</div>
         </div>
       </div>
 

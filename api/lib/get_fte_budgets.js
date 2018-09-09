@@ -35,8 +35,10 @@ const time_query = util.trim   `SELECT  w.id as request_id,
 //         <contract-name-1>: xxx
 //         total: yyy
 //       },
-//       sla_hours: { ... },            // timesheets on SLA WRs with no quotes (contract.base_hours_spent)
-//       additional_budget: { ... },    // approved quotes on Additional WRs (contract.additional_hours)
+//       sla_hours_committed: { ... },  // quoted+unquoted SLA time (contract.base_hours_spent - matches client dash)
+//       sla_hours: { ... },            // timesheets on SLA WRs (i.e. unquoted time + actual time on quoted WRs,
+//                                      // not trusting contract.sla_quote_hours)
+//       additional_budget: { ... },    // approved quotes on Additional WRs (contract.additional_hours - matches client dash)
 //       additional_hours: { ... },     // timesheets on Additional WRs
 //       unchargeable_hours: { ... },   // timesheets on unchargeable WRs (maintenance + warranty)
 //       sla_fee_hours: { ... },        // cash_value/contract length/cash_rate, which needs to
@@ -61,6 +63,7 @@ function create_periods(){
 
         [
             'sla_budget',
+            'sla_hours_committed',
             'sla_hours',
             'additional_budget',
             'additional_hours',
@@ -89,7 +92,7 @@ function add_budget(period, values, contract){
 
     [
         ['sla_budget',          'base_hours'],
-        ['sla_hours',           'base_hours_spent'],
+        ['sla_hours_committed', 'base_hours_spent'],
         ['additional_budget',   'additional_hours']
     ].forEach(f => {
         add_field(period, f[0], values[f[1]], contract)
@@ -157,6 +160,8 @@ function include_timesheet_data(result, data){
                 add_field(result.periods[row.month], 'additional_hours', row.hours, row.contract);
             }else if (row.tag_unchargeable){
                 add_field(result.periods[row.month], 'unchargeable_hours', row.hours, row.contract);
+            }else{
+                add_field(result.periods[row.month], 'sla_hours', row.hours, row.contract);
             }
         }
     });

@@ -1,5 +1,6 @@
 var request = require('request'),
     config = require('config'),
+    org_data = require('./org_data'),
     util = require('./util');
 
 'use strict';
@@ -202,7 +203,28 @@ function merge_espo_data(context){
 
     util.log_debug(__filename, '==================== Raw accounts: ', DEBUG);
     context.accounts.list.forEach(acc => {
+        if (acc.type !== 'Customer' || acc.deleted || !acc.orgID){
+            return;
+        }
+
         util.log_debug(__filename, acc.id + ': ' + acc.name + ' (' + acc.orgID + ')', DEBUG);
+
+        // Create an org record whether there's an active contract or not. data_sync's
+        // add_new_contract_and_systems() will add more detail as necessary.
+        // If there's no active contract it'll never touch our DB, just be noted in org_data.
+        org_data.syncing().add_org({
+            org_id: acc.orgID,
+            org_name: acc.name,
+            name: acc.name,
+            hours: 0,
+            cash_value: 0,
+            cash_rate: acc.hourlyRateConverted || 85,
+            cash_currency: 'GBP',
+            start_date: null,
+            end_date: null,
+            systems: []
+        });
+
         if (active[acc.id]){
             active[acc.id].forEach(a => {
                 a.org_id = acc.orgID;

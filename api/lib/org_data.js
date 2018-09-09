@@ -1,4 +1,5 @@
 var util = require('./util'),
+    config = require('config'),
     Swapper = require('./swapper');
 
 'use strict';
@@ -83,13 +84,29 @@ OrgData.prototype.get_org = function(id, systems){
         o = this.get_org_by_key('name', id);
     }
 
+    // This happens on startup when we haven't synced yet.
+    if (!o && id === '__vendor'){
+        o = config.get('contracts').filter(c => { return c.name === '__vendor' })[0];
+    }
+
     util.log_debug(__filename, 'get_org(' + JSON.stringify({id:id}) + ') => ' + JSON.stringify(o), DEBUG);
 
     return o;
 }
 
-OrgData.prototype.get_all_orgs = function(){
-    return Object.values(this.data).filter(o => { return o.org_name !== '__vendor' }).map(o => { return o.org_id });
+OrgData.prototype.each = function(fn){
+    Object.values(this.data).forEach(fn);
+}
+
+OrgData.prototype.get_all_orgs = function(even_those_without_systems){
+    return Object.values(this.data)
+                .filter(o => {
+                    let has_systems = o.systems.length > 0;
+                    return o.org_name !== '__vendor' && (has_systems || even_those_without_systems);
+                })
+                .map(o => {
+                    return o.org_id
+                });
 }
 
 module.exports = new Swapper(new OrgData(), new OrgData());
