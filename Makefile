@@ -4,6 +4,7 @@ COMPOSE=docker-compose
 DOCKER=docker
 
 build:
+	@mkdir -p ./frontend/static/admin
 	$(COMPOSE) build
 	$(DOCKER) run -it --rm -v $$PWD/frontend/static:/opt/static -v $$PWD/frontend/staticserve:/opt/staticserve jlabusch/wrms-dash-frontend ./manage.py collectstatic --noinput
 	$(DOCKER) run -it --rm -v $$PWD/frontend/static:/opt/static -v $$PWD/frontend/staticserve:/opt/staticserve jlabusch/wrms-dash-frontend chown -R $$(id -u):$$(id -g) /opt/static/admin /opt/staticserve
