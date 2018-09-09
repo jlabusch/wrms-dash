@@ -163,20 +163,6 @@ query('/customer', function(err, data){
     }
 });
 
-var donut_options = {
-    donut: {
-        label: {
-            format: function(value, ratio, id){ return value + ' hours'; }
-        }
-    },
-    chartArea: {
-        height: "85%",
-        left: "5%",
-        top: "5%",
-        width: "100%"
-    }
-}
-
 var rounding_hack_state = {
     sla_quotes:   undefined,
     sla_unquoted: undefined

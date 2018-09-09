@@ -21,6 +21,20 @@ var ORG = $("body").data("client"),
     PERIOD = $('body').data('month'),
     URI_EXT = ORG + '/' + SYSTEMS + '/' + PERIOD;
 
+var donut_options = {
+    donut: {
+        label: {
+            format: function(value, ratio, id){ return value + ' hours'; }
+        }
+    },
+    chartArea: {
+        height: "85%",
+        left: "5%",
+        top: "5%",
+        width: "100%"
+    }
+}
+
 var std_gchart_options = {
     titlePosition: 'none',
     legend: {position: 'none'},

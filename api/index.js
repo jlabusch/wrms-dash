@@ -114,6 +114,8 @@ setup('get', '/additional_quotes',  get_quotes({sla:false,      approved:true,  
 
 setup('get', '/mis_report', require('./lib/get_mis_report'));
 
+setup('get', '/invoices', require('./lib/get_odoo_invoices'));
+
 setup('get', '/sla_unquoted', require('./lib/get_sla_unquoted'));
 
 setup('get', '/new_sysadmin_wrs', require('./lib/get_new_sysadmin_wrs'));

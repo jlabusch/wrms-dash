@@ -3,6 +3,8 @@ var query = require('./query'),
     qf = require('./quote_funcs'),
     util = require('./util');
 
+const DEBUG = false;
+
 // result format = {
 //   <YYYY-MM>: {
 //     month: <YYYY-MM>
@@ -30,6 +32,12 @@ module.exports = query.prepare(
                 ORDER BY r.request_id,t.work_on`.replace(/\s+/, ' ');
     },
     function(data, ctx, next){
+        let err = util.send_err_if_not_vendor(null, null, null, ctx, __filename);
+        if (err){
+            next(err);
+            return;
+        }
+
         let r = {};
         if (data && data.rows && data.rows.length > 0){
             data.rows.forEach(row => {
@@ -47,6 +55,8 @@ module.exports = query.prepare(
                 o[row.org_name] = n;
 
                 r[period] = o;
+
+                util.log_debug(__filename, `RAW ${row.org_name},${period},${row.request_id},${row.work_quantity},${n}`, DEBUG);
             });
         }
         next(r);

@@ -44,6 +44,12 @@ module.exports = query.prepare(
                     o.org_code IN ( ${org_data.active().get_all_orgs().join(',')})`.replace(/\s+/, ' ');
     },
     function(data, ctx, next){
+        let err = util.send_err_if_not_vendor(null, null, null, ctx, __filename);
+        if (err){
+            next(err);
+            return;
+        }
+
         let r = [];
         if (data && data.rows && data.rows.length > 0){
             r = data.rows.filter(row => {

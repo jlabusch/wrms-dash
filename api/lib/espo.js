@@ -203,7 +203,7 @@ function merge_espo_data(context){
 
     util.log_debug(__filename, '==================== Raw accounts: ', DEBUG);
     context.accounts.list.forEach(acc => {
-        if (acc.type !== 'Customer' || acc.deleted || !acc.orgID){
+        if (acc.deleted || !acc.orgID){
             return;
         }
 

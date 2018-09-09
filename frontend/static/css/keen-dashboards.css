@@ -69,12 +69,6 @@ body.application .return-link:hover,
   text-decoration: none;
 }
 
-select {
-  margin-top: 10px;
-  padding: 5px;
-  background-color: #f3f3f3;
-}
-
 .chart-wrapper {
   background: #fff;
   border: 1px solid #e2e2e2;

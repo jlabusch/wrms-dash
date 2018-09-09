@@ -14,6 +14,10 @@ var cache = require('./cache'),
 //   ...
 // }
 module.exports = function(req, res, next, ctx){
+    if (util.send_err_if_not_vendor(req, res, next, ctx, __filename)){
+        return;
+    }
+
     let resp = {};
 
     try{

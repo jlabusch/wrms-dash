@@ -2,6 +2,10 @@ var store = require('./data_store'),
     util = require('./util');
 
 module.exports = function(req, res, next, ctx){
+    if (util.send_err_if_not_vendor(req, res, next, ctx, __filename)){
+        return;
+    }
+
     let handler = store.make_query_handler(req, res, next, ctx, __filename);
 
     store.query(

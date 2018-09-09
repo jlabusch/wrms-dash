@@ -32,6 +32,12 @@ module.exports = query.prepare(
                     `.replace(/\s+/, ' ');
     },
     function(data, ctx, next){
+        let err = util.send_err_if_not_vendor(null, null, null, ctx, __filename);
+        if (err){
+            next(err);
+            return;
+        }
+
         let r = [];
         if (data && data.rows && data.rows.length > 0){
             r = data.rows;

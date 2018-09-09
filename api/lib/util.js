@@ -75,6 +75,23 @@ exports.trim = function(str){
     return str.map(s => s + (subs.shift() || '')).join('').replace(/\s+/g, ' ');
 }
 
+exports.send_err_if_not_vendor = function(req, res, next, context, filename){
+    if (context.org_name === '__vendor'){
+        return false;
+    }
+
+    let e = {error: 'Permission denied for users from ' + context.org_name};
+    filename = filename || __filename;
+    log(filename, e.error);
+
+    if (res){
+        res.charSet('utf-8');
+        res.json(e);
+        next && next(false);
+    }
+    return e;
+}
+
 exports.wr_list_sql = function(context, this_period_only, exclude_statuses){
     exclude_statuses = exclude_statuses || ["'C'", "'F'"];
     let and_period =   `AND r.request_on >= '${context.period + '-01'}'                 

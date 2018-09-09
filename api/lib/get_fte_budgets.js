@@ -3,6 +3,10 @@ var store = require('./data_store'),
     odata = require('./org_data'),
     util  = require('./util');
 
+'use strict';
+
+const DEBUG = false;
+
 const budget_query = util.trim `SELECT  c.id AS contract,
                                         c.cash_value,
                                         c.cash_rate,
@@ -84,7 +88,7 @@ function add_field(period, field, value, contract){
     n += value;
     period[field][contract] = n;
 
-    util.log_debug(__filename, `${period.month} -> ${field} += ${value} (now ${period[field][contract]} ${contract}, ${period[field].total} total)`);
+    util.log_debug(__filename, `${period.month} -> ${field} += ${value} (now ${period[field][contract]} ${contract}, ${period[field].total} total)`, DEBUG);
 }
 
 function add_budget(period, values, contract){
@@ -156,6 +160,7 @@ function handle_budget_data(data){
 function include_timesheet_data(result, data){
     data.forEach(row => {
         if (result.periods[row.month]){
+            util.log_debug(__filename, `FTE ${row.contract},${row.month},${row.request_id},${row.hours}`, DEBUG);
             if (row.tag_additional){
                 add_field(result.periods[row.month], 'additional_hours', row.hours, row.contract);
             }else if (row.tag_unchargeable){
@@ -168,6 +173,10 @@ function include_timesheet_data(result, data){
 }
 
 module.exports = function(req, res, next, ctx){
+    if (util.send_err_if_not_vendor(req, res, next, ctx, __filename)){
+        return;
+    }
+
     function send_err(e){ store.query_send_error(res, next, e, __filename) }
 
     function send_err_if_invalid(e, d, msg){
