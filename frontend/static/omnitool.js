@@ -62,7 +62,7 @@ function to_fte(n, periods){
     var avg_business_days = 21.167;
     var work_per_day = 8;
     periods = periods || cached_fte_data.periods.length;
-    return n / periods / avg_business_days / work_per_day;
+    return round(n / periods / avg_business_days / work_per_day);
 }
 
 function render_fte_budgets(contract_to_render){
@@ -113,13 +113,13 @@ function render_fte_budgets(contract_to_render){
         count_metric('additional', add_hours);
         count_metric('internal', sla_hours+free_hours);
     });
-    chart08.title('Avg FTE (max ' + round(to_fte(metrics.visible.max, 1)) + ')');
+    chart08.title('Avg FTE (max ' + to_fte(metrics.visible.max, 1) + ')');
     render(chart08)(null, {result: to_fte(metrics.visible.total) });
 
-    chart10.title('Avg FTE (max ' + round(to_fte(metrics.additional.max, 1)) + ')');
+    chart10.title('Avg FTE (max ' + to_fte(metrics.additional.max, 1) + ')');
     render(chart10)(null, {result: to_fte(metrics.additional.total) });
 
-    chart09.title('Avg FTE (max ' + round(to_fte(metrics.internal.max, 1)) + ')');
+    chart09.title('Avg FTE (max ' + to_fte(metrics.internal.max, 1) + ')');
     render(chart09)(null, {result: to_fte(metrics.internal.total) });
 }
 
@@ -257,7 +257,7 @@ function render_mis_vs_timesheets(){
 
     chart12.draw(google.visualization.arrayToDataTable(table), o);
 
-    chart15.title('Avg FTE (max ' + round(to_fte(max_fte, 1)) + ')');
+    chart15.title('Avg FTE (max ' + to_fte(max_fte, 1) + ')');
     render(chart15)(null, {result: to_fte(total_fte) });
 }
 
