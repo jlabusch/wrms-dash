@@ -102,7 +102,7 @@ function render_fte_budgets(contract_to_render){
             free_hours = p.unchargeable_hours[contract_to_render] || 0;
         count_metric('visible', sla_hours);
         count_metric('additional', add_hours);
-        count_metric('internal', free_hours);
+        count_metric('internal', sla_hours+free_hours);
     });
     function to_fte(n, periods){
         var avg_business_days = 21.167;
