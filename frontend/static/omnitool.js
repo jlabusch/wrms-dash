@@ -35,25 +35,34 @@ function make_budget_vs_actual_chart(chart, header, data, mapper, contract){
     c.draw(google.visualization.arrayToDataTable(table), o);
 }
 
-function make_metric(el, title){
+function make_metric(el){
     return new Keen.Dataviz()
         .el(el)
-        //.title(title)
         .height(150)
         .colors([default_colors[0]])
         .type('metric')
         .prepare();
 }
 
-var chart08 = make_metric('#chart-08', 'Visible FTE'),
-    chart09 = make_metric('#chart-10', 'Additional FTE'),
-    chart10 = make_metric('#chart-09', 'Internal FTE');
+var chart08 = make_metric('#chart-08'),
+    chart09 = make_metric('#chart-09'),
+    chart10 = make_metric('#chart-10'),
+    chart15 = make_metric('#chart-15').height(250);
+
+function filter_by_month(){
+    render_invoices(this.value);
+}
 
 // Contract defaults to "total", i.e. all of them.
 function filter_by_contract(){
-    console.log('filter_by_contract -> ' + this.value);
-
     render_fte_budgets(this.value === 'All contracts' ? null : this.value);
+}
+
+function to_fte(n, periods){
+    var avg_business_days = 21.167;
+    var work_per_day = 8;
+    periods = periods || cached_fte_data.periods.length;
+    return n / periods / avg_business_days / work_per_day;
 }
 
 function render_fte_budgets(contract_to_render){
@@ -104,19 +113,13 @@ function render_fte_budgets(contract_to_render){
         count_metric('additional', add_hours);
         count_metric('internal', sla_hours+free_hours);
     });
-    function to_fte(n, periods){
-        var avg_business_days = 21.167;
-        var work_per_day = 8;
-        periods = periods || cached_fte_data.periods.length;
-        return n / periods / avg_business_days / work_per_day;
-    }
-    chart08.title('Max ' + round(to_fte(metrics.visible.max, 1)));
+    chart08.title('Avg FTE (max ' + round(to_fte(metrics.visible.max, 1)) + ')');
     render(chart08)(null, {result: to_fte(metrics.visible.total) });
 
-    chart10.title('Max ' + round(to_fte(metrics.additional.max, 1)));
+    chart10.title('Avg FTE (max ' + round(to_fte(metrics.additional.max, 1)) + ')');
     render(chart10)(null, {result: to_fte(metrics.additional.total) });
 
-    chart09.title('Max ' + round(to_fte(metrics.internal.max, 1)));
+    chart09.title('Avg FTE (max ' + round(to_fte(metrics.internal.max, 1)) + ')');
     render(chart09)(null, {result: to_fte(metrics.internal.total) });
 }
 
@@ -144,9 +147,6 @@ function get_invoices(){
             return;
         }
 
-        console.log('Invoice data:');
-        console.log(inv_data);
-
         cached_invoice_data = inv_data;
 
         var months = [];
@@ -155,16 +155,26 @@ function get_invoices(){
         }
 
         // In future we may allow month selection.
-        var chosen = months[0];
+        var chosen = undefined,
+            month_select = document.getElementById('month-select');
 
-        render_invoices(chosen.month);
+        month_select.onchange = filter_by_month;
+
+        months.sort(period_date_sort).reverse().forEach(function(m){
+            month_select.add(new Option(m.month));
+            if (!chosen){
+                chosen = m.month;
+            }
+        });
+
+        render_invoices(chosen);
     }, undefined, 0);
 }
 
 function render_invoices(month){
     $('#invoicing_section_title').each(function(i, e){ e.innerText = e.innerText.replace(/PERIOD/g, month); });
 
-    var threshold = 30;
+    var threshold = 70;
 
     if (cached_timesheet_data && cached_timesheet_data[month]){
         var ts_orgs = Object.keys(cached_timesheet_data[month]).filter(function(k){ return k !== 'total' && k !== 'month' }).sort(),
@@ -213,15 +223,50 @@ function render_invoices(month){
     }
 }
 
+function render_mis_vs_timesheets(){
+    var table = [
+        ['Month', 'Invoices', 'Client hours', 'SLA fees']
+    ];
+
+    var std_GBP_rate = 85,
+        max_fte = 0,
+        total_fte = 0;
+
+    cached_fte_data.periods.sort(period_date_sort).map(function(fte_row){
+        var ts_row = cached_timesheet_data[fte_row.month],
+            ts = ts_row ? ts_row.total : 0, // maybe nobody has timesheeted to the current month yet
+            mis_row = cached_mis_data[fte_row.month];
+
+        max_fte = Math.max(max_fte, ts);
+        total_fte += ts;
+
+        table.push([
+            fte_row.month,
+            mis_row ? mis_row.sales/std_GBP_rate : 0,
+            ts,
+            fte_row.sla_fee_hours.total
+        ]);
+    });
+
+    var chart12 = new google.visualization.AreaChart(document.getElementById('chart-12'));
+
+    var o = JSON.parse(JSON.stringify(std_gchart_options));
+    o.chartArea.width = '80%';
+    o.legend = {position: 'right'};
+    o.colors = default_colors;
+
+    chart12.draw(google.visualization.arrayToDataTable(table), o);
+
+    chart15.title('Avg FTE (max ' + round(to_fte(max_fte, 1)) + ')');
+    render(chart15)(null, {result: to_fte(total_fte) });
+}
+
 function get_mis_report(){
     query('/mis_report', function(err, mis_data){
         if (err){
             console.log('mis_report: ' + err);
             return;
         }
-
-        //console.log('MIS data:');
-        //console.log(mis_data);
 
         var now = new Date();
 
@@ -230,39 +275,13 @@ function get_mis_report(){
                 .el('#chart-12')
                 .type('message')
                 .message('No data');
+            render(chart13)({message: 'No data available'});
             return;
         }
 
         cached_mis_data = mis_data;
 
-        var table = [
-            ['Month', 'Invoices', 'Client hours', 'SLA fees']
-        ];
-
-        var std_GBP_rate = 85;
-
-        cached_fte_data.periods.sort(period_date_sort).map(function(fte_row){
-            var ts_row = cached_timesheet_data[fte_row.month],
-                mis_row = mis_data[fte_row.month];
-
-            table.push([
-                fte_row.month,
-                mis_row ? mis_row.sales/std_GBP_rate : 0,
-                ts_row ? ts_row.total : 0, // maybe nobody has timesheeted to the current month yet
-                fte_row.sla_fee_hours.total
-            ]);
-        });
-
-        //console.log(table);
-
-        var chart12 = new google.visualization.AreaChart(document.getElementById('chart-12'));
-
-        var o = JSON.parse(JSON.stringify(std_gchart_options));
-        o.chartArea.width = '80%';
-        o.legend = {position: 'right'};
-        o.colors = default_colors;
-
-        chart12.draw(google.visualization.arrayToDataTable(table), o);
+        render_mis_vs_timesheets();
     }, undefined, 0);
 }
 
@@ -277,7 +296,6 @@ function get_raw_timesheets(){
         var now = new Date();
 
         if (!ts_data || !ts_data[now.getFullYear() + '-1']){
-            render(chart13)({message: 'No data available'});
             (new Keen.Dataviz())
                 .el('#chart-12')
                 .type('message')
@@ -299,14 +317,12 @@ function get_fte_budgets(){
             return;
         }
 
-        //console.log(fte_data);
-
         if (!fte_data || !fte_data.periods || fte_data.periods.length < 1){
-            ['06', '07', '08', '09', '10', '11', '12'].forEach(function(x){
+            ['06', '07', '08', '09', '10', '11', '12', '13', '14', '15'].forEach(function(x){
                 (new Keen.Dataviz())
                     .el('#chart-'+x)
                     .type('message')
-                    .message('Budgets not available');
+                    .message('No data available');
             });
             return;
         }
