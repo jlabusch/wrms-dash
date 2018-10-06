@@ -1,42 +1,12 @@
-var config  = require('config'),
-    util    = require('wrms-dash-util'),
-    fs      = require('fs'),
-    store   = require('./data_store'),
-    espo    = require('./espo');
+var util    = require('wrms-dash-util'),
+    naming  = require('./data_sync_naming'),
+    dbs     = require('./data_store_dbs'),
+    promise = require('./data_store_promise'),
+    sql     = require('./data_store_sql');
 
 'use strict';
 
-let sync_active = true,
-    first_run = true,
-    sqlite_promise = store.sqlite_promise,
-    sql = store.sql;
-
 const DEBUG = false;
-
-// select_best_budget() relies on this key composition.
-function create_budget_name(contract, type, period){
-    return contract.name + ' ' + type + ' ' + period;
-}
-
-exports.create_budget_name = create_budget_name;
-
-function match_non_monthly_budget_name(id, ctx){
-    // Matches both annaul and biannual
-    let m = id.match(/annual (\d\d\d\d-\d?\d) to (\d\d\d\d-\d?\d)$/);
-
-    if (m){
-        let from = new Date(m[1]),
-            to = new Date(m[2]);
-
-        let pdate = new Date(ctx.period);
-
-        // Budget names are [start,end)
-        return pdate >= from && pdate < to;
-    }
-    return false;
-}
-
-exports.match_non_monthly_budget_name = match_non_monthly_budget_name;
 
 function dump_rows_as_csv(rows){
     if (Array.isArray(rows) && rows.length > 0){
@@ -98,7 +68,7 @@ function add_new_contract_and_systems(db, contract){
     util.log_debug(__filename, `Adding ${JSON.stringify(contract)}`, DEBUG);
     util.org_data.syncing().add_org(contract);
     stmt_fns.push(
-        store.generate_sqlite_promise(
+        promise.generate(
             db,
             sql.add_contract,
             contract.name,
@@ -114,8 +84,8 @@ function add_new_contract_and_systems(db, contract){
 
     for (let i = 0; i < contract.systems.length; ++i){
         util.org_data.syncing().add_system(contract, contract.systems[i]);
-        stmt_fns.push(store.generate_sqlite_promise(db, sql.add_system, contract.systems[i]));
-        stmt_fns.push(store.generate_sqlite_promise(db, sql.add_contract_system_link, contract.name, contract.systems[i]));
+        stmt_fns.push(promise.generate(db, sql.add_system, contract.systems[i]));
+        stmt_fns.push(promise.generate(db, sql.add_contract_system_link, contract.name, contract.systems[i]));
     }
 
     return util.promise_sequence(stmt_fns, fn => {
@@ -141,8 +111,8 @@ function add_budgets_for_contract(db, contract){
         if (err){
             return err;
         }else{
-            stmt_fns.push(store.generate_sqlite_promise(db, sql.add_budget, key, contract.hours));
-            stmt_fns.push(store.generate_sqlite_promise(db, sql.add_contract_budget_link, contract.name, key));
+            stmt_fns.push(promise.generate(db, sql.add_budget, key, contract.hours));
+            stmt_fns.push(promise.generate(db, sql.add_contract_budget_link, contract.name, key));
         }
     }
 
@@ -160,15 +130,15 @@ function make_budget_name_and_increment_date(contract, current, end){
     switch(contract.type){
         case 'monthly':
             current.setMonth(current.getMonth()+1);
-            key = create_budget_name(contract, 'month', this_month);
+            key = naming.create_budget_name(contract, 'month', this_month);
             break;
         case '6 monthly':
             current.setMonth(current.getMonth()+6);
-            key = create_budget_name(contract, 'biannual', this_month + ' to ' + util.dates.date_fmt(current));
+            key = naming.create_budget_name(contract, 'biannual', this_month + ' to ' + util.dates.date_fmt(current));
             break;
         case 'annually':
             current.setMonth(current.getMonth()+12);
-            key = create_budget_name(contract, 'annual', this_month + ' to ' + util.dates.date_fmt(current));
+            key = naming.create_budget_name(contract, 'annual', this_month + ' to ' + util.dates.date_fmt(current));
             break;
         default:
             contract.setTime(end.getTime());
@@ -190,16 +160,16 @@ exports.find_last_row_for_this_wr = find_last_row_for_this_wr;
 function modify_budget_for_quote(budget, quote, quote_description){
     if (quote_description.additional){
         // Additional quote hours are recorded as a separate tally on additional_hours
-        return sqlite_promise(
-            store.dbs.syncing(),
+        return promise.promise(
+            dbs.syncing(),
             'UPDATE budgets SET additional_hours=? WHERE id=?',
             budget.additional_hours + quote.quote_amount,
             budget.id
         );
     }else{
         // SLA quote hours are subtracted from base_hours as base_hours_spent
-        return sqlite_promise(
-            store.dbs.syncing(),
+        return promise.promise(
+            dbs.syncing(),
             'UPDATE budgets SET base_hours_spent=?, sla_quote_hours=? WHERE id=?',
             budget.base_hours_spent + quote.quote_amount,
             budget.sla_quote_hours + quote.quote_amount,
@@ -219,8 +189,8 @@ exports.quote_is_valid = quote_is_valid;
 function add_quote(quote, desc, budget, wr){
     util.log_debug(__filename, `add_quote(${JSON.stringify(quote)})`, DEBUG);
 
-    return sqlite_promise(
-        store.dbs.syncing(),
+    return promise.promise(
+        dbs.syncing(),
         sql.add_quote,
         quote.quote_id,
         budget.id,

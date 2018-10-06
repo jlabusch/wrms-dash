@@ -1,5 +1,4 @@
-var store = require('./data_store'),
-    sync  = require('./data_sync'),
+var store = require('./data_store_query'),
     util  = require('wrms-dash-util');
 
 module.exports = function(req, res, next, ctx){
@@ -28,7 +27,7 @@ module.exports = function(req, res, next, ctx){
 
             util.log_debug(__filename, 'raw data: ' + JSON.stringify(data, null, 2));
 
-            let monthly_name = sync.create_budget_name(org, 'month', ctx.period);
+            let monthly_name = util.naming.create_budget_name(org, 'month', ctx.period);
 
             let r = {
                 budget: 0,
@@ -43,7 +42,7 @@ module.exports = function(req, res, next, ctx){
             // Sum up ALL the relevant budgets.
             // This logic is very similar to data_sync.js:select_best_budget()
             data.forEach(d => {
-                let relevant = d.id === monthly_name || sync.match_non_monthly_budget_name(d.id, ctx);
+                let relevant = d.id === monthly_name || util.naming.match_non_monthly_budget_name(d.id, ctx);
 
                 util.log_debug(__filename, 'Considering "' + d.id + '" ' + (relevant ? 'relevant' : 'not relevant'));
 

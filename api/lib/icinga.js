@@ -3,7 +3,7 @@ var util    = require('wrms-dash-util'),
     https   = require('https'),
     meta    = require('./metadata'),
     config  = require('config'),
-    store   = require('./data_store');
+    store   = require('./data_store_query');
 
 'use strict';
 

@@ -8,7 +8,31 @@ var config  = require('config'),
 
 'use strict';
 
-var server = util.server.create('wrms-dash-api');
+var server = util.server.create('wrms-dash-api', [config.get('server.version')]);
+
+var store = require('./lib/data_store');
+
+require('./lib/data_sync').unpause();
+
+server.post('/query', (req, res, next) => {
+    util.log_debug(__filename, '/query ' + JSON.stringify(req.body));
+
+    let json = typeof(req.body) === 'string' ? JSON.parse(req.body) : req.body;
+
+    json.query.push(function(err, data){
+        let r = {error: err, result: data};
+        util.log_debug(__filename, '/query response is ' + JSON.stringify(r));
+        res.json(r);
+    });
+
+    try{
+        res.charSet('utf-8');
+        store.internal_query.apply(null, json.query);
+    }catch(ex){
+        util.log(__filename, `ERROR: couldn't perform internal query - ${ex}`);
+        res.json({error: ex});
+    }
+});
 
 server.post('/enc', function(req, res, next){
     res.send(util.crypt.encrypt(req.body));

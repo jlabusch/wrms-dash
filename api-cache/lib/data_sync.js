@@ -1,25 +1,27 @@
 var config  = require('config'),
-    util    = require('wrms-dash-util'),
-    su      = require('./data_sync_utils'),
-    fs      = require('fs'),
-    store   = require('./data_store'),
+    dbs     = require('./data_store_dbs'),
     espo    = require('./espo'),
+    fs      = require('fs'),
     qf      = require('./quote_funcs'),
+    sql     = require('./data_store_sql'),
+    sqlite_promise = require('./data_store_promise').promise,
+    store   = require('./data_store'),
+    su      = require('./data_sync_utils'),
+    naming  = require('./data_sync_naming'),
+    util    = require('wrms-dash-util'),
     wrms    = require('wrms-dash-db').db.get();
 
 'use strict';
 
 let sync_active = true,
-    first_run = true,
-    sqlite_promise = store.sqlite_promise,
-    sql = store.sql;
+    first_run = true;
 
 const DEBUG = false;
 
 async function run(){
-    util.log_debug(__filename, 'run()', DEBUG);
     if (first_run){
         first_run = false;
+        util.org_data.active().set_static_contracts(config.get('contracts'));
         await store.init();
     }
 
@@ -34,12 +36,12 @@ async function run(){
             await sync();
 
             util.org_data.swap();
-            store.dbs.swap();
+            dbs.swap();
 
             util.org_data.active().each(v => {
                 util.log_debug(__filename, `${v.org_id}: ${v.name}`, DEBUG);
             });
-            su.dump(store.dbs.active(), 'After swap');
+            su.dump(dbs.active(), 'After swap');
             util.log_debug(__filename, 'sync complete', DEBUG);
         }catch(err){
             util.log(__filename, 'sync error, keeping current DB active');
@@ -66,8 +68,8 @@ function sync(){
                     return;
                 }
 
-                util.promise_sequence(store.sql.delete_all, s => {
-                    return sqlite_promise(store.dbs.syncing(), s);
+                util.promise_sequence(sql.delete_all, s => {
+                    return sqlite_promise(dbs.syncing(), s);
                 }).then(() => {
                     util.promise_sequence(contracts, sync_contract, 0, util.ON_ERROR_CONTINUE).then(resolve, reject);
                 });
@@ -81,7 +83,7 @@ function sync_contract(c){
     util.log_debug(__filename, `sync_contract(${c.name})`, DEBUG);
 
     return new Promise((resolve, reject) => {
-        create_contract(store.dbs.syncing(), c).then(
+        create_contract(dbs.syncing(), c).then(
             fetch_wrs_from_wrms(resolve, reject, c),
             su.soft_failure(resolve, `ERROR creating contract ${c.name}: `)
         );
@@ -173,7 +175,7 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
 
                 try{
                     await sqlite_promise(
-                        store.dbs.syncing(),
+                        dbs.syncing(),
                         sql.add_wr,
                         wr.request_id,
                         wr.system_id,
@@ -215,7 +217,7 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
                         }
 
                         // Don't modify the budget for real until we see sql.add_quote succeed.
-                        await sqlite_promise(store.dbs.syncing(), 'BEGIN TRANSACTION');
+                        await sqlite_promise(dbs.syncing(), 'BEGIN TRANSACTION');
 
                         util.log_debug(__filename, `contract ${contract.name} quote ${JSON.stringify(q)} will be added`, DEBUG);
 
@@ -239,7 +241,7 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
                             util.log_debug(__filename, `contract ${contract.name} quote ${q.quote_id} linked to budget ${JSON.stringify(budget, null, 2)}`, DEBUG);
                         }catch(err){
                             util.log(__filename, `ERROR finding quote budget for ${contract.name} period ${qdesc.period}: ${err}`);
-                            await sqlite_promise(store.dbs.syncing(), 'ROLLBACK').catch(err => {});
+                            await sqlite_promise(dbs.syncing(), 'ROLLBACK').catch(err => {});
                             continue;
                         }
 
@@ -249,7 +251,7 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
                                 await su.modify_budget_for_quote(budget, q, qdesc);
                             }catch(err){
                                 util.log(__filename, `ERROR modifying budget for ${contract.name} period ${qdesc.period}: ${err}`);
-                                await sqlite_promise(store.dbs.syncing(), 'ROLLBACK').catch(err => {});
+                                await sqlite_promise(dbs.syncing(), 'ROLLBACK').catch(err => {});
                                 continue;
                             }
                         }
@@ -258,10 +260,10 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
                             await su.add_quote(q, qdesc, budget, wr);
                         }catch(err){
                             util.log(__filename, `ERROR adding synced quote ${q.quote_id}: ${err}`);
-                            await sqlite_promise(store.dbs.syncing(), 'ROLLBACK');
+                            await sqlite_promise(dbs.syncing(), 'ROLLBACK');
                             continue;
                         }
-                        await sqlite_promise(store.dbs.syncing(), 'COMMIT').catch(err => {
+                        await sqlite_promise(dbs.syncing(), 'COMMIT').catch(err => {
                             util.log(__filename, `ERROR committing quote ${q.quote_id}: ${err}`);
                         });
 
@@ -336,7 +338,7 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
 
                     try{
                         await sqlite_promise(
-                            store.dbs.syncing(),
+                            dbs.syncing(),
                             sql.add_timesheet,
                             buckets[ib].request_id,
                             b.id,
@@ -351,7 +353,7 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
                     if (time_should_be_seen_by_clients(wr, has_quotes)){
                         try{
                             await sqlite_promise(
-                                store.dbs.syncing(),
+                                dbs.syncing(),
                                 'UPDATE budgets SET base_hours_spent=base_hours_spent + ? WHERE id=?',
                                 n,
                                 b.id
@@ -365,7 +367,7 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
 
                 try{
                     await sqlite_promise(
-                        store.dbs.syncing(),
+                        dbs.syncing(),
                         'UPDATE wrs SET hours=? WHERE id=?',
                         total_timesheets,
                         wr_rows[iw].request_id
@@ -465,7 +467,7 @@ function create_contract(db, c){
 //  - finally an ad-hoc 0-value monthly budget, created on the fly
 function select_best_budget(contract, period){
     return new Promise((resolve, reject) => {
-        store.dbs.syncing().all(
+        dbs.syncing().all(
             // TODO FIXME: figure out the syntax of prepared statement with placeholder
             // containing % and using ESCAPE clause. Right now this is an easy sqli vector.
             `SELECT id,base_hours,base_hours_spent,sla_quote_hours,additional_hours FROM budgets WHERE id LIKE '${contract.name.replace(/'/, '')} %'`,
@@ -475,7 +477,7 @@ function select_best_budget(contract, period){
                     return;
                 }
 
-                let monthly_name = su.create_budget_name(contract, 'month', period);
+                let monthly_name = naming.create_budget_name(contract, 'month', period);
 
                 // First try to find an existing budget...
                 if (Array.isArray(budgets) && budgets.length > 0){
@@ -485,7 +487,7 @@ function select_best_budget(contract, period){
                     budgets.forEach(budget => {
                         if (budget.id == monthly_name){
                             month_match = budget;
-                        }else if (su.match_non_monthly_budget_name(budget.id, {period:period})){
+                        }else if (naming.match_non_monthly_budget_name(budget.id, {period:period})){
                             annual_match = budget;
                         }
                     });
@@ -513,9 +515,9 @@ function select_best_budget(contract, period){
                 util.log_debug(__filename, `No budgets of any kind found for ${contract.name} in ${period}, creating...`);
 
                 // Create a budget and link it to the contract
-                sqlite_promise(store.dbs.syncing(), sql.add_budget, monthly_name, 0).then(
+                sqlite_promise(dbs.syncing(), sql.add_budget, monthly_name, 0).then(
                     success => {
-                        sqlite_promise(store.dbs.syncing(), sql.add_contract_budget_link, contract.name, monthly_name).then(
+                        sqlite_promise(dbs.syncing(), sql.add_contract_budget_link, contract.name, monthly_name).then(
                             success => {
                                 resolve({id: monthly_name, base_hours: 0, sla_quote_hours: 0, additional_hours: 0, base_hours_spent: 0});
                             },
@@ -532,8 +534,6 @@ function select_best_budget(contract, period){
 setTimeout(run, config.get('sync.startup_delay_secs')*1000);
 
 module.exports = {
-    create_budget_name: su.create_budget_name,
-    match_non_monthly_budget_name: su.match_non_monthly_budget_name,
     pause: () => { sync_active = false },
     unpause: () => { sync_active = true }
 }

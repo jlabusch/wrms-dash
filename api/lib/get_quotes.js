@@ -1,5 +1,4 @@
-var store = require('./data_store'),
-    sync  = require('./data_sync'),
+var store = require('./data_store_query'),
     util  = require('wrms-dash-util');
 
 // args.sla -> true, false, undefined

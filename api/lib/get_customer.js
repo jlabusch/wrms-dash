@@ -1,4 +1,4 @@
-var store = require('./data_store'),
+var store = require('./data_store_query'),
     util = require('wrms-dash-util');
 
 // returns {
