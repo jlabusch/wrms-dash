@@ -1,5 +1,5 @@
 var cache   = require('./cache'),
-    util    = require('./util'),
+    util    = require('wrms-dash-util'),
     db      = require('./db').get();
 
 function db_error_handler(res, next){

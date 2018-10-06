@@ -1,7 +1,7 @@
 var cache = require('./cache'),
     fs = require('fs'),
     config = require('config'),
-    util  = require('./util');
+    util  = require('wrms-dash-util');
 
 // This requires that some other magic script has created a file called ./api/invoices.json
 // in the format of an Odoo search_read API call.

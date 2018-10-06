@@ -1,4 +1,4 @@
-var util = require('./util'),
+var util = require('wrms-dash-util'),
     config = require('config'),
     Swapper = require('./swapper');
 

@@ -1,6 +1,6 @@
 var config  = require('config'),
     icinga  = require('./icinga'),
-    util    = require('./util');
+    util    = require('wrms-dash-util');
 
 const DEBUG = false;
 

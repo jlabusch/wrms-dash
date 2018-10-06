@@ -1,5 +1,5 @@
 var store = require('./data_store'),
-    util = require('./util');
+    util = require('wrms-dash-util');
 
 // returns {
 //   result: 0,

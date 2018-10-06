@@ -1,6 +1,6 @@
 var store = require('./data_store'),
     sync  = require('./data_sync'),
-    util  = require('./util');
+    util  = require('wrms-dash-util');
 
 // args.sla -> true, false, undefined
 // args.approved -> true, false

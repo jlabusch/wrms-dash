@@ -18,6 +18,7 @@
     "qs": "~6.4",
     "sqlite3": "~4",
     "request": "~2",
-    "restify": "~4.3"
+    "restify": "~4.3",
+    "wrms-dash-util": "https://github.com/jlabusch/wrms-dash-util.git#0927206a1b1c16df7"
   }
 }

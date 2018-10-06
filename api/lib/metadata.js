@@ -1,5 +1,5 @@
 var request = require('request'),
-    util    = require('./util'),
+    util    = require('wrms-dash-util'),
     cache   = require('./cache'),
     config = require('config');
 

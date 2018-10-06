@@ -1,7 +1,7 @@
 var query = require('./query'),
     org_data = require('./org_data'),
     qf = require('./quote_funcs'),
-    util = require('./util');
+    util = require('wrms-dash-util');
 
 const DEBUG = false;
 
@@ -41,7 +41,7 @@ module.exports = query.prepare(
         let r = {};
         if (data && data.rows && data.rows.length > 0){
             data.rows.forEach(row => {
-                let period = util.date_fmt(new Date(row.work_on.replace(/T\d\d:/, 'T12:')));
+                let period = util.dates.date_fmt(new Date(row.work_on.replace(/T\d\d:/, 'T12:')));
 
                 let o = r[period] || {
                     month: period,

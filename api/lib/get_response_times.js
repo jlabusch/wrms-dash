@@ -1,7 +1,7 @@
 var query = require('./query'),
     cache   = require('./cache'),
     db      = require('./db').get(),
-    util = require('./util');
+    util = require('wrms-dash-util');
 
 const hours = 60*60*1000,
     work_hours_per_day = 8,
@@ -84,6 +84,37 @@ function calculate_response_duration(wr, sev, orig_start, end, tz){
     log(wr, sev, tz_start, tz_end, elapsed);
     return elapsed;
 }
+
+function wr_list_sql(context, this_period_only, exclude_statuses){
+    exclude_statuses = exclude_statuses || ["'C'", "'F'"];
+    let and_period =   `AND r.request_on >= '${context.period + '-01'}'
+                        AND r.request_on < '${util.dates.next_period(context) + '-01'}'`,
+        and_status =   `AND r.last_status not in (${exclude_statuses.join(',')})`;
+
+    return `SELECT r.request_id,
+                   r.brief,
+                   r.request_on,
+                   stat.lookup_desc as status,
+                   urg.lookup_desc as urgency,
+                   imp.lookup_desc as importance
+            FROM request r
+            JOIN usr u ON u.user_no=r.requester_id
+            JOIN lookup_code stat on stat.source_table='request'
+               AND stat.source_field='status_code'
+               AND stat.lookup_code=r.last_status
+            JOIN lookup_code urg on urg.source_table='request'
+               AND urg.source_field='urgency'
+               AND urg.lookup_code=cast(r.urgency as text)
+            JOIN lookup_code imp on urg.source_table='request'
+               AND imp.source_field='importance'
+               AND imp.lookup_code=cast(r.importance as text)
+            WHERE u.org_code=${context.org}
+               ${this_period_only ? and_period : ''}
+               AND r.system_id in (${context.sys.join(',')})
+               ${exclude_statuses.length ? and_status : ''}
+            ORDER BY r.urgency,r.last_status ASC`.replace(/\s+/g, ' ');
+}
+
 
 module.exports = function(req, res, next, ctx){
     let wr_data = undefined;
@@ -179,7 +210,7 @@ module.exports = function(req, res, next, ctx){
     }else{
         db.query(
                 'wr_list-limited',
-                util.wr_list_sql(ctx, true, ["'C'", "'M'", "'H'"]),
+                wr_list_sql(ctx, true, ["'C'", "'M'", "'H'"]),
                 ctx
             )
             .then(

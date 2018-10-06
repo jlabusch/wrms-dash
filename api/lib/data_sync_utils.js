@@ -1,6 +1,6 @@
 var config  = require('config'),
     org_data= require('./org_data'),
-    util    = require('./util'),
+    util    = require('wrms-dash-util'),
     fs      = require('fs'),
     store   = require('./data_store'),
     espo    = require('./espo');
@@ -155,7 +155,7 @@ function add_budgets_for_contract(db, contract){
 exports.add_budgets_for_contract = add_budgets_for_contract;
 
 function make_budget_name_and_increment_date(contract, current, end){
-    let this_month = util.date_fmt(current),
+    let this_month = util.dates.date_fmt(current),
         key = null;
 
     switch(contract.type){
@@ -165,11 +165,11 @@ function make_budget_name_and_increment_date(contract, current, end){
             break;
         case '6 monthly':
             current.setMonth(current.getMonth()+6);
-            key = create_budget_name(contract, 'biannual', this_month + ' to ' + util.date_fmt(current));
+            key = create_budget_name(contract, 'biannual', this_month + ' to ' + util.dates.date_fmt(current));
             break;
         case 'annually':
             current.setMonth(current.getMonth()+12);
-            key = create_budget_name(contract, 'annual', this_month + ' to ' + util.date_fmt(current));
+            key = create_budget_name(contract, 'annual', this_month + ' to ' + util.dates.date_fmt(current));
             break;
         default:
             contract.setTime(end.getTime());
@@ -226,7 +226,7 @@ function add_quote(quote, desc, budget, wr){
         quote.quote_id,
         budget.id,
         quote.request_id,
-        util.date_fmt(new Date(desc.period)), // take wrs.invoice_to and quotes.approved_on into account
+        util.dates.date_fmt(new Date(desc.period)), // take wrs.invoice_to and quotes.approved_on into account
         quote.quote_amount,
         desc.additional|0,
         quote_is_valid(quote)|0,

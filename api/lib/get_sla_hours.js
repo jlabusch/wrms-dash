@@ -1,7 +1,7 @@
 var store = require('./data_store'),
     sync  = require('./data_sync'),
     odata = require('./org_data'),
-    util  = require('./util');
+    util  = require('wrms-dash-util');
 
 module.exports = function(req, res, next, ctx){
     let handler = store.make_query_handler(req, res, next, ctx, __filename);

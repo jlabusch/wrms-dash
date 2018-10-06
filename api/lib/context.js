@@ -1,4 +1,4 @@
-var util = require('./util'),
+var util = require('wrms-dash-util'),
     odata = require('./org_data');
 
 'use strict';
@@ -20,11 +20,11 @@ module.exports = function(req){
     context.sys = org.systems;
     context.tz = org.tz || 'Europe/London';
 
-    let p = util.parse_period(req.params.period);
+    let p = util.dates.parse_period(req.params.period);
     if (p){
         ['year', 'month', 'period'].forEach(x => { context[x] = p[x]; });
     }else{
-        let cp = util.current_period();
+        let cp = util.dates.current_period();
         context.year   = cp.year;
         context.month  = cp.month;
         context.period = cp.period;

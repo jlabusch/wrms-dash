@@ -1,4 +1,4 @@
-var util = require('./util');
+var util = require('wrms-dash-util');
 
 'use strict';
 

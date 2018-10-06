@@ -1,7 +1,7 @@
 var store = require('./data_store'),
     sync  = require('./data_sync'),
     odata = require('./org_data'),
-    util  = require('./util');
+    util  = require('wrms-dash-util');
 
 module.exports = function(req, res, next, ctx){
     if (util.send_err_if_not_vendor(req, res, next, ctx, __filename)){

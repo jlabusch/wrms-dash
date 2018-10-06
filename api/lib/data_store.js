@@ -1,5 +1,5 @@
-var util    = require('./util'),
-    Swapper = require('./swapper'),
+var util    = require('wrms-dash-util'),
+    Swapper = util.swapper,
     sqlite3 = require('sqlite3').verbose();
 
 const DEBUG = false;

@@ -2,7 +2,7 @@ var config  = require('config'),
     db      = require('./lib/db').create(),
     cache   = require('./lib/cache'),
     get_dash_context = require('./lib/context'),
-    util    = require('./lib/util'),
+    util    = require('wrms-dash-util'),
     qf      = require('./lib/quote_funcs'),
     query   = require('./lib/query'),
     restify = require('restify');
@@ -97,12 +97,12 @@ server.post('/sql', function(req, res, next){
 });
 
 server.post('/enc', function(req, res, next){
-    res.send(util.encrypt(req.body));
+    res.send(util.crypt.encrypt(req.body));
     next && next(false);
 });
 
 server.post('/dec', function(req, res, next){
-    res.send(util.decrypt(req.body));
+    res.send(util.crypt.decrypt(req.body));
     next && next(false);
 });
 

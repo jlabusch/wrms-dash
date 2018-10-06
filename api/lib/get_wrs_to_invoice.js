@@ -1,7 +1,7 @@
 var query = require('./query'),
     org_data = require('./org_data'),
     qf = require('./quote_funcs'),
-    util = require('./util');
+    util = require('wrms-dash-util');
 
 module.exports = query.prepare(
     'wrs_to_invoice',

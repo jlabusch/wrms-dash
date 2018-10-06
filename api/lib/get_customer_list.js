@@ -1,5 +1,5 @@
 var store = require('./data_store'),
-    util = require('./util');
+    util = require('wrms-dash-util');
 
 module.exports = function(req, res, next, ctx){
     if (util.send_err_if_not_vendor(req, res, next, ctx, __filename)){

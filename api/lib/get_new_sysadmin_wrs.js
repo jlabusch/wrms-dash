@@ -1,6 +1,6 @@
 var query = require('./query'),
     config = require('config'),
-    util = require('./util');
+    util = require('wrms-dash-util');
 
 module.exports = query.prepare(
     'new_sysadmin_wrs',

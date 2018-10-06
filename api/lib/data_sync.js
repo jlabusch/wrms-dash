@@ -1,5 +1,5 @@
 var config  = require('config'),
-    util    = require('./util'),
+    util    = require('wrms-dash-util'),
     su      = require('./data_sync_utils'),
     fs      = require('fs'),
     store   = require('./data_store'),
@@ -128,7 +128,7 @@ function format_timesheet_dates(resolve, reject, contract){
         wrs.rows.forEach(r => {
             if (r.timesheet_date){
                 // Convert to common short format. Also, lol timezones.
-                r.timesheet_date = util.date_fmt(new Date(r.timesheet_date.replace(/T\d\d:/, 'T12:')));
+                r.timesheet_date = util.dates.date_fmt(new Date(r.timesheet_date.replace(/T\d\d:/, 'T12:')));
             }
             //util.log_debug(__filename, [r.request_id,r.system_id,r.timesheet_hours,r.timesheet_date,r.tags].join(','), DEBUG);
         });
@@ -178,7 +178,7 @@ function process_wrms_data(resolve, reject, contract, wr_rows){
                         sql.add_wr,
                         wr.request_id,
                         wr.system_id,
-                        util.date_fmt(new Date(wr.request_on)),
+                        util.dates.date_fmt(new Date(wr.request_on)),
                         wr.brief,
                         wr.detailed,
                         wr.status,

@@ -1,7 +1,7 @@
 var request = require('request'),
     config = require('config'),
     org_data = require('./org_data'),
-    util = require('./util');
+    util = require('wrms-dash-util');
 
 'use strict';
 
@@ -192,8 +192,8 @@ function merge_espo_data(context){
                 cash_currency: c.sLASupportFeeCurrency,
                 type: (c.sLAFrequency || 'unknown').toLowerCase().trim(),
                 hours: (c.sLAHours || 0),
-                start_date: util.date_fmt(new Date(c.startDate)),
-                end_date: util.date_fmt(new Date(c.endrenewalDate)),
+                start_date: util.dates.date_fmt(new Date(c.startDate)),
+                end_date: util.dates.date_fmt(new Date(c.endrenewalDate)),
                 systems: (c.systemID ? c.systemID.split(/,\s*/).map(n => parseInt(n)).filter(n => n !== null && !isNaN(n)) : [])
             });
         }

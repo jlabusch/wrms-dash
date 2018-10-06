@@ -1,7 +1,7 @@
 var query = require('./query'),
     https  = require('https'),
     cache = require('./cache'),
-    util  = require('./util');
+    util  = require('wrms-dash-util');
 
 module.exports = query.prepare(
     'users',

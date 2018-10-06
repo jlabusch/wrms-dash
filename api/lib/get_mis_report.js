@@ -1,6 +1,6 @@
 var cache = require('./cache'),
     fs = require('fs'),
-    util  = require('./util');
+    util  = require('wrms-dash-util');
 
 // This requires that some other magic script has created a file called ./api/mis.json
 // in the format of an Odoo MIS report.

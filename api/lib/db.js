@@ -1,5 +1,5 @@
 var config  = require('config'),
-    util    = require('./util'),
+    util    = require('wrms-dash-util'),
     pg      = require('pg');
 
 'use strict';

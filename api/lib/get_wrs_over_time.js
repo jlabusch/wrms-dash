@@ -1,5 +1,5 @@
 var query = require('./query'),
-    util = require('./util');
+    util = require('wrms-dash-util');
 
 /*
      A | Quote Approved
@@ -46,8 +46,8 @@ function fill_row(m, sev_by_wr){
 
 function find_gaps(from, to){
     let gaps = [],
-        fp = util.parse_period(from),
-        tp = util.parse_period(to);
+        fp = util.dates.parse_period(from),
+        tp = util.dates.parse_period(to);
 
     if (!fp || !tp){
         util.log(__filename, "can't parse periods");
@@ -58,11 +58,11 @@ function find_gaps(from, to){
         return gaps;
     }
 
-    let p = util.next_period_obj(fp);
+    let p = util.dates.next_period_obj(fp);
 
     while (p.period !== tp.period){
         gaps.push(p.period);
-        p = util.next_period_obj(p);
+        p = util.dates.next_period_obj(p);
     }
     return gaps;
 }
@@ -109,7 +109,7 @@ module.exports = query.prepare(
                         return;
                     }
                     r.push(fill_row(month, open_wrs));
-                    seen_ctx_period = seen_ctx_period || (ctx.period === util.parse_period(row.updated_on).period);
+                    seen_ctx_period = seen_ctx_period || (ctx.period === util.dates.parse_period(row.updated_on).period);
 
                     find_gaps(month, row.updated_on).forEach(gap => {
                         if (seen_ctx_period){
@@ -129,7 +129,7 @@ module.exports = query.prepare(
                 }
             });
 
-            if (!seen_ctx_period || ctx.period === util.parse_period(month).period){
+            if (!seen_ctx_period || ctx.period === util.dates.parse_period(month).period){
                 r.push(fill_row(month, open_wrs));
             }
         }
