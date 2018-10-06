@@ -1,4 +1,4 @@
-var query = require('./query'),
+var query = require('wrms-dash-db').query,
     org_data = require('./org_data'),
     qf = require('./quote_funcs'),
     util = require('wrms-dash-util');

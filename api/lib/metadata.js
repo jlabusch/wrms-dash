@@ -1,6 +1,6 @@
 var request = require('request'),
     util    = require('wrms-dash-util'),
-    cache   = require('./cache'),
+    cache   = require('wrms-dash-db').cache,
     config = require('config');
 
 'use strict';

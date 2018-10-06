@@ -6,7 +6,7 @@ var config  = require('config'),
     org_data= require('./org_data'),
     espo    = require('./espo'),
     qf      = require('./quote_funcs'),
-    wrms    = require('./db').get();
+    wrms    = require('wrms-dash-db').db.get();
 
 'use strict';
 

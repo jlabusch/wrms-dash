@@ -1,10 +1,10 @@
 var config  = require('config'),
-    db      = require('./lib/db').create(),
-    cache   = require('./lib/cache'),
+    cache   = require('wrms-dash-db').cache,
+    db      = require('wrms-dash-db').db.create(),
     get_dash_context = require('./lib/context'),
     util    = require('wrms-dash-util'),
     qf      = require('./lib/quote_funcs'),
-    query   = require('./lib/query'),
+    query   = require('wrms-dash-db').query,
     restify = require('restify');
 
 'use strict';

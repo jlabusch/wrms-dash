@@ -1,6 +1,6 @@
-var query = require('./query'),
+var query = require('wrms-dash-db').query,
     https  = require('https'),
-    cache = require('./cache'),
+    cache = require('wrms-dash-db').cache,
     util  = require('wrms-dash-util');
 
 module.exports = query.prepare(

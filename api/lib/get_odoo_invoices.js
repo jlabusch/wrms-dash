@@ -1,4 +1,4 @@
-var cache = require('./cache'),
+var cache = require('wrms-dash-db').cache,
     fs = require('fs'),
     config = require('config'),
     util  = require('wrms-dash-util');

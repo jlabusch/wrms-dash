@@ -1,6 +1,6 @@
 var util = require('wrms-dash-util'),
     config = require('config'),
-    Swapper = require('./swapper');
+    Swapper = require('wrms-dash-util').swapper;
 
 'use strict';
 

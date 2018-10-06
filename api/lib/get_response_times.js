@@ -1,7 +1,7 @@
-var query = require('./query'),
-    cache   = require('./cache'),
-    db      = require('./db').get(),
-    util = require('wrms-dash-util');
+var query = require('wrms-dash-db').query,
+    cache = require('wrms-dash-db').cache,
+    db    = require('wrms-dash-db').db.get(),
+    util  = require('wrms-dash-util');
 
 const hours = 60*60*1000,
     work_hours_per_day = 8,

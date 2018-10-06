@@ -1,5 +1,5 @@
 var util    = require('wrms-dash-util'),
-    cache   = require('./cache'),
+    cache   = require('wrms-dash-db').cache,
     https   = require('https'),
     meta    = require('./metadata'),
     config  = require('config'),
