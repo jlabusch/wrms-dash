@@ -1,6 +1,5 @@
 var store = require('./data_store'),
     sync  = require('./data_sync'),
-    odata = require('./org_data'),
     util  = require('wrms-dash-util');
 
 module.exports = function(req, res, next, ctx){
@@ -10,7 +9,7 @@ module.exports = function(req, res, next, ctx){
 
     let handler = store.make_query_handler(req, res, next, ctx, __filename);
 
-    let org = odata.active().get_org(ctx);
+    let org = util.org_data.active().get_org(ctx);
 
     store.query(
         util.trim  `SELECT  w.id AS request_id,

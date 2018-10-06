@@ -1,6 +1,5 @@
 var store = require('./data_store'),
     sync  = require('./data_sync'),
-    odata = require('./org_data'),
     util  = require('wrms-dash-util');
 
 'use strict';

@@ -1,6 +1,5 @@
 var request = require('request'),
     config = require('config'),
-    org_data = require('./org_data'),
     util = require('wrms-dash-util');
 
 'use strict';
@@ -212,7 +211,7 @@ function merge_espo_data(context){
         // Create an org record whether there's an active contract or not. data_sync's
         // add_new_contract_and_systems() will add more detail as necessary.
         // If there's no active contract it'll never touch our DB, just be noted in org_data.
-        org_data.syncing().add_org({
+        util.org_data.syncing().add_org({
             org_id: acc.orgID,
             org_name: acc.name,
             name: acc.name,

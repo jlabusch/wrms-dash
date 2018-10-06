@@ -1,7 +1,6 @@
 var config  = require('config'),
     cache   = require('wrms-dash-db').cache,
     db      = require('wrms-dash-db').db.create(),
-    get_dash_context = require('./lib/context'),
     util    = require('wrms-dash-util'),
     qf      = require('./lib/quote_funcs'),
     query   = require('wrms-dash-db').query,
@@ -9,52 +8,7 @@ var config  = require('config'),
 
 'use strict';
 
-const GENERIC_ERROR = {error: 'Service interruption - please try again later'};
-
-var server = restify.createServer({
-    name: 'wrms-dash-api',
-    versions: [config.get('server.version')]
-});
-
-server.use(function _cors(req, res, next){
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    let m = req.headers['access-control-request-method'];
-    if (m)  res.setHeader('Access-Control-Allow-Methods', m);
-    let h = req.headers['access-control-request-headers'];
-    if (h)  res.setHeader('Access-Control-Allow-Headers', h);
-    return next();
-});
-
-server.use(restify.bodyParser({mapParams: true}));
-server.use(restify.queryParser({mapParams: true}));
-
-server.on('uncaughtException', (req, res, route, err) => {
-    util.log(__filename, err.stack);
-    res.send(500, GENERIC_ERROR);
-});
-
-function preflight(req, res, next){
-    res.send(200);
-    return next();
-}
-
-function setup(method, func, handler){
-    let path = ':org/:sys/:period';
-
-    server.opts('/api' + func + '/' + path, preflight);
-
-    server[method]('/api' + func + '/' + path, function(req, res, next){
-        let ctx = get_dash_context(req);
-
-        if (ctx.error){
-            util.log(__filename, 'get_dash_context: ' + ctx.error);
-            res.json({error: ctx.error});
-            return;
-        }
-
-        handler(req, res, next, ctx);
-    });
-}
+var server = util.server.create('wrms-dash-api');
 
 var store = require('./lib/data_store');
 
@@ -108,45 +62,45 @@ server.post('/dec', function(req, res, next){
 
 var get_quotes = require('./lib/get_quotes');
 
-setup('get', '/pending_quotes',     get_quotes({sla:undefined,  approved:false, limit_period:false}));
-setup('get', '/sla_quotes',         get_quotes({sla:true,       approved:true,  limit_period:true }));
-setup('get', '/additional_quotes',  get_quotes({sla:false,      approved:true,  limit_period:true }));
+util.server.setup('get', '/pending_quotes',     get_quotes({sla:undefined,  approved:false, limit_period:false}));
+util.server.setup('get', '/sla_quotes',         get_quotes({sla:true,       approved:true,  limit_period:true }));
+util.server.setup('get', '/additional_quotes',  get_quotes({sla:false,      approved:true,  limit_period:true }));
 
-setup('get', '/mis_report', require('./lib/get_mis_report'));
+util.server.setup('get', '/mis_report', require('./lib/get_mis_report'));
 
-setup('get', '/invoices', require('./lib/get_odoo_invoices'));
+util.server.setup('get', '/invoices', require('./lib/get_odoo_invoices'));
 
-setup('get', '/sla_unquoted', require('./lib/get_sla_unquoted'));
+util.server.setup('get', '/sla_unquoted', require('./lib/get_sla_unquoted'));
 
-setup('get', '/new_sysadmin_wrs', require('./lib/get_new_sysadmin_wrs'));
+util.server.setup('get', '/new_sysadmin_wrs', require('./lib/get_new_sysadmin_wrs'));
 
-setup('get', '/wrs_to_invoice', require('./lib/get_wrs_to_invoice'));
+util.server.setup('get', '/wrs_to_invoice', require('./lib/get_wrs_to_invoice'));
 
-setup('get', '/additional_wrs_unquoted', require('./lib/get_additional_wrs_unquoted'));
+util.server.setup('get', '/additional_wrs_unquoted', require('./lib/get_additional_wrs_unquoted'));
 
-//setup('get', '/combined_budgets', require('./lib/get_combined_budgets'));
+//util.server.setup('get', '/combined_budgets', require('./lib/get_combined_budgets'));
 
-setup('get', '/customer_list', require('./lib/get_customer_list'));
+util.server.setup('get', '/customer_list', require('./lib/get_customer_list'));
 
-setup('get', '/customer', require('./lib/get_customer'));
+util.server.setup('get', '/customer', require('./lib/get_customer'));
 
-setup('get', '/wrs_created_count', require('./lib/get_wrs_created_count'));
+util.server.setup('get', '/wrs_created_count', require('./lib/get_wrs_created_count'));
 
-setup('get', '/wrs_over_time', require('./lib/get_wrs_over_time'));
+util.server.setup('get', '/wrs_over_time', require('./lib/get_wrs_over_time'));
 
-setup('get', '/deployments', require('./lib/get_deployments'));
+util.server.setup('get', '/deployments', require('./lib/get_deployments'));
 
-setup('get', '/users', require('./lib/get_users'));
+util.server.setup('get', '/users', require('./lib/get_users'));
 
-setup('get', '/storage', require('./lib/get_storage'));
+util.server.setup('get', '/storage', require('./lib/get_storage'));
 
-setup('get', '/availability', require('./lib/get_availability'));
+util.server.setup('get', '/availability', require('./lib/get_availability'));
 
-setup('get', '/fte_budgets', require('./lib/get_fte_budgets'));
+util.server.setup('get', '/fte_budgets', require('./lib/get_fte_budgets'));
 
-setup('get', '/raw_timesheets', require('./lib/get_raw_timesheets'));
+util.server.setup('get', '/raw_timesheets', require('./lib/get_raw_timesheets'));
 
-setup(
+util.server.setup(
     'get',
     '/response_times_PLACEHOLDER',
     query.prepare('response_times', 'rtt',
@@ -159,13 +113,13 @@ setup(
     )
 );
 
-setup('get', '/response_times', require('./lib/get_response_times'));
+util.server.setup('get', '/response_times', require('./lib/get_response_times'));
 
-setup('get', '/sla_hours', require('./lib/get_sla_hours'));
+util.server.setup('get', '/sla_hours', require('./lib/get_sla_hours'));
 
 var wr_list_query = require('./lib/get_wr_list');
 
-setup(
+util.server.setup(
     'get',
     '/wr_list',
     wr_list_query({
@@ -174,7 +128,7 @@ setup(
     })
 );
 
-setup(
+util.server.setup(
     'get',
     '/statuses',
     wr_list_query({
@@ -195,7 +149,7 @@ setup(
     })
 );
 
-setup(
+util.server.setup(
     'get',
     '/severity',
     wr_list_query({
@@ -215,18 +169,8 @@ setup(
     })
 );
 
-function main(port){
-    server.listen(port, function(err){
-        if (err){
-            throw err;
-        }
-        util.log(__filename, `${server.name} listening at ${server.url}`);
-    });
-    require('./lib/data_sync').unpause();
-}
+util.server.main(
+    config.get('server.listen_port'),
+    () => { require('./lib/data_sync').unpause() }
+);
 
-if (require.main === module){
-    main(config.get('server.listen_port'));
-}
-
-exports.run = main;

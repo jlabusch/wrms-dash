@@ -1,5 +1,4 @@
 var query = require('wrms-dash-db').query,
-    org_data = require('./org_data'),
     qf = require('./quote_funcs'),
     util = require('wrms-dash-util');
 
@@ -27,7 +26,7 @@ module.exports = query.prepare(
                 JOIN request r ON r.request_id=t.request_id
                 JOIN usr u ON u.user_no=r.requester_id
                 JOIN organisation o ON o.org_code=u.org_code
-                WHERE u.org_code IN (${org_data.active().get_all_orgs(true).join(",")})
+                WHERE u.org_code IN (${util.org_data.active().get_all_orgs(true).join(",")})
                   AND t.work_on >= current_date - interval '13 months'
                 ORDER BY r.request_id,t.work_on`.replace(/\s+/, ' ');
     },

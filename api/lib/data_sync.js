@@ -3,7 +3,6 @@ var config  = require('config'),
     su      = require('./data_sync_utils'),
     fs      = require('fs'),
     store   = require('./data_store'),
-    org_data= require('./org_data'),
     espo    = require('./espo'),
     qf      = require('./quote_funcs'),
     wrms    = require('wrms-dash-db').db.get();
@@ -30,14 +29,14 @@ async function run(){
 
     if (sync_active){
         try{
-            org_data.syncing().wipe();
+            util.org_data.syncing().wipe();
 
             await sync();
 
-            org_data.swap();
+            util.org_data.swap();
             store.dbs.swap();
 
-            org_data.active().each(v => {
+            util.org_data.active().each(v => {
                 util.log_debug(__filename, `${v.org_id}: ${v.name}`, DEBUG);
             });
             su.dump(store.dbs.active(), 'After swap');

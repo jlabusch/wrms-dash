@@ -1,5 +1,4 @@
 var config  = require('config'),
-    org_data= require('./org_data'),
     util    = require('wrms-dash-util'),
     fs      = require('fs'),
     store   = require('./data_store'),
@@ -97,7 +96,7 @@ function add_new_contract_and_systems(db, contract){
     let stmt_fns = [];
 
     util.log_debug(__filename, `Adding ${JSON.stringify(contract)}`, DEBUG);
-    org_data.syncing().add_org(contract);
+    util.org_data.syncing().add_org(contract);
     stmt_fns.push(
         store.generate_sqlite_promise(
             db,
@@ -114,7 +113,7 @@ function add_new_contract_and_systems(db, contract){
     );
 
     for (let i = 0; i < contract.systems.length; ++i){
-        org_data.syncing().add_system(contract, contract.systems[i]);
+        util.org_data.syncing().add_system(contract, contract.systems[i]);
         stmt_fns.push(store.generate_sqlite_promise(db, sql.add_system, contract.systems[i]));
         stmt_fns.push(store.generate_sqlite_promise(db, sql.add_contract_system_link, contract.name, contract.systems[i]));
     }
