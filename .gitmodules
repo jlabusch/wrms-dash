@@ -1,0 +1,12 @@
+[submodule "wrms-dash-api"]
+	path = wrms-dash-api
+	url = git@github.com:jlabusch/wrms-dash-api.git
+[submodule "wrms-dash-sync"]
+	path = wrms-dash-sync
+	url = git@github.com:jlabusch/wrms-dash-sync.git
+[submodule "wrms-dash-frontend"]
+	path = wrms-dash-frontend
+	url = git@github.com:jlabusch/wrms-dash-frontend.git
+[submodule "wrms-dash-nginx"]
+	path = wrms-dash-nginx
+	url = git@github.com:jlabusch/wrms-dash-nginx.git
