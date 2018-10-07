@@ -1,10 +1,5 @@
 .*.swp
-.htpasswd
-ssl/*.pem
-mis.json
+*.json
 download_mis_report.sh
-api/config/default.json
-frontend/static/admin
-frontend/staticserve
-*/db.sqlite3
+**/db.sqlite3
 **/__pycache__

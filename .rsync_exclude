@@ -1,6 +1,0 @@
-.git
-.gitignore
-.*.swp
-.codeclimate.yml
-frontend/db.sqlite3
-api/config/default.json
