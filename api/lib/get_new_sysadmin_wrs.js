@@ -7,7 +7,7 @@ module.exports = query.prepare(
     'new_sysadmin_wrs',
     // TODO the sysadmin user account ID and other Catalyst branch IDs need to be configurable.
     function(ctx){
-        let server = config.get('server'),
+        let server = config.get('api.server'),
             wrms_details = server.wrms_details || {
                 user_id: 4089,
                 exclude_orgs: '37,1098'

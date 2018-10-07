@@ -6,7 +6,7 @@ var config  = require('config'),
 
 'use strict';
 
-var server = util.server.create('wrms-dash-api', [config.get('server.version')]);
+var server = util.server.create('wrms-dash-api', [config.get('api.server.version')]);
 
 server.post('/update_org_data', (req, res, next) => {
     util.log_debug(__filename, '/update_org_data' + JSON.stringify(req.body));
@@ -140,7 +140,7 @@ util.server.setup(
 );
 
 util.server.main(
-    config.get('server.listen_port'),
+    config.get('api.server.listen_port'),
     () => {
         util.org_data.active().set_static_contracts(config.get('contracts'));
     }

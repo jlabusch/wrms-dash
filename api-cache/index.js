@@ -7,7 +7,7 @@ var config  = require('config'),
 
 'use strict';
 
-var server = util.server.create('wrms-dash-api-cache', [config.get('server.version')]);
+var server = util.server.create('wrms-dash-api-cache', [config.get('api-cache.server.version')]);
 
 server.post('/query', (req, res, next) => {
     util.log_debug(__filename, '/query ' + JSON.stringify(req.body));
@@ -33,7 +33,7 @@ server.post('/query', (req, res, next) => {
 
 
 util.server.main(
-    config.get('server.listen_port'),
+    config.get('api-cache.server.listen_port'),
     () => { require('./lib/data_sync').unpause() }
 );
 
