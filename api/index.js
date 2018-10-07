@@ -1,8 +1,6 @@
 var config  = require('config'),
-    cache   = require('wrms-dash-db').cache,
     db      = require('wrms-dash-db').db.create(),
     util    = require('wrms-dash-util'),
-    qf      = require('./lib/quote_funcs'),
     query   = require('wrms-dash-db').query,
     restify = require('restify');
 
@@ -10,28 +8,16 @@ var config  = require('config'),
 
 var server = util.server.create('wrms-dash-api', [config.get('server.version')]);
 
-var store = require('./lib/data_store');
-
-require('./lib/data_sync').unpause();
-
-server.post('/query', (req, res, next) => {
-    util.log_debug(__filename, '/query ' + JSON.stringify(req.body));
+server.post('/update_org_data', (req, res, next) => {
+    util.log_debug(__filename, '/update_org_data' + JSON.stringify(req.body));
 
     let json = typeof(req.body) === 'string' ? JSON.parse(req.body) : req.body;
 
-    json.query.push(function(err, data){
-        let r = {error: err, result: data};
-        util.log_debug(__filename, '/query response is ' + JSON.stringify(r));
-        res.json(r);
-    });
+    util.org_data.active().data = json;
 
-    try{
-        res.charSet('utf-8');
-        store.internal_query.apply(null, json.query);
-    }catch(ex){
-        util.log(__filename, `ERROR: couldn't perform internal query - ${ex}`);
-        res.json({error: ex});
-    }
+    res.charSet('utf-8');
+    res.json({error: null});
+    next && next(false);
 });
 
 server.post('/enc', function(req, res, next){
@@ -153,5 +139,10 @@ util.server.setup(
     })
 );
 
-util.server.main(config.get('server.listen_port'));
+util.server.main(
+    config.get('server.listen_port'),
+    () => {
+        util.org_data.active().set_static_contracts(config.get('contracts'));
+    }
+);
 

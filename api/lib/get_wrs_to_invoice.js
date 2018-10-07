@@ -1,6 +1,6 @@
 var query = require('wrms-dash-db').query,
-    qf = require('./quote_funcs'),
-    util = require('wrms-dash-util');
+    util  = require('wrms-dash-util'),
+    qf    = util.quote_funcs;
 
 module.exports = query.prepare(
     'wrs_to_invoice',

@@ -48,13 +48,31 @@ services:
         build: api
         expose:
             - "80"
+        links:
+            - "api-cache"
         entrypoint:
             - npm
             - start
         environment:
             - ICINGA_BASIC_AUTH
-            - API_DEBUG
+            - DEBUG
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - ./api/config/default.json:/opt/config/default.json:ro
+
+    api-cache:
+        image: jlabusch/wrms-dash-api-cache
+        restart: always
+        build: api-cache
+        expose:
+            - "80"
+        entrypoint:
+            - npm
+            - start
+        environment:
+            - ICINGA_BASIC_AUTH
+            - DEBUG
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+            - ./api-cache/config/default.json:/opt/config/default.json:ro
 

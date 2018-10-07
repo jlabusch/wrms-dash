@@ -57,39 +57,10 @@ exports.query = function(/* stmt, arg, ..., next(err,rows) */){
         next = args.pop();
     }
 
-   let options = {
-        url: config.get('api-cache.host') + '/query',
-        json: true,
-        body: {query: args}
-    };
-
     util.log_debug(__filename, args[0]);
 
-    request.post(
-        options,
-        (err, res, body) => {
-            if (err){
-                next(err);
-                return;
-            }
-
-            if (res.statusCode >= 400){
-                next(new Error(`API cache query failed (${res.statusCode})`));
-                return;
-            }
-
-            if (res.statusCode == 200){
-                try{
-                    next(body.error, body.result);
-                }catch(ex){
-                    util.log(__filename, 'ERROR: ' + ex);
-                    next(ex);
-                }
-                return;
-            }
-
-            next(new Error(`API cache query unhandled response (${res.statusCode})`));
-        }
-    );
+    util.send_post({ url: config.get('api-cache.host') + '/query' })
+        .with({ query: args })
+        .then(next);
 }
 

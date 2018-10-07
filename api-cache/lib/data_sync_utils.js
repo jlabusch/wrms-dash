@@ -1,5 +1,4 @@
 var util    = require('wrms-dash-util'),
-    naming  = require('./data_sync_naming'),
     dbs     = require('./data_store_dbs'),
     promise = require('./data_store_promise'),
     sql     = require('./data_store_sql');
@@ -130,15 +129,15 @@ function make_budget_name_and_increment_date(contract, current, end){
     switch(contract.type){
         case 'monthly':
             current.setMonth(current.getMonth()+1);
-            key = naming.create_budget_name(contract, 'month', this_month);
+            key = util.naming.create_budget_name(contract, 'month', this_month);
             break;
         case '6 monthly':
             current.setMonth(current.getMonth()+6);
-            key = naming.create_budget_name(contract, 'biannual', this_month + ' to ' + util.dates.date_fmt(current));
+            key = util.naming.create_budget_name(contract, 'biannual', this_month + ' to ' + util.dates.date_fmt(current));
             break;
         case 'annually':
             current.setMonth(current.getMonth()+12);
-            key = naming.create_budget_name(contract, 'annual', this_month + ' to ' + util.dates.date_fmt(current));
+            key = util.naming.create_budget_name(contract, 'annual', this_month + ' to ' + util.dates.date_fmt(current));
             break;
         default:
             contract.setTime(end.getTime());

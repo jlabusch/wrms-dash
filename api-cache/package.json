@@ -1,7 +1,7 @@
 {
-  "name": "wrms-dash-api",
+  "name": "wrms-dash-api-cache",
   "version": "1.0.0",
-  "description": "Catalyst EU dashboard API",
+  "description": "Catalyst EU dashboard cache",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -14,6 +14,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "config": "~1",
+    "sqlite3": "~4",
     "request": "~2",
     "restify": "~4.3",
     "wrms-dash-util": "https://github.com/jlabusch/wrms-dash-util.git#6d920ed277230db20cf",

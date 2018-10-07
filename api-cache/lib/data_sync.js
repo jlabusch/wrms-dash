@@ -2,13 +2,12 @@ var config  = require('config'),
     dbs     = require('./data_store_dbs'),
     espo    = require('./espo'),
     fs      = require('fs'),
-    qf      = require('./quote_funcs'),
     sql     = require('./data_store_sql'),
     sqlite_promise = require('./data_store_promise').promise,
     store   = require('./data_store'),
     su      = require('./data_sync_utils'),
-    naming  = require('./data_sync_naming'),
     util    = require('wrms-dash-util'),
+    qf      = util.quote_funcs,
     wrms    = require('wrms-dash-db').db.get();
 
 'use strict';
@@ -18,10 +17,23 @@ let sync_active = true,
 
 const DEBUG = false;
 
+function push_org_data(){
+    util.send_post({ url: config.get('api.host') + '/update_org_data' })
+        .with(util.org_data.active().data)
+        .then((err, data) => {
+            if (err || data.error){
+                util.log(__filename, `ERROR: couldn't update API org_data: ${err || data.error}`);
+            }else{
+                util.log_debug(__filename, `Sent updated org_data to API`, DEBUG);
+            }
+        });
+}
+
 async function run(){
     if (first_run){
         first_run = false;
         util.org_data.active().set_static_contracts(config.get('contracts'));
+        push_org_data();
         await store.init();
     }
 
@@ -37,6 +49,8 @@ async function run(){
 
             util.org_data.swap();
             dbs.swap();
+
+            push_org_data();
 
             util.org_data.active().each(v => {
                 util.log_debug(__filename, `${v.org_id}: ${v.name}`, DEBUG);
@@ -477,7 +491,7 @@ function select_best_budget(contract, period){
                     return;
                 }
 
-                let monthly_name = naming.create_budget_name(contract, 'month', period);
+                let monthly_name = util.naming.create_budget_name(contract, 'month', period);
 
                 // First try to find an existing budget...
                 if (Array.isArray(budgets) && budgets.length > 0){
@@ -487,7 +501,7 @@ function select_best_budget(contract, period){
                     budgets.forEach(budget => {
                         if (budget.id == monthly_name){
                             month_match = budget;
-                        }else if (naming.match_non_monthly_budget_name(budget.id, {period:period})){
+                        }else if (util.naming.match_non_monthly_budget_name(budget.id, {period:period})){
                             annual_match = budget;
                         }
                     });
