@@ -30,8 +30,8 @@ stop:
 
 clean:
 	$(DOCKER) volume rm $(CONFIG_VOL) || :
-	make -C wrms-dash-nginx $@
-	make -C wrms-dash-frontend $@
-	make -C wrms-dash-sync $@
-	make -C wrms-dash-api $@
+	make -C wrms-dash-nginx $@ || :
+	make -C wrms-dash-frontend $@ || :
+	make -C wrms-dash-sync $@ || :
+	make -C wrms-dash-api $@ || :
 
