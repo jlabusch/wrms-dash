@@ -33,6 +33,19 @@ User administration is currently done using the standard Django admin interface,
 
 ![Architecture](https://github.com/jlabusch/wrms-dash/raw/ecs/overview.png)
 
+
+### Migrating from SQlite3 to Postgres
+
+Previous versions of this used SQlite3.
+
+To dump the old SQlite3 data as JSON, use `docker exec -it wrms-dash_frontend ./manage.py dumpdata --exclude contenttypes > db.json`.
+
+To import it into Postgres:
+
+ - start `wrms-dash-frontend-db` and `wrms-dash-frontend`
+ - `docker cp db.json wrms-dash-frontend:/opt/`
+ - `docker exec -it wrms-dash-frontend ./manage.py loaddata db.json`
+
 ### Dev notes
 
  - Each widget's back end code is at `./api/lib/get_XXX.js`

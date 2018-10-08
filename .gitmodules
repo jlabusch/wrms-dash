@@ -10,3 +10,6 @@
 [submodule "wrms-dash-nginx"]
 	path = wrms-dash-nginx
 	url = git@github.com:jlabusch/wrms-dash-nginx.git
+[submodule "wrms-dash-frontend-db"]
+	path = wrms-dash-frontend-db
+	url = git@github.com:jlabusch/wrms-dash-frontend-db.git
