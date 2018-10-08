@@ -24,4 +24,8 @@ stop:
 
 clean:
 	$(DOCKER) volume rm $(CONFIG_VOL)
+	make -C wrms-dash-nginx clean
+	make -C wrms-dash-frontend clean
+	make -C wrms-dash-sync clean
+	make -C wrms-dash-api clean
 
