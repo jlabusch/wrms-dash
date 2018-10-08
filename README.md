@@ -1,6 +1,6 @@
 # wrms-dash
 
-![Screenshot](https://github.com/jlabusch/wrms-dash/raw/master/example.png)
+![Screenshot](https://github.com/jlabusch/wrms-dash/raw/ecs/example.png)
 
 ## Brief
 
@@ -31,7 +31,7 @@ User administration is currently done using the standard Django admin interface,
  - `make start` to start the system, `make stop` to stop it
  - Browse to http://localhost to test
 
-![Architecture](https://github.com/jlabusch/wrms-dash/raw/master/overview.png)
+![Architecture](https://github.com/jlabusch/wrms-dash/raw/ecs/overview.png)
 
 ### Dev notes
 
