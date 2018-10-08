@@ -1,7 +1,5 @@
 # wrms-dash
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/aa20cf63acacc13e2fa0/maintainability)](https://codeclimate.com/github/jlabusch/wrms-dash/maintainability)
-
 ![Screenshot](https://github.com/jlabusch/wrms-dash/raw/master/example.png)
 
 ## Brief
@@ -13,7 +11,9 @@ It relies on a few internal systems:
   - Espo CRM for account and contract details (alternative: static JSON config)
   - WRMS for ticket, quote and timesheet information
   - JSON configuration endpoints equivlant to the EU metadata (https://reviews.ci.catalyst-eu.net/#/admin/projects/eumetadata) [Optional]
+  - Chkm8 reports for application/plugin patch levels (see https://jenkins-eu.ci.catalyst-eu.net/metadata/updates.json) [Optional]
   - Icinga endpoints for measuring site availability [Optional]
+  - Odoo ERP for invoicing reports [Optional]
   - Plugins for reporting user numbers and storage utilisation [Optional, currently exist for Moodle/Mahara/Totara]
 
 User administration is currently done using the standard Django admin interface, but the next step on the roadmap is to back this with WRMS authentication. (There are reasons for not using the Catalyst IdP.)
@@ -23,12 +23,13 @@ User administration is currently done using the standard Django admin interface,
  - Prerequisites: `git`, `docker` and `docker-compose`
  - `git clone git@github.com:jlabusch/wrms-dash.git`
  - `cd wrms-dash`
- - Create `./api/config/default.json`
+ - `git submodule update --init`
+ - Create `./config/default.json`
+ - `make build` to copy `./config/` into a docker volume and build all submodules
  - Decide if you need to set the optional `DJANGO_SECRET` and `ICINGA_BASIC_AUTH` environment variables
- - Export `DJANGO_DEBUG=Y` and/or `API_DEBUG=Y` if you want to turn on debug logging
- - `make run` to start the system, `docker-compose down` to stop it
+ - Export `DJANGO_DEBUG=True` and `DEBUG=Y` if you want to turn on debug logging
+ - `make start` to start the system, `make stop` to stop it
  - Browse to http://localhost to test
- - If you're within Catalyst, ask me about integrating the finance system's MIS reports to see revenue on the Omnitool.
 
 ![Architecture](https://github.com/jlabusch/wrms-dash/raw/master/overview.png)
 
