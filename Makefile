@@ -4,7 +4,7 @@ DOCKER=docker
 CONFIG_VOL=wrms-dash-config-vol
 
 config:
-	$(DOCKER) volume ls | grep -q $(STATIC_VOL) || $(DOCKER) volume create $(STATIC_VOL)
+	$(DOCKER) volume ls | grep -q $(CONFIG_VOL) || $(DOCKER) volume create $(CONFIG_VOL)
 	$(DOCKER) images | grep -q alpine || $(DOCKER) pull alpine
 	CONTAINER=$$($(DOCKER) run -d -t -e TERM=xterm --rm -v $(CONFIG_VOL):/opt/ alpine top) && \
     for i in config/*; do $(DOCKER) cp $$i $$CONTAINER:/opt/; done && \
