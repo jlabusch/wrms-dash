@@ -6,7 +6,64 @@
 
 This aggregates information about our Service Level Agreements into real-time dashboards we (and our customers!) can use to evaluate account status and manage service delivery.
 
-It relies on a few internal systems:
+## Quick start
+
+Prerequisites: `git` and `docker`.
+
+ - `git clone git@github.com:jlabusch/wrms-dash.git`
+ - `cd wrms-dash`
+ - `git submodule update --init`
+ - Create `./config/default.json`
+ - `make build`
+ - `make start`
+ - Browse to http://localhost to test
+
+![Architecture](https://github.com/jlabusch/wrms-dash/raw/ecs/overview.png)
+
+## Initial data load
+
+If you have data to load, e.g. because you dumped the old SQLite version of the DB using `docker exec -it wrms-dash_frontend ./manage.py dumpdata --exclude contenttypes > db.json`, then you can do:
+
+ - copy `db.json` into `./config/`
+ - `make config` # copy files into the config volume
+ - `make -C wrms-dash-frontend-db build start` # wait for postgres to start
+ - `make -C wrms-dash-frontend    build start` # runs initial migrations
+ - `docker exec -it wrms-dash-frontend ./manage.py loaddata /opt/db/db.json`
+
+On the other hand, if you don't have anything to import:
+
+ - Start the frontend and frontend-db containers as above
+ - `docker exec -it wrms-dash-frontend ./manage.py createsuperuser`
+
+## Volumes
+
+![Architecture](https://github.com/jlabusch/wrms-dash/raw/ecs/volumes.png)
+
+ #### wrms-dash-config-vol
+ 
+ - Built by `wrms-dash`
+ - `wrms-dash` copies in everything from `./config/` (usually just `default.json`)
+ - `wrms-dash-frontend-db` copies in `pgpass`, which gets a new randomly generated password every time you `make build`
+
+#### wrms-dash-db-vol
+
+ - Built by `wrms-dash-frontend-db`
+ - Contains Postgres data files
+
+#### wrms-dash-frontend-vol
+
+ - Built by `wrms-dash-frontend`
+ - Contains HTML, CSS and JS files from Django's `staticserve` directory
+
+## Noteworthy environment variables
+
+ - `DJANGO_DEBUG` (`wrms-dash-frontend`) and `DEBUG` (`wrms-dash-api`, `wrms-dash-sync`)
+ - `DJANGO_SECRET` (`wrms-dash-frontend`)
+ - `ICINGA_BASIC_AUTH` (`wrms-dash-api`)
+
+## Integrations
+
+The dash relies on a few internal systems:
 
   - Espo CRM for account and contract details (alternative: static JSON config)
   - WRMS for ticket, quote and timesheet information
@@ -18,52 +75,14 @@ It relies on a few internal systems:
 
 User administration is currently done using the standard Django admin interface, but the next step on the roadmap is to back this with WRMS authentication. (There are reasons for not using the Catalyst IdP.)
 
-## Quick start
-
- - Prerequisites: `git`, `docker` and `docker-compose`
- - `git clone git@github.com:jlabusch/wrms-dash.git`
- - `cd wrms-dash`
- - `git submodule update --init`
- - Create `./config/default.json`
- - `make build` to copy `./config/` into a docker volume and build all submodules
- - Decide if you need to set the optional `DJANGO_SECRET` and `ICINGA_BASIC_AUTH` environment variables
- - Export `DJANGO_DEBUG=True` and `DEBUG=Y` if you want to turn on debug logging
- - `make start` to start the system, `make stop` to stop it
- - Browse to http://localhost to test
-
-![Architecture](https://github.com/jlabusch/wrms-dash/raw/ecs/overview.png)
-
-
-### Migrating from SQlite3 to Postgres
-
-Previous versions of this used SQlite3.
-
-To dump the old SQlite3 data as JSON, use `docker exec -it wrms-dash_frontend ./manage.py dumpdata --exclude contenttypes > db.json`.
-
-To import it into Postgres:
-
- - start `wrms-dash-frontend-db` and `wrms-dash-frontend`
- - `docker cp db.json wrms-dash-frontend:/opt/`
- - `docker exec -it wrms-dash-frontend ./manage.py loaddata db.json`
-
 ### Dev notes
 
- - Each widget's back end code is at `./api/lib/get_XXX.js`
+ - Each dashboard's widget's back end code is in `wrms-dash-api/lib/get_XXX.js`
  - check out https://github.com/keen/keen-dataviz.js/blob/master/docs/README.md#chart-types for front-end options, or just use your favourite charting library. Google charts also play nicely with this dash.
-
-(Note: there is vestigial SSL support, but we haven't touched that in ages because it's solved a different way in our own infrastructure.)
-
-### Administration
-
-If you're starting from a blank database, after starting the system you need to create a superuser: `docker exec -it wrmsdash_frontend_1 ./manage.py createsuperuser`
-
-> Note that `frontend/db.sqlite3` will be mounted as a volume
-
-> Also remember that the actual container name, e.g. `wrmsdash_frontend_1`, depends on your environment. Use `docker-compose ps` to see what the real name is.
 
 ##### User accounts
 
-To change a user's password, run `docker exec -it wrmsdash_frontend_1 ./manage.py changepassword <username>`
+To change a user's password, run `docker exec -it wrms-dash_frontend ./manage.py changepassword <username>`
 
 Current (pre-WRMS IdP) user model is:
 
