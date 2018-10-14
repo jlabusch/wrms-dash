@@ -13,3 +13,6 @@
 [submodule "wrms-dash-frontend-db"]
 	path = wrms-dash-frontend-db
 	url = git@github.com:jlabusch/wrms-dash-frontend-db.git
+[submodule "wrms-dash-build-funcs"]
+	path = wrms-dash-build-funcs
+	url = git@github.com:jlabusch/wrms-dash-build-funcs.git

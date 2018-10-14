@@ -1,31 +1,55 @@
-.PHONY: config build start stop clean
+.PHONY: config deps build start stop clean
 
 DOCKER=docker
 CONFIG_VOL=wrms-dash-config-vol
-IMAGES=wrms-dash-api \
-       wrms-dash-sync \
-       wrms-dash-frontend-db \
-       wrms-dash-frontend \
-       wrms-dash-nginx
+BUILD=$(shell ls ./wrms-dash-build-funcs/build.sh 2>/dev/null || ls ../wrms-dash-build-funcs/build.sh 2>/dev/null)
+SHELL:=/bin/bash
 
-config:
-	$(DOCKER) volume ls | grep -q $(CONFIG_VOL) || $(DOCKER) volume create $(CONFIG_VOL)
-	# Copy files from ./config into the config volume
-	$(DOCKER) images | grep -q alpine || $(DOCKER) pull alpine
-	CONTAINER=$$($(DOCKER) run -d -t -e TERM=xterm --rm -v $(CONFIG_VOL):/opt/ alpine top) && \
-    for i in config/*; do $(DOCKER) cp $$i $$CONTAINER:/opt/; done && \
-    $(DOCKER) stop $$CONTAINER
+deps:
+	@test -n "$(BUILD)" || (echo 'wrms-dash-build-funcs not found; do you need "git submodule update --init"?'; false)
+	@echo "Using $(BUILD)"
+
+config: deps
+	@$(BUILD) volume create $(CONFIG_VOL)
+	@$(BUILD) image pull-if-not-exists alpine
+	@for i in config/*; do \
+        $(BUILD) cp alpine $$PWD/config $(CONFIG_VOL) /vol0/$$(basename $$i) /vol1/; \
+    done
 
 build: config
-	@for i in $(IMAGES); do make -C $$i $@; done
+	@for i in \
+        wrms-dash-frontend-db \
+        wrms-dash-frontend \
+        wrms-dash-nginx \
+        wrms-dash-api \
+        wrms-dash-sync \
+    ; do \
+        make -C $$i $@; \
+    done
 
 start:
-	@for i in $(IMAGES); do make -C $$i $@; done
+	@for i in \
+        wrms-dash-frontend-db \
+        wrms-dash-api \
+        wrms-dash-sync \
+        wrms-dash-frontend \
+        wrms-dash-nginx \
+    ; do \
+        make -C $$i $@; \
+    done
 
 stop:
-	@for i in $(IMAGES); do make -C $$i $@ || :; done
+	make -C wrms-dash-nginx $@ || :
+	make -C wrms-dash-api $@ || :
+	make -C wrms-dash-sync $@ || :
+	make -C wrms-dash-frontend $@ || :
+	make -C wrms-dash-frontend-db $@ || :
 
 clean:
-	$(DOCKER) volume rm $(CONFIG_VOL) || :
-	@for i in $(IMAGES); do make -C $$i $@ || :; done
+	$(BUILD) volume delete $(CONFIG_VOL) || :
+	make -C wrms-dash-nginx $@ || :
+	make -C wrms-dash-api $@ || :
+	make -C wrms-dash-sync $@ || :
+	make -C wrms-dash-frontend $@ || :
+	make -C wrms-dash-frontend-db $@ || :
 
