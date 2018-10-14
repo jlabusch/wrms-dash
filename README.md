@@ -37,23 +37,20 @@ On the other hand, if you don't have anything to import:
 
 ## Volumes
 
-![Architecture](https://github.com/jlabusch/wrms-dash/raw/ecs/volumes.png)
-
  #### wrms-dash-config-vol
  
  - Built by `wrms-dash`
  - `wrms-dash` copies in everything from `./config/` (usually just `default.json`)
- - `wrms-dash-frontend-db` copies in `pgpass`, which gets a new randomly generated password every time you `make build`
+ - `wrms-dash-frontend-db` copies in `pgpass`, which gets created with a random password
 
 #### wrms-dash-db-vol
 
  - Built by `wrms-dash-frontend-db`
  - Contains Postgres data files
 
-#### wrms-dash-frontend-vol
+#### Things that are no longer volumes
 
- - Built by `wrms-dash-frontend`
- - Contains HTML, CSS and JS files from Django's `staticserve` directory
+`wrms-dash-frontend` and `wrms-dash-nginx` share the same static files. To avoid dealing with volumes on ECS we copy the files into both images at build time. Same deal with copying the node config from `wrms-dash-config-vol` into both `wrms-dash-api` and `wrms-dash-sync`.
 
 ## Noteworthy environment variables
 
