@@ -24,7 +24,7 @@ build: config
 
 start:
 	@test -n "$$CONFIG" || (echo 'CONFIG not set, try "export CONFIG=`base64 < ./config/default.json`"'; false)
-	test -n "$$DB_PASS" || (echo 'DB_PASS not set - try "export DB_PASS=`cat ./wrms-dash-frontend-db/pgpass`"'; false)
+	@test -n "$$DB_PASS" || (echo 'DB_PASS not set - try "export DB_PASS=`cat ./wrms-dash-frontend-db/pgpass`"'; false)
 	@for i in \
         wrms-dash-frontend-db \
         wrms-dash-api \
