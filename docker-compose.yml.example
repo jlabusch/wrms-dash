@@ -1,0 +1,75 @@
+version: "2"
+
+services:
+
+    wrms-dash-nginx:
+        image: jlabusch/wrms-dash-nginx
+        restart: always
+        ports:
+            - "80:80"
+        links:
+            - wrms-dash-frontend
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+
+    wrms-dash-frontend-db:
+        image: postgres:9.6
+        restart: always
+        expose:
+            - "5432"
+        environment:
+            - POSTGRES_USER=dashboard
+            - POSTGRES_PASSWORD=example_password
+            - POSTGRES_DB=dashboard
+            - PGDATA=/var/lib/postgresql/data/pgdata
+        volumes:
+            - /opt/ecs/pgdata:/var/lib/postgresql/data/pgdata
+
+    wrms-dash-frontend:
+        image: jlabusch/wrms-dash-frontend
+        restart: always
+        expose:
+            - "80"
+        environment:
+            - DJANGO_DEBUG
+            - DJANGO_BACKEND_URI=http://wrms-dash-api:80
+            - DJANGO_SECRET
+            - DB_PASS=example_password
+        links:
+            - wrms-dash-api
+            - wrms-dash-frontend-db
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+
+    wrms-dash-sync:
+        image: jlabusch/wrms-dash-sync
+        restart: always
+        expose:
+            - "80"
+        entrypoint:
+            - npm
+            - start
+        environment:
+            - ICINGA_BASIC_AUTH
+            - CONFIG
+            - API_DEBUG
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+
+    wrms-dash-api:
+        image: jlabusch/wrms-dash-api
+        restart: always
+        expose:
+            - "80"
+        entrypoint:
+            - npm
+            - start
+        links:
+            - wrms-dash-sync
+        environment:
+            - ICINGA_BASIC_AUTH
+            - CONFIG
+            - API_DEBUG
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+

@@ -1,0 +1,73 @@
+{
+    "db": {
+        "user": "wrms_readonly",
+        "database": "wrms",
+        "password": "",
+        "host": "wrms-db.example.com",
+        "port": 5432
+    },
+    "api-cache": {
+        "server": {
+            "version": "1.0.0",
+            "listen_port": 80
+        },
+        "host": "http://wrms-dash-sync"
+    },
+    "api": {
+        "server": {
+            "version": "1.0.0",
+            "listen_port": 80,
+            "wrms_details": {
+                "user_id": 534,
+                "exclude_orgs": "1137,1098"
+            }
+        },
+        "host": "http://wrms-dash-api"
+    },
+    "espo": {
+        "enabled": false
+    },
+    "metadata": {
+        "host": "https://metadata.example.com"
+    },
+    "default_rates": {
+        "GBP.EU": 100,
+        "USD.EU": 127,
+        "EUR.EU": 113
+    },
+    "sync": {
+        "startup_delay_secs": 2,
+        "poll_interval_secs": 300
+    },
+    "icinga": {
+        "enabled": false
+    },
+    "contracts": [
+        {
+            "org_id": 1137,
+            "org_name": "__vendor",
+            "name": "__vendor",
+            "type": "monthly",
+            "hours": 0,
+            "cash_value": 0,
+            "cash_rate": 0,
+            "cash_currency": "GBP",
+            "start_date": "1 October 2008",
+            "end_date": "31 October 2008",
+            "systems": [ 1661, 1416, 1359, 2664 ]
+        },
+        {
+            "org_id": 2345,
+            "org_name": "Acme.com",
+            "name": "Acme.com support contract",
+            "type": "monthly",
+            "hours": 2,
+            "cash_value": 1500,
+            "cash_rate": 150,
+            "cash_currency": "USD",
+            "start_date": "1 October 2018",
+            "end_date": "31 October 2019",
+            "systems": [ 123, 456 ]
+        }
+    ]
+}
