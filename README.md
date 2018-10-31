@@ -18,7 +18,15 @@ Prerequisites: `git` and `docker`.
  - `make start`
  - Browse to http://localhost to test
 
+## How it works
+
 ![Architecture](https://github.com/jlabusch/wrms-dash/raw/ecs/overview.png)
+
+ - ***wrms-dash-sync*** builds an in-memory data model of client information drawn from WRMS and our CRM (or static configuration if not connected to the CRM)
+ - ***wrms-dash-api*** aggregates various data sources (including *wrms-dash-sync*) into APIs for the front end
+ - ***wrms-dash-frontend*** performs authentication and user management and proxies all API requests
+ - ***wrms-dash-nginx*** serves static files (CSS, JS, images)
+ - ***wrms-dash-frontend-db*** is used by Django for user management and not much else. This container is for testing only; in production this should be a persistent PostgreSQL instance
 
 ## Initial data load
 
