@@ -1,5 +1,6 @@
 .*.swp
 *.json
+.envrc
 download_mis_report.sh
 **/db.sqlite3
 **/__pycache__
